@@ -218,7 +218,7 @@
 	 'void)))
 
 (defmacro c-integer-types ()
-  `'(sint32 uint8 uint16 unsigned-char))
+  `'(sint32 uint8 uint16 sint16 unsigned-char))
 
 
 

@@ -35,6 +35,7 @@
     (TL:EQUALP . "equalp")
     (TL:FILL . "fill")
     (TL:FILL-ARRAY-DOUBLE-FLOAT . "fill_array_double_float")
+    (TL::FILL-ARRAY-SIGNED-BYTE-16 . "fill_array_signed_byte_16")
     (TL:FILL-ARRAY-UNSIGNED-BYTE-16 . "fill_array_unsigned_byte_16")
     (TL:FILL-ARRAY-UNSIGNED-BYTE-8 . "fill_array_unsigned_byte_8")
     (TL:FILL-LIST . "fill_list")

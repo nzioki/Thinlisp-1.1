@@ -489,12 +489,17 @@
 
 
 
-;;; The structures for `c-uint8-init-expr' and `c-uint16-init-expr' represent an
-;;; initializer for arrays of unsigned byte 8 and unsigned byte 16 values.
+;;; The structures for `c-uint8-init-expr', `c-uint16-init-expr',
+;;; `c-sint16-init-expr' represent initializers for arrays of unsigned byte 8,
+;;; unsigned byte 16, and signed byte 16 values.
 
 (def-c-expr c-uint8-init-expr (17 array)
   (emit-integer-vector-to-c-file
     expr (c-uint8-init-expr-array expr) 'sa-uint8 c-file indent))
+
+(def-c-expr c-sint16-init-expr (17 array)
+  (emit-integer-vector-to-c-file
+    expr (c-sint16-init-expr-array expr) 'sa-sint16 c-file indent))
 
 (def-c-expr c-uint16-init-expr (17 array)
   (emit-integer-vector-to-c-file

@@ -41,14 +41,16 @@
 ;;;   sint32 which is a signed 32-bit integer,
 ;;;   uint8 which is an unsigned 8-bit integer (equivalent to unsigned-char),
 ;;;   uint16 which is an unsigned 16-bit integer (aka unsigned short),
+;;;   sint16 which is a signed 16-bit integer (aka signed short),
 ;;;   unsigned-char which is C unsigned char (equivalent to uint8),
 ;;;   boolean which is a C int used as an arg to logical predicates,
 ;;;   Mdouble which is a structure holding a managed-float (tag 0x4),
 ;;;   Ldouble which is a structure holding a double-float (tag 0x5),
 ;;;   Sv which is a simple-vector structure (tag 0x6),
 ;;;   Str which is a string structure (tag 0x7),
-;;;   Sa_unit8 which is a structure holding uint8 arrays (tag 0x8),
-;;;   Sa_unit16 which is a structure holding uint16 arrays (tag 0x9),
+;;;   Sa_uint8 which is a structure holding uint8 arrays (tag 0x8),
+;;;   Sa_uint16 which is a structure holding uint16 arrays (tag 0x9),
+;;;   Sa_sint16 which is a structure holding sint16 arrays (tag 0x12),
 ;;;   Sa_double which is a structure holding double arrays (tag 0xA),
 ;;;   Sym which is a symbol structure (tag 0xB),
 ;;;   Func which is compiled-function structure (tag 0xC),
@@ -322,6 +324,8 @@
       ((satisfies-c-required-type-p c-type 'sa-uint8)
        (round-up length 4))
       ((satisfies-c-required-type-p c-type 'sa-uint16)
+       (round-up length 2))
+      ((satisfies-c-required-type-p c-type 'sa-sint16)
        (round-up length 2))
       ((satisfies-c-required-type-p c-type 'sa-double)
        length)

@@ -231,6 +231,15 @@
   uint8 body[~a];
 }"
 		    ))
+	     ((sa-sint16)
+	      (setq type-format-string
+		    "struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  sint16 body[~a];
+}"
+		    ))
 	     ((sa-uint16)
 	      (setq type-format-string
 		    "struct {

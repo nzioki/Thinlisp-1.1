@@ -69,6 +69,12 @@
      'sint32 (make-c-indirect-selection-expr
 	       (make-c-cast-expr '(pointer sa-uint16) sequence)
 	       "fill_length")))
+  ((trans-specs :lisp-type (((array (signed-byte 16))) fixnum)
+		:c-type ((obj) sint32))
+   (make-c-cast-expr
+     'sint32 (make-c-indirect-selection-expr
+	       (make-c-cast-expr '(pointer sa-sint16) sequence)
+	       "fill_length")))
   ((trans-specs :lisp-type (((array double-float)) fixnum)
 		:c-type ((obj) sint32))
    (make-c-cast-expr
@@ -111,6 +117,12 @@
      'sint32 (make-c-indirect-selection-expr
 	       (make-c-cast-expr '(pointer sa-uint16) vector)
 	       "length")))
+  ((trans-specs :lisp-type (((array (signed-byte 16))) fixnum)
+		:c-type ((obj) sint32))
+   (make-c-cast-expr
+     'sint32 (make-c-indirect-selection-expr
+	       (make-c-cast-expr '(pointer sa-sint16) vector)
+	       "length")))
   ((trans-specs :lisp-type (((array double-float)) fixnum)
 		:c-type ((obj) sint32))
    (make-c-cast-expr
@@ -137,6 +149,12 @@
    (make-c-cast-expr
      'sint32 (make-c-indirect-selection-expr
 	       (make-c-cast-expr '(pointer sa-uint8) vector)
+	       "fill_length")))
+  ((trans-specs :lisp-type (((array (signed-byte 16))) fixnum)
+		:c-type ((obj) sint32))
+   (make-c-cast-expr
+     'sint32 (make-c-indirect-selection-expr
+	       (make-c-cast-expr '(pointer sa-sint16) vector)
 	       "fill_length")))
   ((trans-specs :lisp-type (((array (unsigned-byte 16))) fixnum)
 		:c-type ((obj) sint32))
@@ -206,6 +224,13 @@
        (make-c-cast-expr '(pointer sa-uint8) vector)
        "fill_length")
      "=" new-fill-pointer))
+  ((trans-specs :lisp-type (((array (signed-byte 16)) fixnum) fixnum)
+		:c-type ((obj sint32) sint32))
+   (make-c-infix-expr
+     (make-c-indirect-selection-expr
+       (make-c-cast-expr '(pointer sa-sint16) vector)
+       "fill_length")
+     "=" new-fill-pointer))
   ((trans-specs :lisp-type (((array (unsigned-byte 16)) fixnum) fixnum)
 		:c-type ((obj sint32) sint32))
    (make-c-infix-expr
@@ -243,6 +268,9 @@
    (make-c-subscript-expr sequence index))
   ((trans-specs :lisp-type (((array (unsigned-byte 8)) fixnum) fixnum)
 		:c-type (((array uint8) sint32) uint8))
+   (make-c-subscript-expr sequence index))
+  ((trans-specs :lisp-type (((array (signed-byte 16)) fixnum) fixnum)
+		:c-type (((array sint16) sint32) sint16))
    (make-c-subscript-expr sequence index))
   ((trans-specs :lisp-type (((array (unsigned-byte 16)) fixnum) fixnum)
 		:c-type (((array uint16) sint32) uint16))
@@ -286,6 +314,10 @@
 			    fixnum)
 		:c-type (((array uint8) sint32 uint8) uint8))
    (make-c-infix-expr (make-c-subscript-expr sequence index) "=" value))
+  ((trans-specs :lisp-type (((array (signed-byte 16)) fixnum fixnum)
+			    fixnum)
+		:c-type (((array sint16) sint32 sint16) sint16))
+   (make-c-infix-expr (make-c-subscript-expr sequence index) "=" value))
   ((trans-specs :lisp-type (((array (unsigned-byte 16)) fixnum fixnum)
 			    fixnum)
 		:c-type (((array uint16) sint32 uint16) uint16))
@@ -318,6 +350,9 @@
   ((trans-specs :lisp-type (((array (unsigned-byte 8)) fixnum) fixnum)
 		:c-type (((array uint8) sint32) uint8))
    (make-c-subscript-expr array index))
+  ((trans-specs :lisp-type (((array (signed-byte 16)) fixnum) fixnum)
+		:c-type (((array sint16) sint32) sint16))
+   (make-c-subscript-expr array index))
   ((trans-specs :lisp-type (((array (unsigned-byte 16)) fixnum) fixnum)
 		:c-type (((array uint16) sint32) uint16))
    (make-c-subscript-expr array index))
@@ -337,11 +372,12 @@
 (defparameter primitive-array-types
   ;; Format is:  ( array-type  array-element-type  type-name )
   ;; The type-name is to be used to create type-specific function names.
-  '((simple-vector                    T                 simple-vector)
-    (string                           character         string)
-    ((array (unsigned-byte 8))        (unsigned-byte 8) array-unsigned-byte-8)
-    ((array (unsigned-byte 16))       (unsigned-byte 16)array-unsigned-byte-16)
-    ((array double-float)             double-float      array-double-float)))
+  '((simple-vector                 T                  simple-vector)
+    (string                        character          string)
+    ((array (unsigned-byte 8))     (unsigned-byte 8)  array-unsigned-byte-8)
+    ((array (unsigned-byte 16))    (unsigned-byte 16) array-unsigned-byte-16)
+    ((array (signed-byte 16))      (signed-byte 16)   array-signed-byte-16)
+    ((array double-float)          double-float       array-double-float)))
 
 
 (def-c-translation set-aref (array index value)
@@ -357,6 +393,10 @@
   ((trans-specs :lisp-type (((array (unsigned-byte 8)) fixnum fixnum)
 			    fixnum)
 		:c-type (((array uint8) sint32 uint8) uint8))
+   (make-c-infix-expr (make-c-subscript-expr array index) "=" value))
+  ((trans-specs :lisp-type (((array (signed-byte 16)) fixnum fixnum)
+			    fixnum)
+		:c-type (((array sint16) sint32 sint16) sint16))
    (make-c-infix-expr (make-c-subscript-expr array index) "=" value))
   ((trans-specs :lisp-type (((array (unsigned-byte 16)) fixnum fixnum)
 			    fixnum)
@@ -772,6 +812,21 @@
 		 '(array (unsigned-byte 8)))))
 	   (make-c-literal-expr (c-type-tag 'sa-uint8))))))
 
+(def-c-translation make-sint16-array (length)
+  ((lisp-specs :ftype ((fixnum) (array (signed-byte 16))))
+   `(make-array ,length :element-type '(signed-byte 16) :fill-pointer t))
+  ((trans-specs :c-type ((sint32) obj))
+   (make-c-function-call-expr
+     (make-c-name-expr "alloc_sint16_array")
+     (list length 
+	   (make-c-literal-expr
+	     (region-number-for-type-and-area
+	       '(array (signed-byte 16))
+	       (declared-area-name
+		 (l-expr-env function-call-l-expr)
+		 '(array (signed-byte 16)))))
+	   (make-c-literal-expr (c-type-tag 'sa-sint16))))))
+
 (def-c-translation make-uint16-array (length)
   ((lisp-specs :ftype ((fixnum) (array (unsigned-byte 16))))
    `(make-array ,length :element-type '(unsigned-byte 16) :fill-pointer t))
@@ -880,6 +935,8 @@
 	 (values 'make-string-1 'tl:string))
 	((equal upgraded-type '(tl:unsigned-byte 8))
 	 (values 'make-uint8-array '(tl:array (tl:unsigned-byte 8))))
+	((equal upgraded-type '(tl:signed-byte 16))
+	 (values 'make-sint16-array '(tl:array (tl:signed-byte 16))))
 	((equal upgraded-type '(tl:unsigned-byte 16))
 	 (values 'make-uint16-array '(tl:array (tl:unsigned-byte 16))))
 	((eq upgraded-type 'tl:double-float)

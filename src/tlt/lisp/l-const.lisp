@@ -720,7 +720,8 @@
 	       (if (tl-subtypep lisp-type '(c-type "long"))
 		   (values '(c-type "long") 'long)
 		   (values 'fixnum
-			   (if (loop for type in '(sint32 uint32 uint16 uint8)
+			   (if (loop for type in '(sint32 uint32 sint16 uint16 
+							  uint8)
 				     thereis (satisfies-c-required-type-p
 					       c-type type))
 			       c-type

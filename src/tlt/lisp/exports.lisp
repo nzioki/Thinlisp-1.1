@@ -337,6 +337,7 @@
      "ARRAY"
      "VECTOR"
      "UNSIGNED-BYTE"
+     "SIGNED-BYTE"
      "STRING"
      "STRINGP"
      "SIMPLE-STRING"

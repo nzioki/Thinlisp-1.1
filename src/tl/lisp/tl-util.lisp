@@ -487,6 +487,15 @@
     (setf (aref sequence index) elt))
   sequence)
 
+(defun fill-array-signed-byte-16 (sequence elt)
+  (declare (type (simple-array (signed-byte 16)) sequence)
+	   (type (signed-byte 16) elt)
+	   (return-type (simple-array (signed-byte 16))))
+  (loop for index from 0 below (length sequence)
+	do
+    (setf (aref sequence index) elt))
+  sequence)
+
 (defun fill-array-double-float (sequence elt)
   (declare (type (simple-array double-float) sequence)
 	   (type double-float elt)

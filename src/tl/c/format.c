@@ -690,28 +690,31 @@ static const Str_25 str_const_16
 static const Str_25 str_const_17
   = { 7, 23, 23, "Unsigned-Byte-16-Vector" };
 
-static const Str_21 str_const_18
+static const Str_25 str_const_18
+  = { 7, 21, 21, "Signed-Byte-16-Vector" };
+
+static const Str_21 str_const_19
   = { 7, 19, 19, "Double-Float-Vector" };
 
-static const Str_13 str_const_19
+static const Str_13 str_const_20
   = { 7, 12, 12, "WRITE-SYMBOL" };
 
-static const Str_21 str_const_20
+static const Str_21 str_const_21
   = { 7, 17, 17, "Compiled-Function" };
 
-static const Str_9 str_const_21
+static const Str_9 str_const_22
   = { 7, 7, 7, "Package" };
 
-static const Str_21 str_const_22
+static const Str_21 str_const_23
   = { 7, 17, 17, "The-Unbound-Value" };
 
-static const Str_17 str_const_23
+static const Str_17 str_const_24
   = { 7, 13, 13, "String-Stream" };
 
-static const Str_13 str_const_24
+static const Str_13 str_const_25
   = { 7, 11, 11, "File-Stream" };
 
-static const Str_13 str_const_25
+static const Str_13 str_const_26
   = { 7, 12, 12, "Unknown-Type" };
 
 /* Translated from WRITE-FUNCTION(T T T T FIXNUM T T T T) = T */
@@ -801,8 +804,12 @@ Obj write_function (Obj object, Obj stream, Obj case_1, Obj escape, sint32 base,
     print_random_object_with_type_name(object,((Str *)(&str_const_17))->body,   /* "Unsigned-Byte-16-Vector" */
         BOXFIX((sint32)(((Sa_uint16 *)object)->fill_length)),stream);
     break;
+   case 18:
+    print_random_object_with_type_name(object,((Str *)(&str_const_18))->body,   /* "Signed-Byte-16-Vector" */
+        BOXFIX((sint32)(((Sa_sint16 *)object)->fill_length)),stream);
+    break;
    case 10:
-    print_random_object_with_type_name(object,((Str *)(&str_const_18))->body,   /* "Double-Float-Vector" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_19))->body,   /* "Double-Float-Vector" */
         BOXFIX((sint32)(((Sa_double *)object)->length)),stream);
     break;
    case 11:
@@ -810,27 +817,27 @@ Obj write_function (Obj object, Obj stream, Obj case_1, Obj escape, sint32 base,
         case_1,stream);
     break;
    case 12:
-    print_random_object_with_type_name(object,((Str *)(&str_const_20))->body,   /* "Compiled-Function" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_21))->body,   /* "Compiled-Function" */
         ((Func *)object)->name,stream);
     break;
    case 13:
-    print_random_object_with_type_name(object,((Str *)(&str_const_21))->body,   /* "Package" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_22))->body,   /* "Package" */
         ((Pkg *)object)->name,stream);
     break;
    case 14:
-    print_random_object_with_type_name(object,((Str *)(&str_const_22))->body,   /* "The-Unbound-Value" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_23))->body,   /* "The-Unbound-Value" */
         (Obj)NULL,stream);
     break;
    case 15:
-    print_random_object_with_type_name(object,((Str *)(&str_const_23))->body,   /* "String-Stream" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_24))->body,   /* "String-Stream" */
         (Obj)NULL,stream);
     break;
    case 16:
-    print_random_object_with_type_name(object,((Str *)(&str_const_24))->body,   /* "File-Stream" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_25))->body,   /* "File-Stream" */
         (Obj)NULL,stream);
     break;
    default:
-    print_random_object_with_type_name(object,((Str *)(&str_const_25))->body,   /* "Unknown-Type" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_26))->body,   /* "Unknown-Type" */
         (Obj)NULL,stream);
     break;
   }
@@ -898,7 +905,7 @@ Obj print (Obj object, Obj streamP)
   return object;
 }
 
-static const Str_5 str_const_26
+static const Str_5 str_const_27
   = { 7, 3, 3, " . " };
 
 /* Translated from WRITE-LIST(T T) = T */
@@ -927,7 +934,7 @@ Obj write_list (Obj cons_1, Obj streamP)
   if (next_cons==NULL) 
     write_char(')',streamP);
   else {
-    write_string_function(((Str *)(&str_const_26))->body,streamP,   /* " . " */
+    write_string_function(((Str *)(&str_const_27))->body,streamP,   /* " . " */
         0,(Obj)NULL);
     write_function(next_cons,streamP,GET_GLOBAL(Sprint_caseS),GET_GLOBAL(Sprint_escapeS),
         UNBOXFIX(GET_GLOBAL(Sprint_baseS)),GET_GLOBAL(Sprint_prettyS),GET_GLOBAL(Sprint_levelS),
@@ -970,7 +977,7 @@ Obj alloc_field_width_string (void)
   return this_string;
 }
 
-static const Str_5 str_const_27
+static const Str_5 str_const_28
   = { 7, 2, 2, "()" };
 
 /* Translated from WRITE-WITH-ARGLIST(T T T T T) = T */
@@ -994,7 +1001,7 @@ Obj write_with_arglist (Obj stream, Obj object, Obj arglist, Obj atsign_modifier
   else 
     current_stream = stream;
   if (object==NULL) 
-    write_string_function((colon_modifierP!=NULL) ? ((Str *)(&str_const_27))->body      /* "()" */
+    write_string_function((colon_modifierP!=NULL) ? ((Str *)(&str_const_28))->body      /* "()" */
         : (((Str *)(&str_const_11))->body),current_stream,  /* "nil" */
         0,(Obj)NULL);
   else 
@@ -1127,25 +1134,25 @@ void write_fixnum_with_arglist (Obj stream, sint32 fixnum, Obj arglist,
     return;
 }
 
-static const Str_5 str_const_28
+static const Str_5 str_const_29
   = { 7, 2, 2, "  " };
 
-static const Str_49 str_const_29
+static const Str_49 str_const_30
   = { 7, 47, 47, "TL:FORMAT doesn\'t support nested ~{ iterations." };
 
-static const Str_45 str_const_30
+static const Str_45 str_const_31
   = { 7, 43, 43, "In FORMAT, a ~{ iteration had no closing ~}" };
 
-static const Str_49 str_const_31
+static const Str_49 str_const_32
   = { 7, 48, 48, "In FORMAT, ~^ found outside of any ~{ iteration." };
 
-static const Str_25 str_const_32
+static const Str_25 str_const_33
   = { 7, 24, 24, "In FORMAT, unmatched ~}." };
 
-static const Str_29 str_const_33
+static const Str_29 str_const_34
   = { 7, 26, 26, "Only : args to ~; allowed." };
 
-static const Str_21 str_const_34
+static const Str_21 str_const_35
   = { 7, 18, 18, "No ~] found for ~[" };
 
 /* Translated from FORMAT-FUNCTION(T STRING T) = T */
@@ -1415,7 +1422,7 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
         }
         break;
        case 116:
-        write_string_function(((Str *)(&str_const_28))->body,   /* "  " */
+        write_string_function(((Str *)(&str_const_29))->body,   /* "  " */
             stream,0,(Obj)NULL);
         break;
        case 37:
@@ -1492,7 +1499,7 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
         break;
        case 123:
         if (iteration_start_indexP!=NULL) 
-          format_error((Obj)(&str_const_29),    /* "TL:FORMAT doesn't support nested ~{ iterations." */
+          format_error((Obj)(&str_const_30),    /* "TL:FORMAT doesn't support nested ~{ iterations." */
               ObjStrHDR(control_string));
         iteration_start_indexP = BOXFIX(index);
         iteration_maximum_loopsP = ((arglist!=NULL) ? CAR(arglist) : (Obj)NULL);
@@ -1540,7 +1547,7 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
        exit_nil_3:
         iteration_end_index = block_temp;
         if (iteration_end_index==NULL) 
-          format_error((Obj)(&str_const_30),    /* "In FORMAT, a ~{ iteration had no closing ~}" */
+          format_error((Obj)(&str_const_31),    /* "In FORMAT, a ~{ iteration had no closing ~}" */
               ObjStrHDR(control_string));
         if (((iteration_maximum_loopsP!=NULL) && (((sint32)iteration_maximum_loopsP)
             <=(sint32)BOXFIX(0))) || (((iteration_uses_sublistsP!=NULL) 
@@ -1560,14 +1567,14 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
         break;
        case 94:
         if (iteration_start_indexP==NULL) 
-          format_error((Obj)(&str_const_31),    /* "In FORMAT, ~^ found outside of any ~{ iteration." */
+          format_error((Obj)(&str_const_32),    /* "In FORMAT, ~^ found outside of any ~{ iteration." */
               ObjStrHDR(control_string));
         iteration_start_indexP = (Obj)NULL;
         index = UNBOXFIX(iteration_end_index);
         break;
        case 125:
         if (iteration_start_indexP==NULL) 
-          format_error((Obj)(&str_const_32),    /* "In FORMAT, unmatched ~}." */
+          format_error((Obj)(&str_const_33),    /* "In FORMAT, unmatched ~}." */
               ObjStrHDR(control_string));
         if (iteration_maximum_loopsP!=NULL) {
           g = UNBOXFIX((Obj)((((sint32)iteration_maximum_loopsP)-(sint32)
@@ -1641,7 +1648,7 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
                 goto exit_nil_4;
               }
               else if (clause_index!=directive_index) 
-                format_error((Obj)(&str_const_33),  /* "Only : args to ~; allowed." */
+                format_error((Obj)(&str_const_34),  /* "Only : args to ~; allowed." */
                     ObjStrHDR(control_string));
               else 
                 clause_number = (clause_number-1);
@@ -1659,7 +1666,7 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
             }
           }
         }
-        format_error((Obj)(&str_const_34),ObjStrHDR(control_string));   /* "No ~] found for ~[" */
+        format_error((Obj)(&str_const_35),ObjStrHDR(control_string));   /* "No ~] found for ~[" */
         goto exit_nil_4;
        exit_nil_4:
         break;
@@ -1690,7 +1697,7 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
   return temp_1;
 }
 
-static const Str_49 str_const_35
+static const Str_49 str_const_36
   = { 7, 45, 45, "Twiddle did not have corresponding directive." };
 
 /* Translated from DISCARD-FORMAT-ARGLIST(STRING FIXNUM FIXNUM) = FIXNUM */
@@ -1730,12 +1737,12 @@ sint32 discard_format_arglist (unsigned char *control_string, sint32 index,
     char_1 = (control_string[index]);
   }
 
-  format_error((Obj)(&str_const_35),            /* "Twiddle did not have corresponding directive." */
+  format_error((Obj)(&str_const_36),            /* "Twiddle did not have corresponding directive." */
       ObjStrHDR(control_string));
   return 0;
 }
 
-static const Str_17 str_const_36
+static const Str_17 str_const_37
   = { 7, 13, 13, "Unmatched ~[." };
 
 /* Translated from FIND-END-OF-CONDITIONAL(STRING FIXNUM FIXNUM) = FIXNUM */
@@ -1763,7 +1770,7 @@ sint32 find_end_of_conditional (unsigned char *control_string, sint32 conditiona
         nesting = (nesting+1);
     }
   }
-  return (sint32)format_error((Obj)(&str_const_36),     /* "Unmatched ~[." */
+  return (sint32)format_error((Obj)(&str_const_37),     /* "Unmatched ~[." */
       ObjStrHDR(control_string));
 }
 
@@ -1831,69 +1838,69 @@ Obj error_three_args (Obj control_string, Obj arg1, Obj arg2, Obj arg3)
   return (Obj)NULL;
 }
 
-static const Str_65 str_const_37
+static const Str_65 str_const_38
   = { 7, 64, 64, "This control string contained an ill-formed format directive: ~s" };
 
 /* Translated from BAD-CONTROL-DIRECTIVE-ERROR(T) = VOID */
 
 void bad_control_directive_error (Obj control_string)
 {
-  error_one_arg((Obj)(&str_const_37),           /* "This control string contained an ill-formed format..." */
+  error_one_arg((Obj)(&str_const_38),           /* "This control string contained an ill-formed format..." */
       control_string);
   return;
 }
 
-static const Str_65 str_const_38
+static const Str_65 str_const_39
   = { 7, 61, 61, "The character ~s is not a supported format control character." };
 
 /* Translated from UNSUPPORTED-CONTROL-CHAR-ERROR(T) = VOID */
 
 void unsupported_control_char_error (Obj bad_char)
 {
-  error_one_arg((Obj)(&str_const_38),           /* "The character ~s is not a supported format control..." */
+  error_one_arg((Obj)(&str_const_39),           /* "The character ~s is not a supported format control..." */
       bad_char);
   return;
 }
 
-static const Str_49 str_const_39
+static const Str_49 str_const_40
   = { 7, 46, 46, "The object ~s was not a valid stream argument." };
 
 /* Translated from BAD-STREAM-ERROR(T) = VOID */
 
 void bad_stream_error (Obj stream_arg)
 {
-  error_one_arg((Obj)(&str_const_39),           /* "The object ~s was not a valid stream argument." */
+  error_one_arg((Obj)(&str_const_40),           /* "The object ~s was not a valid stream argument." */
       stream_arg);
   return;
 }
 
-static const Str_33 str_const_40
+static const Str_33 str_const_41
   = { 7, 29, 29, "~a  The control string was ~s" };
 
 /* Translated from FORMAT-ERROR(T T) = NULL */
 
 Obj format_error (Obj description, Obj control_string)
 {
-  return error_two_args((Obj)(&str_const_40),   /* "~a  The control string was ~s" */
+  return error_two_args((Obj)(&str_const_41),   /* "~a  The control string was ~s" */
       description,control_string);
 }
 
-static const Str_77 str_const_41
+static const Str_77 str_const_42
   = { 7, 74, 74, "The extra value ~a ran off the end of a destructuring-bind-strict pattern." };
 
 /* Translated from NOT-NULL-DESTRUCTURING-ERROR-1(T) = VOID */
 
 void not_null_destructuring_error_1 (Obj shoulda_been_nil)
 {
-  error_one_arg((Obj)(&str_const_41),           /* "The extra value ~a ran off the end of a destructur..." */
+  error_one_arg((Obj)(&str_const_42),           /* "The extra value ~a ran off the end of a destructur..." */
       shoulda_been_nil);
   return;
 }
 
-static const Str_57 str_const_42
+static const Str_57 str_const_43
   = { 7, 54, 54, "TL make-array does not support multiple-dimensions: ~a" };
 
-static const Str_57 str_const_43
+static const Str_57 str_const_44
   = { 7, 55, 55, "TL make-array dimension argument was not an integer: ~a" };
 
 /* Translated from CHECK-MAKE-ARRAY-DIMENSIONS(T) = FIXNUM */
@@ -1902,13 +1909,13 @@ sint32 check_make_array_dimensions (Obj dimensions)
 {
   if (IMMED_TAG(dimensions)==2) {               /* Consp */
     if (CDR(dimensions)!=NULL) 
-      error_one_arg((Obj)(&str_const_42),       /* "TL make-array does not support multiple-dimensions..." */
+      error_one_arg((Obj)(&str_const_43),       /* "TL make-array does not support multiple-dimensions..." */
           dimensions);
     else 
       dimensions = CAR(dimensions);
   }
   if (!(IMMED_TAG(dimensions)==1))              /* Fixnump */
-    error_one_arg((Obj)(&str_const_43),         /* "TL make-array dimension argument was not an intege..." */
+    error_one_arg((Obj)(&str_const_44),         /* "TL make-array dimension argument was not an intege..." */
         dimensions);
   return UNBOXFIX(dimensions);
 }
@@ -1923,19 +1930,19 @@ Obj pm_print (Obj object)
   return (Obj)NULL;
 }
 
-static const Str_9 str_const_44
+static const Str_9 str_const_45
   = { 7, 7, 7, "KEYWORD" };
 
-static const Str_9 str_const_45
+static const Str_9 str_const_46
   = { 7, 6, 6, "UPCASE" };
 
-static const Str_9 str_const_46
+static const Str_9 str_const_47
   = { 7, 8, 8, "DOWNCASE" };
 
-static const Str_13 str_const_47
+static const Str_13 str_const_48
   = { 7, 10, 10, "CAPITALIZE" };
 
-static const Str_21 str_const_48
+static const Str_21 str_const_49
   = { 7, 20, 20, "CAP-FIRST-LOWER-REST" };
 
 Sym tl_format_symbols[4];
@@ -1948,20 +1955,20 @@ void syms_tl_format (void)
 {
   Obj cached_keyword_package;
 
-  cached_keyword_package = find_package_1((Obj)(&str_const_44));    /* "KEYWORD" */
-  init_symbol_into_package((Obj)(&(tl_format_symbols[0])),(Obj)(&str_const_45),     /* "UPCASE" */
+  cached_keyword_package = find_package_1((Obj)(&str_const_45));    /* "KEYWORD" */
+  init_symbol_into_package((Obj)(&(tl_format_symbols[0])),(Obj)(&str_const_46),     /* "UPCASE" */
       3167,cached_keyword_package);
   (tl_format_symbols[0]).external = 1;
   (tl_format_symbols[0]).symbol_value = (Obj)(&(tl_format_symbols[0]));
-  init_symbol_into_package((Obj)(&(tl_format_symbols[1])),(Obj)(&str_const_46),     /* "DOWNCASE" */
+  init_symbol_into_package((Obj)(&(tl_format_symbols[1])),(Obj)(&str_const_47),     /* "DOWNCASE" */
       15423,cached_keyword_package);
   (tl_format_symbols[1]).external = 1;
   (tl_format_symbols[1]).symbol_value = (Obj)(&(tl_format_symbols[1]));
-  init_symbol_into_package((Obj)(&(tl_format_symbols[2])),(Obj)(&str_const_47),     /* "CAPITALIZE" */
+  init_symbol_into_package((Obj)(&(tl_format_symbols[2])),(Obj)(&str_const_48),     /* "CAPITALIZE" */
       61541,cached_keyword_package);
   (tl_format_symbols[2]).external = 1;
   (tl_format_symbols[2]).symbol_value = (Obj)(&(tl_format_symbols[2]));
-  init_symbol_into_package((Obj)(&(tl_format_symbols[3])),(Obj)(&str_const_48),     /* "CAP-FIRST-LOWER-REST" */
+  init_symbol_into_package((Obj)(&(tl_format_symbols[3])),(Obj)(&str_const_49),     /* "CAP-FIRST-LOWER-REST" */
       49547,cached_keyword_package);
   (tl_format_symbols[3]).external = 1;
   (tl_format_symbols[3]).symbol_value = (Obj)(&(tl_format_symbols[3]));
@@ -1981,7 +1988,7 @@ void init_tl_format (void)
   (tl_format_funcs[0]).optional_arguments = 0;
   (tl_format_funcs[0]).sets_values_count = 0;
   (tl_format_funcs[0]).default_arguments = (Obj)NULL;
-  (tl_format_funcs[0]).name = (Obj)(&str_const_19);     /* "WRITE-SYMBOL" */
+  (tl_format_funcs[0]).name = (Obj)(&str_const_20);     /* "WRITE-SYMBOL" */
   (tl_format_funcs[0]).c_function = (Obj (*)(Obj))write_symbol;
   SpackageS = find_package_1((Obj)(&str_const));    /* "TL" */
   if (Sterminal_ioS==(Obj)(&Unbound)) 

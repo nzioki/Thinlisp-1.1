@@ -1618,6 +1618,8 @@
 
 (defun inline-uint16-array-p (x) (typep x '(array (unsigned-byte 16) (*))))
 
+(defun inline-sint16-array-p (x) (typep x '(array (signed-byte 16) (*))))
+
 (defun inline-uint8-array-p (x) (typep x '(array (unsigned-byte 8) (*))))
 
 (defun inline-stringp (x) (typep x 'string))
@@ -1640,6 +1642,8 @@
 	   `(inline-consp ,object))
 	  ((tl-subtypep type '(array (unsigned-byte 16)))
 	   `(inline-uint16-array-p ,object))
+	  ((tl-subtypep type '(array (signed-byte 16)))
+	   `(inline-sint16-array-p ,object))
 	  ((tl-subtypep type '(array (unsigned-byte 8)))
 	   `(inline-uint8-array-p ,object))
 	  ((tl-subtypep type 'string)

@@ -1120,7 +1120,7 @@
      (emit-c-expr-as-directed (make-c-literal-expr (if value 1 0))
 			      quote-l-expr c-func c-body return-directive))
     ((or (and (fixnump value)
-	      (loop for type in '(sint32 uint32 uint16 uint8)
+	      (loop for type in '(sint32 uint32 sint32 uint16 uint8)
 		    thereis (satisfies-c-required-type-p c-type type)))
 	 (and (tl-typep value 'double-float)
 	      (satisfies-c-required-type-p c-type 'double)))

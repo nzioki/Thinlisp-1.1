@@ -68,7 +68,7 @@
    (make-c-cast-expr
      'obj
      (make-c-infix-expr (make-c-cast-expr 'uint32 c-expr) "+" 2)))
-  ((sint32 uint32 uint16 uint8 int uint long ulong size-t)
+  ((sint32 uint32 sint16 uint16 uint8 int uint long ulong size-t)
    (make-c-function-call-expr (make-c-name-expr "BOXFIX") (list c-expr)))
   ((unsigned-char)
    (make-c-function-call-expr (make-c-name-expr "BOXCHAR") (list c-expr)))
@@ -88,6 +88,20 @@
 	   (make-c-subscript-expr
 	     (make-c-indirect-selection-expr
 	       (make-c-cast-expr '(pointer sa-uint8) (make-c-name-expr "NULL"))
+	       "body")
+	     (make-c-literal-expr 0)))))))
+   (((pointer sint16))
+    (make-c-cast-expr
+     'obj
+     (make-c-infix-expr
+       (make-c-cast-expr 'uint32 c-expr) "-"
+       (make-c-cast-expr
+	 'uint32
+	 (make-c-unary-expr
+	   #\&
+	   (make-c-subscript-expr
+	     (make-c-indirect-selection-expr
+	       (make-c-cast-expr '(pointer sa-sint16) (make-c-name-expr "NULL"))
 	       "body")
 	     (make-c-literal-expr 0)))))))
    (((pointer uint16))
@@ -187,7 +201,7 @@
   ((obj)
    (make-c-function-call-expr 
     (make-c-name-expr "UNBOXFIX") (list c-expr)))
-  ((uint32 uint8 uint16 unsigned-char int long size-t)
+  ((uint32 uint8 sint16 uint16 unsigned-char int long size-t)
    (make-c-cast-expr 'sint32 c-expr))
   ((double)
    ;; This is used by rounding and truncation code.
@@ -203,7 +217,7 @@
    (make-c-cast-expr
      'uint8
      (coerce-c-expr-result-to-type c-expr 'obj 'sint32 env)))
-  ((uint16 sint32 unsigned-char)
+  ((sint16 uint16 sint32 unsigned-char)
    (make-c-cast-expr 'uint8 c-expr))
   ((void)
    (make-void-cast-stand-in-expr
@@ -219,13 +233,35 @@
      c-expr original-type '(pointer uint8)
      (default-value-for-c-type '(pointer uint8)))))
 
+(def-c-type sint16 "sint16" "sint16 *" nil nil)
+
+(def-c-type-coercion sint16 (c-expr original-type)
+  ((obj)
+   (make-c-cast-expr
+     'sint16 (coerce-c-expr-result-to-type c-expr 'obj 'sint32 env)))
+  ((uint8 uint16 sint32 unsigned-char)
+   (make-c-cast-expr 'sint16 c-expr))
+  ((void)
+   (make-void-cast-stand-in-expr
+     c-expr original-type 'sint16 (make-c-literal-expr 0))))
+
+(def-c-pointer-type-coercion sint16 (c-expr original-expr)
+  ((obj)
+   (make-c-indirect-selection-expr
+     (make-c-cast-expr '(pointer sa-sint16) c-expr)
+     "body"))
+  ((void)
+   (make-void-cast-stand-in-expr
+     c-expr original-expr '(pointer sint16)
+     (default-value-for-c-type '(pointer sint16)))))
+
 (def-c-type uint16 "uint16" "uint16 *" nil nil)
 
 (def-c-type-coercion uint16 (c-expr original-type)
   ((obj)
    (make-c-cast-expr
      'uint16 (coerce-c-expr-result-to-type c-expr 'obj 'sint32 env)))
-  ((uint8 sint32 unsigned-char)
+  ((uint8 sint16 sint32 unsigned-char)
    (make-c-cast-expr 'uint16 c-expr))
   ((void)
    (make-void-cast-stand-in-expr
@@ -278,7 +314,7 @@
    (make-c-cast-expr
      'long
      (coerce-c-expr-result-to-type c-expr 'obj 'sint32 env)))
-  ((sint32 uint8 uint16 char unsigned-char int size-t)
+  ((sint32 uint8 sint16 uint16 char unsigned-char int size-t)
    (make-c-cast-expr 'long c-expr))
   ((void)
    (make-void-cast-stand-in-expr
@@ -289,7 +325,7 @@
    (make-c-cast-expr
      'ulong
      (coerce-c-expr-result-to-type c-expr 'obj 'uint32 env)))
-  ((sint32 uint8 uint16 char unsigned-char int size-t)
+  ((sint32 uint8 sint16 uint16 char unsigned-char int size-t)
    (make-c-cast-expr 'ulong c-expr))
   ((void)
    (make-void-cast-stand-in-expr
@@ -300,7 +336,7 @@
    (make-c-cast-expr
      'size-t
      (coerce-c-expr-result-to-type c-expr 'obj 'sint32 env)))
-  ((sint32 uint8 uint16 char unsigned-char int)
+  ((sint32 uint8 sint16 uint16 char unsigned-char int)
    (make-c-cast-expr 'size-t c-expr))
   ((void)
    (make-void-cast-stand-in-expr
@@ -311,7 +347,7 @@
    (make-c-cast-expr
      'int
      (coerce-c-expr-result-to-type c-expr 'obj 'sint32 env)))
-  ((sint32 uint8 uint16 char unsigned-char long size-t)
+  ((sint32 uint8 sint16 uint16 char unsigned-char long size-t)
    (make-c-cast-expr 'int c-expr))
   ((void)
    (make-void-cast-stand-in-expr
@@ -322,7 +358,7 @@
    (make-c-cast-expr
      'uint
      (coerce-c-expr-result-to-type c-expr 'obj 'uint32 env)))
-  ((sint32 uint8 uint16 char unsigned-char long size-t)
+  ((sint32 uint8 sint16 uint16 char unsigned-char long size-t)
    (make-c-cast-expr 'uint c-expr))
   ((void)
    (make-void-cast-stand-in-expr
@@ -331,7 +367,7 @@
 (def-c-type-coercion unsigned-char (c-expr original-type)
   ((obj)
    (make-c-function-call-expr (make-c-name-expr "UNBOXCHAR") (list c-expr)))
-  ((sint32 uint8 uint16 char)
+  ((sint32 uint8 sint16 uint16 char)
    (make-c-cast-expr 'unsigned-char c-expr))
   ((void)
    (make-void-cast-stand-in-expr
@@ -356,7 +392,7 @@
    (make-c-cast-expr
     'char 
     (make-c-function-call-expr (make-c-name-expr "UNBOXCHAR") (list c-expr))))
-  ((sint32 uint8 uint16)
+  ((sint32 uint8 sint16 uint16)
    (make-c-cast-expr 'char c-expr))
   ((unsigned-char)
    (make-c-cast-expr 'char c-expr))
@@ -410,7 +446,7 @@
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer ldouble) c-expr)
      "body"))
-  ((sint32 uint32 uint16 uint8 long int size-t)
+  ((sint32 uint32 sint16 uint16 uint8 long int size-t)
    (make-c-cast-expr 'double c-expr))
   ((void)
    (make-void-cast-stand-in-expr
@@ -496,6 +532,8 @@
 (def-c-type char-pointer "char *" "char **" nil nil)
 
 (def-c-type class-hdr "Class_hdr" "Class_hdr *" nil 17)
+
+(def-c-type sa-sint16 "Sa_sint16" "Sa_sint16 *" (array (signed-byte 16)) 18)
 
 
 

@@ -34,6 +34,8 @@ Obj generic_aref (Obj array, sint32 index)
     return BOXFIX(((Sa_uint8 *)array)->body[index]);
    case 9:
     return BOXFIX(((Sa_uint16 *)array)->body[index]);
+   case 18:
+    return BOXFIX(((Sa_sint16 *)array)->body[index]);
    case 10:
     return alloc_ldouble(((Sa_double *)array)->body[index],-1,5);
    default:
@@ -63,6 +65,9 @@ Obj generic_set_aref (Obj array, sint32 index, Obj value)
     break;
    case 9:
     (((Sa_uint16 *)array)->body[index]) = (uint16)UNBOXFIX(value);
+    break;
+   case 18:
+    (((Sa_sint16 *)array)->body[index]) = (sint16)UNBOXFIX(value);
     break;
    case 10:
     (((Sa_double *)array)->body[index]) = (((Ldouble *)value)->body);
@@ -96,6 +101,8 @@ Obj generic_elt (Obj sequence, sint32 index)
     return BOXFIX(((Sa_uint8 *)sequence)->body[index]);
    case 9:
     return BOXFIX(((Sa_uint16 *)sequence)->body[index]);
+   case 18:
+    return BOXFIX(((Sa_sint16 *)sequence)->body[index]);
    case 10:
     return alloc_ldouble(((Sa_double *)sequence)->body[index],-1,5);
    default:
@@ -129,6 +136,9 @@ Obj generic_set_elt (Obj sequence, sint32 index, Obj value)
     break;
    case 9:
     (((Sa_uint16 *)sequence)->body[index]) = (uint16)UNBOXFIX(value);
+    break;
+   case 18:
+    (((Sa_sint16 *)sequence)->body[index]) = (sint16)UNBOXFIX(value);
     break;
    case 10:
     (((Sa_double *)sequence)->body[index]) = (((Ldouble *)value)->body);

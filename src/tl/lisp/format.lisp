@@ -786,6 +786,11 @@
        object "Unsigned-Byte-16-Vector"
        (tli::length-trans (the (array (unsigned-byte 16)) object))
        stream))
+    ((array (signed-byte 16))
+     (print-random-object-with-type-name
+       object "Signed-Byte-16-Vector"
+       (tli::length-trans (the (array (signed-byte 16)) object))
+       stream))
     ((array double-float)
      (print-random-object-with-type-name
        object "Double-Float-Vector"

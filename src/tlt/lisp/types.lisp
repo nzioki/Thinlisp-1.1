@@ -170,6 +170,15 @@
 	 (values (eq superior-type 't) t))
 	((memqp subtype '(tl-string-stream file-stream))
 	 (values (memqp superior-type '(stream t)) t))
+	((and (consp superior-type)
+	      (consp subtype)
+	      (eq (cons-car superior-type) 'array)
+	      (eq (cons-car subtype) 'array)
+	      (consp (cons-cdr superior-type))
+	      (consp (cons-cdr subtype)))
+	 (values (equal (upgraded-tl-array-element-type (second superior-type))
+			(upgraded-tl-array-element-type (second subtype)))
+		 t))
 	(t
 	 (subtypep subtype superior-type))))
 
@@ -251,11 +260,13 @@
 (defparameter tl-optimizable-types
   '(((unsigned-byte 8) . uint8)
     ((unsigned-byte 16) . uint16)
+    ((signed-byte 16) . sint16)
     (fixnum . sint32)
     (double-float . double)
     (character . unsigned-char)
     ((array (unsigned-byte 8)) . (array uint8))
     ((array (unsigned-byte 16)) . (array uint16))
+    ((array (signed-byte 16)) . (array sint16))
     ((array double-float) . (array double))
     (simple-string . (array unsigned-char))
     (string . (array unsigned-char))
@@ -420,6 +431,7 @@
   `((character          tl:character          unsigned-char)
     ((unsigned-byte 8)  (tl:unsigned-byte 8)  uint8)
     ((unsigned-byte 16) (tl:unsigned-byte 16) uint16)
+    ((signed-byte 16)   (tl:signed-byte 16)   sint16)
     (double-float       tl:double-float       double)
     (t                  tl:t                  obj)))
 

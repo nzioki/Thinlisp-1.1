@@ -119,6 +119,20 @@ uint16 *fill_array_unsigned_byte_16 (uint16 *sequence, uint16 elt_1)
   return sequence;
 }
 
+/* Translated from FILL-ARRAY-SIGNED-BYTE-16((ARRAY (INTEGER -32768 32767)) (INTEGER -32768 32767)) = (ARRAY (INTEGER -32768 32767)) */
+
+sint16 *fill_array_signed_byte_16 (sint16 *sequence, sint16 elt_1)
+{
+  sint32 index, tl_loop_bind_;
+
+  index = 0;
+  tl_loop_bind_ = (sint32)(((Sa_sint16 *)(Obj)(((uint32)sequence)-(uint32)(
+      &(((Sa_sint16 *)NULL)->body[0]))))->fill_length);
+  for (;!(index>=tl_loop_bind_);index = (index+1)) 
+    (sequence[index]) = elt_1;
+  return sequence;
+}
+
 /* Translated from FILL-ARRAY-DOUBLE-FLOAT((ARRAY DOUBLE-FLOAT) DOUBLE-FLOAT) = (ARRAY DOUBLE-FLOAT) */
 
 double *fill_array_double_float (double *sequence, double elt_1)
@@ -161,6 +175,9 @@ Obj fill (Obj sequence, Obj elt_1)
     break;
    case 9:
     fill_array_unsigned_byte_16(((Sa_uint16 *)sequence)->body,(uint16)UNBOXFIX(elt_1));
+    break;
+   case 18:
+    fill_array_signed_byte_16(((Sa_sint16 *)sequence)->body,(sint16)UNBOXFIX(elt_1));
     break;
    case 10:
     fill_array_double_float(((Sa_double *)sequence)->body,((Ldouble *)elt_1)->body);

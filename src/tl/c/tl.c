@@ -748,6 +748,22 @@ Obj alloc_uint8_array (sint32 length, sint32 region, sint32 type_tag) {
   return (Obj)new;
 }
 
+Obj alloc_sint16_array (sint32 length, sint32 region, sint32 type_tag) {
+  Sa_sint16 *new;
+
+  if (region!=CURRENT_REGION_NUMBER) {
+    if (region != -1)
+      bad_region_warning(region, "Sa_sint16");
+    region = CURRENT_REGION_NUMBER;
+  }
+  /* By default the Sa_sint16 struct contains 2 elements. */
+  new = (Sa_sint16 *)alloc_bytes(region, 4, sizeof(Sa_sint16)+((length-2)*sizeof(sint16)));
+  new->type = type_tag;
+  new->length = length;
+  new->fill_length = length;
+  return (Obj)new;
+}
+
 Obj alloc_uint16_array (sint32 length, sint32 region, sint32 type_tag) {
   Sa_uint16 *new;
 

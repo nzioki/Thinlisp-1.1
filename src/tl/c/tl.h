@@ -83,6 +83,7 @@ typedef   signed int   sint32;
  *   Str - heap allocated strings,
  *   Sa_uint8 - heap allocated (unsigned-byte 8) simple-arrays,
  *   Sa_uint16 - heap allocated (unsigned-byte 16) simple-arrays,
+ *   Sa_sint16 - heap allocated (signed-byte 16) simple-arrays,
  *   Sa_double - heap allocated double-float simple-arrays,
  *   Ldouble - heap allocated double-floats,
  *   Mdouble - heap allocated managed-floats,
@@ -136,6 +137,13 @@ typedef struct {
   unsigned int fill_length: 24;
   uint16 body[2];
 } Sa_uint16;
+
+typedef struct {
+  unsigned int type:         8;
+  unsigned int length:      24;
+  unsigned int fill_length: 24;
+  sint16 body[2];
+} Sa_sint16;
 
 typedef struct {
   unsigned int type:    8;
@@ -533,6 +541,8 @@ extern Obj alloc_string(sint32 dimension, sint32 region, sint32 type_tag);
 extern Obj alloc_uint8_array(sint32 length, sint32 region, sint32 type_tag);
 
 extern Obj alloc_uint16_array(sint32 length, sint32 region, sint32 type_tag);
+
+extern Obj alloc_sint16_array(sint32 length, sint32 region, sint32 type_tag);
 
 extern Obj alloc_double_array(sint32 length, sint32 region, sint32 type_tag);
 
