@@ -2154,7 +2154,8 @@
 					    ,(car (cons-third type))))))))
 		 (t
 		  `(inlined-typep ,object (tl:quote ,type))))))
-	      ((class-type-p type)
+	      ((and (class-type-p type)
+		    structure-type-tags-assigned)
 	       (let* ((tag-var (gensym))
 		      (info (structure-info type))
 		      (min-type-tag (struct-type-tag info))

@@ -86,14 +86,6 @@
 
 
 
-;;; The variable `*root-classes*' contains a list of all classes defined with no
-;;; superior class.
-
-(defvar *root-classes* nil)
-
-
-
-
 ;;; The `struct' structure type is used to hold structure type
 ;;; information during Lisp development time.
 
@@ -190,10 +182,7 @@
 (defun assign-structure-type-tags ()
   (unless structure-type-tags-assigned
     (setq structure-type-tags-assigned t)
-    (loop with current-tag = base-structure-type-tag
-	  for root in *root-classes*
-	  do
-      (setq current-tag (assign-structure-type-tag-tree root current-tag)))))
+    (assign-structure-type-tag-tree 'structure base-structure-type-tag)))
 
 (defun clear-structure-type-tags ()
   (loop for type in *all-classes* do
@@ -251,10 +240,13 @@
 (defun type-tags-for-class-type (type-symbol)
   (let* ((struct-info (structure-info type-symbol))
 	 (tag (struct-type-tag struct-info)))
-    (when (null tag)
-      (error "Type ~s did not yet have a type tag assigned." type-symbol))
-    (loop for next-tag from tag to (struct-maximum-subtype-tag struct-info) 
-	  collect next-tag)))
+    (cond 
+      (tag 
+       (loop for next-tag from tag to (struct-maximum-subtype-tag struct-info) 
+	     collect next-tag))
+      (t
+       (error "Type ~s did not yet have a type tag assigned." type-symbol)))))
+
 
 
 
@@ -658,7 +650,12 @@
     (setf (structure-info name) struct)
     (setf (struct-slot-descriptions struct) 
 	  (collect-slot-descriptions struct conc-name))
-    (when (null include)
-      (pushnew name *root-classes*))
+    (cond (include
+	   (struct-add-subtype include name))
+	  ((not (eq name 'structure))
+	   (struct-add-subtype 'structure name)))
     (pushnew name *all-classes*)
     name))
+
+(install-structure
+  'structure nil nil nil nil nil nil nil nil nil nil nil)
