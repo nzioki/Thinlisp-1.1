@@ -751,6 +751,11 @@
      "NOTANY"
      "NOTEVERY"
 
+     ;; Internal time operations.
+     "GET-INTERNAL-REAL-TIME"
+     "GET-INTERNAL-RUN-TIME"
+     "INTERNAL-TIME-UNITS-PER-SECOND"
+
      ;; GSI size reduction macros, to be eliminated later.  -jallard 2/12/97
      "DEFVAR-EXCLUDING-GSI"
      "DEFVAR-EXCLUDING-GSI-NO-UTF-G"
