@@ -2037,9 +2037,8 @@
 
 (def-c-translation compiled-function-optional-arguments (compiled-function)
   ((lisp-specs :ftype ((compiled-function) fixnum))
-   `(progn
-      (derror "No Lisp env implementation of (compiled-function-optional-arguments ~s)"
-	     ,compiled-function)))
+   `(derror "No Lisp env implementation of (compiled-function-optional-arguments ~s)"
+	    ,compiled-function))
   ((trans-specs :c-type ((obj) sint32))
    (make-c-cast-expr
      'sint32 (make-c-indirect-selection-expr
@@ -2048,10 +2047,8 @@
 
 (def-c-translation compiled-function-sets-values-count (compiled-function)
   ((lisp-specs :ftype ((compiled-function) fixnum))
-   `(progn
-      (derror "No Lisp env implementation of (compiled-function-optional-arguments ~s)"
-	     ,compiled-function)
-      0))
+   `(derror "No Lisp env implementation of (compiled-function-optional-arguments ~s)"
+	    ,compiled-function))
   ((trans-specs :c-type ((obj) sint32))
    (make-c-cast-expr
      'sint32 (make-c-indirect-selection-expr
@@ -2062,9 +2059,8 @@
 
 (def-c-translation compiled-function-default-arguments (compiled-function)
   ((lisp-specs :ftype ((compiled-function) t))
-   `(progn
-      (derror "No Lisp env implementation of (compiled-function-default-arguments ~s)"
-	     ,compiled-function)))
+   `(derror "No Lisp env implementation of (compiled-function-default-arguments ~s)"
+	    ,compiled-function))
   ((trans-specs :c-type ((obj) obj))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer func) compiled-function)
@@ -2072,9 +2068,8 @@
 
 (def-c-translation compiled-function-closure-environment (compiled-function)
   ((lisp-specs :ftype ((compiled-function) t))
-   `(progn
-      (derror "No Lisp env implementation of (compiled-function-closure-environment ~s)"
-	     ,compiled-function)))
+   `(derror "No Lisp env implementation of (compiled-function-closure-environment ~s)"
+	    ,compiled-function))
   ((trans-specs :c-type ((obj) obj))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer func) compiled-function)
@@ -2083,9 +2078,8 @@
 (def-c-translation set-compiled-function-closure-environment (compiled-function 
 							      closure-env)
   ((lisp-specs :ftype ((compiled-function t) t))
-   `(progn
-      (derror "No Lisp env implementation of (set-compiled-function-closure-environment ~s ~s)"
-	     ,compiled-function ,closure-env)))
+   `(derror "No Lisp env implementation of (set-compiled-function-closure-environment ~s ~s)"
+	    ,compiled-function ,closure-env))
   ((trans-specs :c-type ((obj obj) obj))
    (make-c-infix-expr
      (make-c-indirect-selection-expr
@@ -2110,10 +2104,8 @@
    #+cmu
    `(kernel:%function-name ,compiled-function)
    #-(or lucid cmu)
-   `(progn
-      (derror "No Lisp env implementation of (compiled-function-name ~s)"
-	     ,compiled-function)
-      :dummy-name))
+   `(derror "No Lisp env implementation of (compiled-function-name ~s)"
+	    ,compiled-function))
   ((trans-specs :c-type ((obj) obj))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer func) compiled-function)
