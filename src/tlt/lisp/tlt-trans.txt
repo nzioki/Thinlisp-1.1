@@ -46,7 +46,7 @@ Def-System
 --------------
 
 In order to get the flexibility that we want with this development environment,
-a def- system implementation will be build-in to GL.  This is necessary to get
+a def- system implementation will be built-in to GL.  This is necessary to get
 the desired layering of libraries and to enable identification of call-trees,
 module interdependencies, and dead-code.
 

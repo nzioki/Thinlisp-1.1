@@ -38,8 +38,7 @@ A determination of type can be made from a hex value of the pointer.
 
 The arguments for a 30 bit fixnum instead of a 31 is that it makes for fast
 fixnum additions and subtractions without risking overflow.  31 bit fixnums
-require a statement boundary between operations to avoid the potential for
-overflow.
+require a sequence point between operations to avoid the potential for overflow.
 
 Characters could be either immediate or remote, though there is some performance
 benefit to characters being immediate.  We could have a preallocated array of
@@ -178,7 +177,7 @@ Symbol
 
 There are several different optimizations that one can imagine for the slots of
 symbols.  In the first pass of this implementation, no such memory squeezing
-will be attempted, and all fine typical slots of symbols will be directly
+will be attempted, and all five typical slots of symbols will be directly
 provided in the symbol structure.  Also, since virtually all symbols are
 included in packages in G2 and TW, the slots needed for holding the symbol in
 package balanced binary trees will be included in the symbol itself.
