@@ -1405,7 +1405,7 @@
     (case arg-count
       ((0)
        `(progn
-	  (gli::simple-error ,control-string)
+	  (gli::gli-simple-error ,control-string)
 	  nil))
       ((1)
        `(error-one-arg ,control-string ,@args))
@@ -1416,7 +1416,7 @@
       (t
        `(progn
 	  (with-permanent-area ()
-	    (gli::simple-error
+	    (gli::gli-simple-error
 	      (format nil ,control-string ,@args)))
 	  nil)))))
 
@@ -1428,21 +1428,21 @@
 (defun error-one-arg (control-string arg)
   (declare (return-type null))
   (with-permanent-area ()
-    (gli::simple-error
+    (gli::gli-simple-error
       (format nil control-string arg)))
   nil)
 
 (defun error-two-args (control-string arg1 arg2)
   (declare (return-type null))
   (with-permanent-area ()
-    (gli::simple-error
+    (gli::gli-simple-error
       (format nil control-string arg1 arg2)))
   nil)
 
 (defun error-three-args (control-string arg1 arg2 arg3)
   (declare (return-type null))
   (with-permanent-area ()
-    (gli::simple-error
+    (gli::gli-simple-error
       (format nil control-string arg1 arg2 arg3)))
   nil)
 

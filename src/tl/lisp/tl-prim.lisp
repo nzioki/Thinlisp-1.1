@@ -464,7 +464,7 @@
     (list (reverse-list (the list sequence)))
     (string (reverse-string (the string sequence)))
     (t
-     (gli::simple-error "REVERSE argument was not a string or list."))))
+     (gli::gli-simple-error "REVERSE argument was not a string or list."))))
 
 (defun reverse-list (list)
   (declare (consing-area permanent)
