@@ -94,14 +94,14 @@
 
 
 
-;;; The function `underlying-def-foreign-callable' returns the symbol naming
-;;; this port's implementation of def-foreign-callable.  If this function
-;;; returns NIL, then no attempt will be made to enable this feature in Lisp
-;;; development.
+;;; The variable `underlying-def-foreign-callable' holds the symbol naming this
+;;; port's implementation of def-foreign-callable.  If this variable
+;;; returnscontains NIL, then no attempt will be made to enable this feature in
+;;; Lisp development.
 
-(defun underlying-def-foreign-callable ()
+(defvar underlying-def-foreign-callable
   #+lucid
-  ''lcl:def-foreign-callable
+  'lcl:def-foreign-callable
   #-lucid
   nil)
 
@@ -139,7 +139,7 @@
 		 collect (list arg-name
 			       (rewrite-foreign-keyword-type-names arg-type))))
 	 (translating? (eval-feature :translator))
-	 (lisp-implementation? (underlying-def-foreign-callable)))
+	 (lisp-implementation? underlying-def-foreign-callable))
     `(gl:progn
        ,@(unless translating?
 	   `((gl:declaim
