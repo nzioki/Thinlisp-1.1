@@ -1538,11 +1538,18 @@ sint32 integer_length (sint32 fixnum)
   if (fixnum<0) 
     fixnum = (~fixnum);
   count = 0;
-  while (fixnum>127) {
+  if (fixnum>=16777216) {
+    count = (count+24);
+    fixnum = (fixnum>>24);
+  }
+  else if (fixnum>=65536) {
+    count = (count+16);
+    fixnum = (fixnum>>16);
+  }
+  else if (fixnum>=256) {
     count = (count+8);
     fixnum = (fixnum>>8);
   }
-
   while (fixnum>0) {
     fixnum = (fixnum>>1);
     count = (count+1);
