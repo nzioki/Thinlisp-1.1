@@ -1,0 +1,25 @@
+#
+# LECHO Cygnus Makefile
+#
+# Copyright (c) 1999 Jim Allard
+
+CC=gcc -o
+CFLAGS=-O2 -ansi -pedantic -W -Wall -fomit-frame-pointer -c
+LINK=gcc -o
+LINKFLAGS=-O2
+LIBS= ../../tl/bin/libtl.a
+SYSLIBS=
+OBJECTS= main.o boot.o echo.o
+
+all : lecho.exe
+
+clean :
+	-rm *.o
+	-( if [ -f lecho.exe ] ; then rm lecho.exe ; fi )
+
+lecho.exe : makefile-cygnus $(OBJECTS) $(LIBS)
+	-( if [ -f lecho.exe ] ; then rm lecho.exe ; fi )
+	$(LINK) lecho.exe $(LINKFLAGS) $(OBJECTS) $(LIBS) $(SYSLIBS)
+
+%.o : ../c/%.c ../c/%.h makefile-cygnus
+	$(CC) $@ $(CFLAGS) -I ../c -I../../tl/c/ $<

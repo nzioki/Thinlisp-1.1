@@ -1,0 +1,25 @@
+#
+# LECHO Linux Makefile
+#
+# Copyright (c) 1999 Jim Allard
+
+CC=gcc -o
+CFLAGS=-O2 -ansi -pedantic -W -Wall -fomit-frame-pointer -c
+LINK=gcc -o
+LINKFLAGS=-O2
+LIBS= ../../tl/bin/libtl.a
+SYSLIBS=-lm
+OBJECTS= main.o boot.o echo.o
+
+all : lecho
+
+clean :
+	-rm *.o
+	-( if [ -f lecho ] ; then rm lecho ; fi )
+
+lecho : makefile-linux $(OBJECTS) $(LIBS)
+	-( if [ -f lecho ] ; then rm lecho ; fi )
+	$(LINK) lecho $(LINKFLAGS) $(OBJECTS) $(LIBS) $(SYSLIBS)
+
+%.o : ../c/%.c ../c/%.h makefile-linux
+	$(CC) $@ $(CFLAGS) -I ../c -I../../tl/c/ $<
