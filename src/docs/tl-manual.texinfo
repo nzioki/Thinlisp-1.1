@@ -10,7 +10,7 @@
 The rationale and associated descriptions of ThinLisp, a Lisp-to-C translator
 for real time applications and anything that shouldn't be fat and slow.
 
-Copyright (c) 1999-2001 The ThinLisp Group
+Copyright (c) 1999-2003 The ThinLisp Group
 @end ifinfo
 
 @titlepage
@@ -24,7 +24,7 @@ Copyright (c) 1999-2001 The ThinLisp Group
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1999-2001 The ThinLisp Group
+Copyright @copyright{} 1999-2003 The ThinLisp Group
 @*Copyright @copyright{} 1995 Gensym Corporation.
 @*All rights reserved.
 
@@ -38,7 +38,7 @@ ThinLisp is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-For additional information see @url{http://www.thinlisp.org/}.
+For additional information see @uref{http://www.thinlisp.org/}.
 
 @end titlepage
 
@@ -109,7 +109,7 @@ by improving the code, or through use of lexical declarations acknowledging that
 the code is only of prototype quality.  Code meeting the stringent requirements
 imposed by ThinLisp cannot by sped up by rewriting it in C.
 
-The ThinLisp home is @url{http://www.thinlisp.org/}.  The newest source
+The ThinLisp home is @uref{http://www.thinlisp.org/}.  The newest source
 distributions of TL and this manual can be found here.  Bugs should be
 reported to @email{bugs@@thinlisp.org}.
 
@@ -161,7 +161,7 @@ could be manipulated in the same manner as data.  The presumption behind many of
 the Lisp design choices was that the most important goal was to maximize a
 programmer's productivity in developing new functionality by enabling the purest
 form possible of coded solutions, and so to hide as many of the platform
-specific details as possible.  In the ongoing evolution of Lips, considerations
+specific details as possible.  In the ongoing evolution of Lisp, considerations
 of the efficiency of processing speed and memory use came in a distant second to
 programmer convenience and to the attempt to protect the programmer from bugs
 caused by mathematically abhorrent behaviors such as integer wraparound.
@@ -198,7 +198,7 @@ functionality that they were promising.
 
 However, when it came to deploying these systems, things didn't turn out so
 smoothly.  Most software products of that era were coded in languages such as
-Fortran, Cobol, Pascal, C, and assembly language.  It turned out that Software
+Fortran, Cobol, Pascal, C, and assembly language.  It turned out that software
 developers who could breathe fire in Lisp were clumsy, inefficient, or flatly
 unwilling to port their systems to these traditional languages.
 
@@ -249,7 +249,8 @@ happened, the plant crew turned off the system and never restarted it again.
 In this case, the system was gaining acceptance by the pilot users, but as a
 direct consequence of the performance problems caused by garbage collection this
 pilot project was closed out, and this particular deployment approach was
-dropped.  A different 
+dropped.  A different implementation containing some of Cooker's ideas
+eventually became the TDC Expert product.
 
 The G2 system is a real-time supervisory level control system built by Gensym
 Corporation.  It's source code was written in Lisp, and for approximately 3
@@ -405,21 +406,22 @@ command in the language.  Fortran, Pascal, Basic, and C are all examples of
 languages in this category, with C (and it's derivative, C++) now being the
 default choice for people building big systems.
 
-Lisp and other languages (such as CLU, Smalltalk, Eiffel, and recently Java)
-were are exemplars of the mathematical style, emphasizing denotational
-semantics.  The operations in these languages were defined with semantics that
-are deep (or fat if you prefer), focusing not on what an operation @emph{did}
-but on what it @emph{meant}.  Of course there had to be implementations of these
-operations, but the actual machine instructions carried out were allowed (even
-expected) to vary widely depending on the manner and situation in which it was
+Lisp and other languages (such as CLU, Smalltalk, Eiffel, and recently Java) are
+exemplars of the mathematical style, emphasizing denotational semantics.  The
+operations in these languages were defined with semantics that are deep (or fat
+if you prefer), focusing not on what an operation @emph{did} but on what it
+@emph{meant}.  Of course there had to be implementations of these operations,
+but the actual machine instructions carried out were allowed (even expected) to
+vary widely depending on the manner and situation in which the operation was
 used.
 
 These philosophical differences lead to vastly different languages, with the
 consequences of each style evoking surprise, disbelief, or even indignant
 disgust in ardent followers of the opposing camp.  Denotational fans can't
-believe how much of the underlying limitations of systems are exposed, and
-operational fans can't believe how disassociated operations are from the
-machine.  One sees too much exposed, and the other sees too much being hidden.
+believe how much of the underlying limitations of systems are exposed in
+operational languages, and operational fans can't believe how disassociated
+operations are from the machine in denotational languages.  One sees too much
+exposed, and the other sees too much being hidden.
 
 @section GOTO Right Now, or GOTO When You're Ready
 
@@ -470,16 +472,16 @@ set" element above is a simple @code{do}, then the behavior will be very much
 like what happens in C.  However, if the iteration is performed using a mapping
 function, and the @code{(go bad)} form is contained within an embedded
 @code{lambda} form defining a different function, then the situation is very
-different.  Because goto tags have lexical scope, even across function
-boundaries, requires that the @code{go} be able to exit the function it is in
-and re-enter the outer function at the appropriate point.  In this case,
-entering the @code{tagbody} statement would require establishing a restart point
-similar to a @code{setjmp}, and the @code{go} would become something similar to
-a @code{longjmp}.  If the iteration contains an @code{unwind-protect}, then
-cleanup code will be executed after the @code{go} executes, but before the code
-at the @code{bad} statement.  If the @code{unwind-protect} clean-up forms
-contain a go to a further surrounding tagbody, then the code after the
-@code{bad} tag will never be executed.
+different.  The fact that Lisp @code{go} tags have lexical scope, even across
+function boundaries, requires that the call to @code{go} be able to exit the
+function it is in and re-enter the outer function at the appropriate point.  In
+this case, entering the @code{tagbody} statement would require establishing a
+restart point similar to a @code{setjmp}, and the @code{go} would become
+something similar to a @code{longjmp}.  If the iteration contains an
+@code{unwind-protect}, then cleanup code will be executed after the @code{go}
+executes, but before the code at the @code{bad} statement.  If the
+@code{unwind-protect} clean-up forms contain a go to a further surrounding
+tagbody, then the code after the @code{bad} tag will never be executed.
 
 In this example, operational prorammers are floored by how complicated a simple
 @code{goto} statement can become.  Denotational programmers are in disbelief
@@ -493,20 +495,19 @@ that the execution of clean-up code cannot be enforced.
 @comment  node-name,  next,  previous,  up
 @section ThinLisp's Compromises
 
-While C++ and Java can be viewed as attempts to move C more towards a
-denotational footing, Thinlisp is an attempt to move Common Lisp more towards an
-operational footing.  I've attempted to lessen the impact of Lisp's "gotchas"
-that frustrate programmers who look at languages from an operational semantics
-point of view.  Attempting to allow the benefits of deep denotational semantics
-while warning of performance and behavior surprises is the underlying goal for
-ThinLisp.
+While C++ can be viewed as an attempt to move C more towards a denotational
+footing, Thinlisp is an attempt to move Common Lisp more towards an operational
+footing.  I've attempted to lessen the impact of Lisp's "gotchas" that frustrate
+programmers who look at languages from an operational semantics point of view.
+Attempting to allow the benefits of deep denotational semantics while warning of
+performance and behavior surprises is the underlying goal for ThinLisp.
 
-One of the goals of ThinLisp is to implement the deep semantics of Lisp, while
-offering compile time warnings whenever these semantics force behavior that
-deviates from expectations consistent with operational (or "thin") semantics.
-If the programmer really intends to use the full, deep semantics, then a
-lexically apparent declaration can be used to suppress the warnings and accept
-the more expensive behavior required by the deep semantics.
+In ThinLisp we've implemented the deep semantics of Lisp, while offering compile
+time warnings whenever these semantics force behavior that deviates from
+expectations consistent with operational (or "thin") semantics.  If the
+programmer really intends to use the full, deep semantics, then a lexically
+apparent declaration can be used to suppress the warnings and accept the more
+expensive behavior required by the deep semantics.
 
 There are three main areas where ThinLisp warnings are used to help prevent
 performance gotchas.
@@ -615,16 +616,17 @@ gensym-c-function form.
 
 @section Overview of Translations
 
-There are four different modes in which GL (Gensym Lisp, oops, er, Language)
-source code will need to be processed, two Lisp compilation modes and two
-translation modes.  The first is development compilation in an underlying Lisp
-environment.  The second is a macro definition compilation to define macros in
-preparation for a translation.  These are otherwise unremarkable uses of the
-underlying Lisp implementations compile-file and load functions, distinguished
-only by what we do with the :development and :distribution compiler switches.
-The third is a translation pre-process step in which the names and data types
-of variables and functions are determined.  The fourth and final is a
-translation mode in which C files and H files are generated.
+There are four different modes in which GL (Gensym Lisp, oops, er, Language,
+oops, er ThinLisp) source code will need to be processed, two Lisp compilation
+modes and two translation modes.  The first is development compilation in an
+underlying Lisp environment.  The second is a macro definition compilation to
+define macros in preparation for a translation.  These are otherwise
+unremarkable uses of the underlying Lisp implementations compile-file and load
+functions, distinguished only by what we do with the :development and
+:distribution compiler switches.  The third is a translation pre-process step in
+which the names and data types of variables and functions are determined.  The
+fourth and final is a translation mode in which C files and H files are
+generated.
 
 The translator from GL to C will be written to make as few dependencies as
 possible on the implementation it is layered on top of.  (As this is being
