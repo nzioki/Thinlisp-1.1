@@ -1,10 +1,26 @@
-;;; Type Info for the L implementation
+(in-package "L-SYSTEM")
 
+;;; Module: Bit-pack
+
+;;; Copyright (c) 1999 The ThinLisp Group
 ;;; Copyright, Artificial Creatures, Inc., 1998
-
 ;;; Copyright, IS Robotics, Inc., 1998
 
-(in-package "L-SYSTEM")
+;;; This file is part of ThinLisp.
+
+;;; ThinLisp is open source; you can redistribute it and/or modify it
+;;; under the terms of the ThinLisp License as published by the ThinLisp
+;;; Group; either version 1 or (at your option) any later version.
+
+;;; ThinLisp is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+;;; For additional information see <http://www.thinlisp.org/>
+
+;;; Author: ?
+
+;;;; Type Info for the L implementation
 
 ;;;
 ;;; This is the Bit-Packed Encoding Algorithm from:
