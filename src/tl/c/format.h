@@ -109,6 +109,8 @@ extern Obj SpackageS;
 
 extern Obj current_region;
 
+extern Func tl_format_funcs[];
+
 extern void bad_control_directive_error(Obj);
 extern void bad_stream_error(Obj);
 extern sint32 discard_format_arglist(unsigned char *, sint32, sint32);

@@ -17,7 +17,7 @@
     :CAPITALIZE
     :CAP-FIRST-LOWER-REST)
   ;; Used compiled-functions = (name func-array . index).
-  NIL
+  '((TL::WRITE-SYMBOL "tl_format_funcs" . 0))
   ;; Name for this file's array of compiled-functions.
   "tl_format_funcs"
   ;; Compiled-function objects defined in this file.

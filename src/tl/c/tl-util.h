@@ -67,6 +67,8 @@ extern Obj SpackageS;
 
 extern Obj current_region;
 
+extern Func tl_tl_util_funcs[];
+
 extern Obj copy_list(Obj);
 extern Obj eql(Obj, Obj);
 extern Obj error_one_arg(Obj, Obj);

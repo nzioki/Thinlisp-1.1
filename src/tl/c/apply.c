@@ -127,6 +127,7 @@ Obj apply_1 (Obj function, Obj args)
       error_two_args((Obj)(&str_const_4),       /* "Argument count mismatch in APPLY ~s on ~s" */
           compiled_function,function_args);
   }
+  Closure_env = (((Func *)compiled_function)->closure_environment);
   g = function_args;
   g_1 = (Obj)NULL;
   g_2 = (Obj)NULL;

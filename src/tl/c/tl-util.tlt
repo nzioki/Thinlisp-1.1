@@ -16,7 +16,7 @@
     :STATIC
     :TEMPORARY)
   ;; Used compiled-functions = (name func-array . index).
-  NIL
+  '((TL::FLET-SEARCH-PREDICATE-IN-SEARCH-TEST-0 "tl_tl_util_funcs" . 0))
   ;; Name for this file's array of compiled-functions.
   "tl_tl_util_funcs"
   ;; Compiled-function objects defined in this file.

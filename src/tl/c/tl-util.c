@@ -1119,6 +1119,7 @@ void init_tl_tl_util (void)
   (tl_tl_util_funcs[0]).optional_arguments = 0;
   (tl_tl_util_funcs[0]).sets_values_count = 0;
   (tl_tl_util_funcs[0]).default_arguments = (Obj)NULL;
+  (tl_tl_util_funcs[0]).closure_environment = (Obj)NULL;
   (tl_tl_util_funcs[0]).name = (Obj)(&str_const_2);     /* "FLET-SEARCH-PREDICATE-IN-SEARCH-TEST-0" */
   (tl_tl_util_funcs[0]).c_function = (Obj (*)(Obj))flet_search_predicate_in_search_test_0;
   SpackageS = find_package_1((Obj)(&str_const));    /* "TL" */

@@ -1988,6 +1988,7 @@ void init_tl_format (void)
   (tl_format_funcs[0]).optional_arguments = 0;
   (tl_format_funcs[0]).sets_values_count = 0;
   (tl_format_funcs[0]).default_arguments = (Obj)NULL;
+  (tl_format_funcs[0]).closure_environment = (Obj)NULL;
   (tl_format_funcs[0]).name = (Obj)(&str_const_20);     /* "WRITE-SYMBOL" */
   (tl_format_funcs[0]).c_function = (Obj (*)(Obj))write_symbol;
   SpackageS = find_package_1((Obj)(&str_const));    /* "TL" */
