@@ -27,7 +27,12 @@
 
 #include <string.h>
 #include <unistd.h>
-#include "time.h"
+#include <errno.h>
+#include <sys/times.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <time.h>
 #include "tl.h"
 
 
@@ -1036,3 +1041,87 @@ void write_double_into_str (double value, sint32 width, Str *output) {
   output->fill_length = (uint32)new_end - (uint32)base;
   return;
 }
+
+
+/**
+ * The following functions implement the get-internal-real-time primitives.  The
+ * initialization function should cache the result of an initial call to times
+ * and take the difference between that and any subsequent calls.  This will
+ * make the returned value always start from zero and count up.
+ */
+
+static clock_t base_cron;
+
+/*
+ * Linux has bolluxed up the definition of CLOCKS_PER_SEC, saying that this
+ * value must be 1000000 to be compliant with a standard, even though that is
+ * the wrong value if you look at what the time functions actually do.  Just set
+ * it to 100 for Linux, that is correct for the i386 port, though it may be
+ * wrong for the Alpha port.  -jallard 1/11/00 
+ */
+
+#ifdef __linux__
+#define TICKS 100
+#else
+#define TICKS CLOCKS_PER_SEC
+#endif
+
+extern void init_cronometer(void) {
+  struct tms time_buf;
+  base_cron = times(&time_buf);
+}
+
+extern sint32 cronometer(void) {
+  struct tms time_buf;
+
+  return (sint32)(times(&time_buf) - base_cron);
+}
+
+extern sint32 cpu_run_time(void) {
+  struct tms buf;
+  
+  times(&buf);
+  return (sint32)(buf.tms_utime + buf.tms_stime + 
+		  buf.tms_cutime + buf.tms_cstime);
+}
+
+extern sint32 ticks_per_second(void) {
+  return (sint32)TICKS;
+}
+
+/*
+extern void sleep_nanoticks(sint32 seconds) {
+  struct timespec req, rem;
+  if (seconds > 0) {
+    time_t full_seconds;
+    long nanos;
+
+    full_seconds = (time_t)(seconds / TICKS);
+    nanos = (long)(((double)(seconds % TICKS) / (double)TICKS)
+		   * 1000000000.0);
+    while (nanosleep(&req, &rem) == -1 && 
+	   errno == EINTR &&
+	   (rem.tv_sec > 0 || rm.tv_nsec > 0)) {
+      req = rem;
+    }
+  }
+}
+*/
+
+
+extern void sleep_ticks(sint32 seconds) {
+  struct timeval tv;
+  if (seconds > 0) {
+    time_t full_seconds;
+    long micros;
+
+    full_seconds = (time_t)(seconds / TICKS);
+    micros = (long)(((double)(seconds % TICKS) / (double)TICKS)
+		   * 1000000.0);
+    tv.tv_sec = full_seconds;
+    tv.tv_usec = micros;
+    select(0, NULL, NULL, NULL, &tv);
+  }
+}
+    
+
