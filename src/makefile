@@ -45,8 +45,9 @@ distribution :
 	if [ -d dist ] ; then rm -rf dist ; fi
 	if [ ! -d src ] ; then echo You must export an SRC before making distribution ; exit 1 ; fi
 	cp ../README src
+	mkdir dist
 	cp src/VERSION dist/VERSION
-	mkdir dist thinlisp-`head -1 dist/VERSION`
+	mkdir thinlisp-`head -1 dist/VERSION`
 	cp src/INSTALL dist/thinlisp-`head -1 dist/VERSION`-install.txt
 	mv src thinlisp-`head -1 dist/VERSION`/src
 	tar czvf dist/thinlisp-`head -1 thinlisp-*/src/VERSION`.tgz thinlisp-`head -1 dist/VERSION`
