@@ -369,11 +369,12 @@
       (find-symbol-in-package string hash-number package)
     (if found?
 	(values symbol found?)
+      (with-permanent-area 
 	(let ((new-symbol (tli::make-empty-symbol)))
 	  (tli::init-symbol new-symbol string hash-number)
 	  (tli::set-symbol-package new-symbol package)
 	  (insert-symbol-into-package new-symbol package)
-	  (values new-symbol :internal)))))
+	  (values new-symbol :internal))))))
 
 
 
@@ -508,15 +509,16 @@
       (t
        ;; Else, ignore the argument, do the default.
        (incf *gensym-counter*)))
-    (let* ((counter-length
-	     (1+ (truncate (the double-float
-				(log (float counter 1.0) 10)))))
-	   (new-name (make-string
-		       (+ counter-length (length (the string prefix))))))
-      (declare (fixnum counter-length))
-      (setf (fill-pointer new-name) 0)
-      (format new-name "~a~v,'0d" prefix counter-length counter)
-      (make-symbol new-name))))
+    (with-permanent-area
+      (let* ((counter-length
+	      (1+ (truncate (the double-float
+				 (log (float counter 1.0) 10)))))
+	     (new-name (make-string
+			(+ counter-length (length (the string prefix))))))
+	(declare (fixnum counter-length))
+	(setf (fill-pointer new-name) 0)
+	(format new-name "~a~v,'0d" prefix counter-length counter)
+	(make-symbol new-name)))))
 
 
 

@@ -193,15 +193,18 @@
 ;      (speed 1)
 ;      (safety 3))
     '(optimize
+      #+cmu (c::brevity 3)
       (compilation-speed 0)
       (speed 3)
-      (safety 0))
+      (safety 0)
+      )
     ))
 
 (defun safest-compilations ()
   (setq *features* (delete :fastest-tlt (the list *features*)))
   (proclaim '(optimize
-	      #+cmu(debug 3)
+	      #+cmu (debug 3)
+	      #+cmu (c::brevity 3)
 	      (compilation-speed #-cmu 3 #+cmu 2)
 	      (speed #-cmu 1 #+cmu 0)
 	      (safety 3)

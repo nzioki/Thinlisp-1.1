@@ -169,6 +169,7 @@
 
 (defun generic-divide (number1 number2)
   (declare (number number1 number2)
+	   (consing-area either)
 	   (return-type number))
   (typecase number1
     (fixnum
@@ -486,7 +487,8 @@
        (values 0 0)))))
 
 (defun generic-ceiling-one (number)
-  (declare (return-type (values fixnum number)))
+  (declare (consing-area either)
+	   (return-type (values fixnum number)))
   (typecase number
     (fixnum
      (values number 0))
@@ -501,7 +503,8 @@
      (values 0 0))))
 
 (defun generic-fceiling (number divisor)
-  (declare (return-type (values double-float number)))
+  (declare (consing-area either)
+	   (return-type (values double-float number)))
   (let ((ceiling-value 0.0))
     (declare (double-float ceiling-value))
     (typecase number
@@ -565,7 +568,8 @@
        (values 0.0 0)))))
 
 (defun generic-fceiling-one (number)
-  (declare (return-type (values double-float number)))
+  (declare (consing-area either)
+	   (return-type (values double-float number)))
   (typecase number
     (fixnum
      (values (the double-float (float (the fixnum number) 1.0)) 0))
@@ -589,7 +593,8 @@
        0)))
 
 (defun generic-truncate-one (number)
-  (declare (return-type (values fixnum number)))
+  (declare (consing-area either)
+	   (return-type (values fixnum number)))
   (typecase number
     (fixnum (values (the fixnum number) 0))
     (double-float
@@ -630,7 +635,8 @@
      0)))
 
 (defun generic-truncate-two (number divisor)
-  (declare (return-type (values fixnum number)))
+  (declare (consing-area either)
+	   (return-type (values fixnum number)))
   (typecase number
     (fixnum
      (typecase divisor
@@ -666,6 +672,7 @@
 
 (defun ftruncate-two-arg-mult-value (number divisor)
   (declare (double-float number divisor)
+	   (consing-area either)
 	   (return-type (values double-float double-float)))
   (let* ((quotient (/ number divisor))
 	 (integer-quotient (if (>= quotient 0.0)
@@ -681,6 +688,7 @@
 
 (defun ftruncate-one-arg-mult-value (number)
   (declare (double-float number)
+	   (consing-area either)
 	   (return-type (values double-float double-float)))
   (let ((quotient (if (>= number 0.0)
 		      (the double-float
@@ -704,7 +712,8 @@
        0)))
 
 (defun generic-round-one (number)
-  (declare (return-type (values fixnum number)))
+  (declare (consing-area either)
+	   (return-type (values fixnum number)))
   (typecase number
     (fixnum (values (the fixnum number) 0))
     (double-float
@@ -737,7 +746,8 @@
 		     (the double-float (float divisor 0.0)))))
 
 (defun generic-round-two (number divisor)
-  (declare (return-type (values fixnum number)))
+  (declare (consing-area either)
+	   (return-type (values fixnum number)))
   (let ((round-value 0))
     (declare (fixnum round-value))
     (typecase number
@@ -848,7 +858,8 @@
     remainder-result))
 
 (defun generic-mod (number divisor)
-  (declare (return-type number))
+  (declare (consing-area either)
+	   (return-type number))
   (typecase number
     (fixnum
      (typecase divisor
@@ -876,7 +887,8 @@
      0)))
 
 (defun generic-rem (number divisor)
-  (declare (return-type number))
+  (declare (consing-area either)
+	   (return-type number))
     (typecase number
     (fixnum
      (typecase divisor
@@ -907,7 +919,8 @@
 (declaim (functional generic-abs integer-length logcount))
 
 (defun generic-abs (number)
-  (declare (return-type number))
+  (declare (consing-area either)
+	   (return-type number))
   (typecase number
     (fixnum
      (the fixnum (abs (the fixnum number))))
@@ -1005,6 +1018,7 @@
 
 (defun generic-expt (base power)
   (declare (number base power)
+	   (consing-area either)
 	   (return-type number))
   (if (fixnump base)
       (if (fixnump power)

@@ -76,14 +76,15 @@
 
 (defun compute-new-plist (plist property new-value)
   (declare (return-type t))
-  (loop for cons = plist then (cddr-of-conses cons)
-	while cons do
-    (when (eq (car-of-cons cons) property)
-      (setf (car (cdr-of-cons cons)) new-value)
-      (return nil))
-	finally
-	  (setq plist
-		(cons property (cons new-value plist))))
+  (with-permanent-area
+   (loop for cons = plist then (cddr-of-conses cons)
+	 while cons do
+     (when (eq (car-of-cons cons) property)
+       (setf (car (cdr-of-cons cons)) new-value)
+       (return nil))
+     finally
+     (setq plist
+	   (cons property (cons new-value plist)))))
   plist)
 
 
@@ -1072,7 +1073,8 @@
       (funcall-simple-compiled-function test a b)))
 
 (defun copy-tree (tree)
-  (declare (return-type t))
+  (declare (consing-area either)
+	   (return-type t))
   (if (consp tree)
       (cons (copy-tree (car-of-cons tree))
 	    (copy-tree (cdr-of-cons tree)))
@@ -1101,7 +1103,8 @@
 
 
 (defun copy-seq (sequence)
-  (declare (return-type t))
+  (declare (consing-area either)
+	   (return-type t))
   (if (listp sequence)
       (loop for item in sequence collect item)
       (typecase sequence
@@ -1119,6 +1122,7 @@
 	(t (error "unrecognized sequence type for sequence ~s" sequence)))))
 
 (defun substitute (new-item old-item sequence)
+  (declare (consing-area either))
   (if (listp sequence)
       (loop for item in sequence
 	    collect
@@ -1158,6 +1162,7 @@
 
 (defun equalp (a b)
   (declare (return-type t)
+	   (consing-area either)
 	   (fat-and-slow))
   (typecase a
     (fixnum (typecase b
@@ -1179,8 +1184,8 @@
 				   (the character b)))
 		 (t nil)))
     (cons (and (consp b)
-	       (equalp (car-of-cons a)(car-of-cons b))
-	       (equalp (cdr-of-cons a)(cdr-of-cons b))))
+	       (equalp (car-of-cons a) (car-of-cons b))
+	       (equalp (cdr-of-cons a) (cdr-of-cons b))))
     (string (typecase b
 	      (string (string-equal (the string a)(the string b)))
 	      (t nil)))
@@ -1262,47 +1267,48 @@
 
 (defun copy-optimized-constant (arg)
   (declare (return-type t))
-  (typecase arg
-    (null
-     arg)
-    (fixnum
-     arg)
-    (character
-     arg)
-    (symbol
-     arg)
-    (cons
-     (loop with new-list = (copy-list arg)
-	   for copied-cons = new-list then next-cons?
-	   for next-cons? = (cdr (the cons copied-cons))
-	   until (atom next-cons?)
-	   do
-       (setf (car copied-cons)
-	     (recursive-copy-optimized-constant
+  (with-permanent-area
+   (typecase arg
+     (null
+      arg)
+     (fixnum
+      arg)
+     (character
+      arg)
+     (symbol
+      arg)
+     (cons
+      (loop with new-list = (copy-list arg)
+	    for copied-cons = new-list then next-cons?
+	    for next-cons? = (cdr (the cons copied-cons))
+	    until (atom next-cons?)
+	    do
+	(setf (car copied-cons)
+	      (recursive-copy-optimized-constant
 	       (car (the cons copied-cons))))
-	   finally
-	     (setf (cdr copied-cons)
-		   (recursive-copy-optimized-constant
-		     next-cons?))
-	     (return new-list)))
-    (simple-vector
-     (let* ((length (length (the simple-vector arg)))
-	    (sv arg)
-	    (new-sv (tli::make-simple-vector length)))
-       (declare (fixnum length)
-		(simple-vector sv new-sv))
-       (loop for index from 0 below length do
-	 (setf (svref new-sv index)
-	       (recursive-copy-optimized-constant
+	    finally
+	    (setf (cdr copied-cons)
+		  (recursive-copy-optimized-constant
+		   next-cons?))
+	    (return new-list)))
+     (simple-vector
+      (let* ((length (length (the simple-vector arg)))
+	     (sv arg)
+	     (new-sv (tli::make-simple-vector length)))
+	(declare (fixnum length)
+		 (simple-vector sv new-sv))
+	(loop for index from 0 below length do
+	  (setf (svref new-sv index)
+		(recursive-copy-optimized-constant
 		 (svref sv index))))
-       new-sv))
-    (string
-     (let* ((length (length (the string arg)))
-	    (new-string (tli::make-string-1 length)))
-       (replace-strings new-string arg :end2 length)
-       new-string))
-    (t
-     (error "Unhandled type in copy-optmized-constant: ~s" arg))))
+	new-sv))
+     (string
+      (let* ((length (length (the string arg)))
+	     (new-string (tli::make-string-1 length)))
+	(replace-strings new-string arg :end2 length)
+	new-string))
+     (t
+      (error "Unhandled type in copy-optmized-constant: ~s" arg)))))
 
 
 

@@ -958,6 +958,8 @@
   (lcl:ephemeral-gc)
   #+allegro
   (excl:gc :tenure)
+  #+cmu
+  (gc)
   nil)
 
 (defun gc-a-lot ()
@@ -965,4 +967,6 @@
   (lcl:full-gc)
   #+allegro
   (excl:gc t)
+  #+cmu
+  (gc :full t)
   nil)

@@ -182,7 +182,8 @@
 				(module-number 0) (total-modules 0))
   (when verbose
     (format t "~%TRANSLATING ~14a  [~3d/~3d]"
-	    module module-number total-modules))
+	    module module-number total-modules)
+    (force-output))
   (let ((*package* *package*)
 	(*readtable* *readtable*)
 	(*current-system-name* (system-name system))

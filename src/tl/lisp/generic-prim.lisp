@@ -32,6 +32,7 @@
 
 (defun generic-aref (array index)
   (declare (type fixnum index)
+	   (consing-area either)
 	   (return-type t))
   (macrolet ((aref-typecase (array-var array-index)
                `(typecase ,array-var
@@ -69,6 +70,7 @@
 
 (defun generic-elt (sequence index)
   (declare (type fixnum index)
+	   (consing-area either)
 	   (return-type t))
   (macrolet ((elt-typecase (sequence-var sequence-index)
                `(typecase ,sequence-var

@@ -117,7 +117,8 @@
 	  collected-systems))))
 
 (defun collect-all-used-systems (name)
-  (declare (return-type void))
+  (declare (consing-area either)
+	   (return-type void))
   (loop for sub-system in (get name :system-used-systems) do
     (collect-all-used-systems sub-system))
   (pushnew name collected-systems :test #'eq))
