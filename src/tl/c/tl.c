@@ -806,6 +806,7 @@ Obj alloc_file_strm (FILE *input, FILE *output, char *filename,
 #define NCR_CODE         26
 #define WINDOWS95_CODE   27
 #define FREEBSD_CODE     28
+#define LINUX386_CODE    29
 
 sint32 get_platform_code(void)
 {
@@ -928,6 +929,10 @@ sint32 get_platform_code(void)
 
 #    ifdef __FreeBSD__
          platform_code = FREEBSD_CODE;
+#    endif
+
+#    ifdef __linux__
+	 platform_code = LINUX386_CODE;
 #    endif
 
     return platform_code;
