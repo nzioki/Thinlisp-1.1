@@ -468,7 +468,7 @@
 
 (defun reverse (sequence)
   (declare (return-type t)
-	   (consing-area permanent))
+	   (consing-area either))
   (typecase sequence
     (list (reverse-list (the list sequence)))
     (string (reverse-string (the string sequence)))
@@ -476,7 +476,7 @@
      (tli::tli-simple-error "REVERSE argument was not a string or list."))))
 
 (defun reverse-list (list)
-  (declare (consing-area permanent)
+  (declare (consing-area either)
 	   (type list list)
 	   (return-type list))
   (if list
@@ -492,7 +492,7 @@
       nil))
 
 (defun reverse-string (string)
-  (declare (consing-area permanent)
+  (declare (consing-area either)
 	   (type string string)
 	   (return-type string))
   (let* ((length (tli::length-trans string))
