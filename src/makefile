@@ -21,6 +21,7 @@ opt :
 
 clean :
 	rm -rf {tlt,tl,lecho}/{dev,macro,bin,opt} dist src TAGS
+	rm -rf {tl,lecho}/c/*.tlt
 	( cd docs ; make clean )
 
 tarballs : 
