@@ -91,10 +91,7 @@ Obj *fill_simple_vector (Obj *sequence, Obj elt_1)
   return sequence;
 }
 
-/* Translated from FILL-ARRAY-UNSIGNED-BYTE-8((ARRAY (INTEGER 0 255))
-                                              (INTEGER 0 255)) = (ARRAY
-                                                                  (INTEGER 0
-                                                                   255)) */
+/* Translated from FILL-ARRAY-UNSIGNED-BYTE-8((ARRAY (INTEGER 0 255)) (INTEGER 0 255)) = (ARRAY (INTEGER 0 255)) */
 
 uint8 *fill_array_unsigned_byte_8 (uint8 *sequence, uint8 elt_1)
 {
@@ -108,10 +105,7 @@ uint8 *fill_array_unsigned_byte_8 (uint8 *sequence, uint8 elt_1)
   return sequence;
 }
 
-/* Translated from FILL-ARRAY-UNSIGNED-BYTE-16((ARRAY (INTEGER 0 65535))
-                                               (INTEGER 0 65535)) = (ARRAY
-                                                                     (INTEGER 0
-                                                                      65535)) */
+/* Translated from FILL-ARRAY-UNSIGNED-BYTE-16((ARRAY (INTEGER 0 65535)) (INTEGER 0 65535)) = (ARRAY (INTEGER 0 65535)) */
 
 uint16 *fill_array_unsigned_byte_16 (uint16 *sequence, uint16 elt_1)
 {
@@ -125,8 +119,7 @@ uint16 *fill_array_unsigned_byte_16 (uint16 *sequence, uint16 elt_1)
   return sequence;
 }
 
-/* Translated from FILL-ARRAY-DOUBLE-FLOAT((ARRAY DOUBLE-FLOAT) DOUBLE-FLOAT) = (ARRAY
-                                                                                 DOUBLE-FLOAT) */
+/* Translated from FILL-ARRAY-DOUBLE-FLOAT((ARRAY DOUBLE-FLOAT) DOUBLE-FLOAT) = (ARRAY DOUBLE-FLOAT) */
 
 double *fill_array_double_float (double *sequence, double elt_1)
 {
@@ -237,7 +230,7 @@ Obj search_list_function (Obj pattern_list, Obj source_list, Obj test_func,
   return (Obj)NULL;
 }
 
-/* Translated from GENERIC-SEARCH(T T T FIXNUM T FIXNUM T) = T */
+/* Translated from GENERIC-SEARCH(T T COMPILED-FUNCTION FIXNUM T FIXNUM T) = T */
 
 Obj generic_search (Obj pattern, Obj source, Obj test_func, sint32 start1, 
         Obj end1, sint32 start2, Obj end2)

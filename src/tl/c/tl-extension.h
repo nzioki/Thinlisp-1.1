@@ -45,6 +45,13 @@ typedef struct {
   unsigned char body[113];
 } Str_113;
 
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[121];
+} Str_121;
+
 extern Obj SpackageS;
 
 extern Obj find_package_1(Obj);

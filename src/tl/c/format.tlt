@@ -43,8 +43,7 @@
     (TL::FORMAT-FUNCTION . "format_function")
     (TL::GET-LAST-STRING-STREAM-CHARACTER . "get_last_string_stream_character")
     (TL:GET-OUTPUT-STREAM-STRING . "get_output_stream_string")
-    (TL::GET-STRING-OR-FILE-STREAM-FOR-OUTPUT
-     . "get_string_or_file_stream_for_output")
+    (TL::GET-STRING-OR-FILE-STREAM-FOR-OUTPUT . "get_string_or_file_stream_for_output")
     (TL::LAST-STREAM-CHAR? . "last_stream_charP")
     (TL::LAST-STRING-CHAR? . "last_string_charP")
     (TL::NOT-NULL-DESTRUCTURING-ERROR-1 . "not_null_destructuring_error_1")
@@ -55,8 +54,7 @@
     (TL:PRIN1 . "prin1")
     (TL:PRINC . "princ")
     (TL:PRINT . "print")
-    (TL::PRINT-RANDOM-OBJECT-WITH-TYPE-NAME
-     . "print_random_object_with_type_name")
+    (TL::PRINT-RANDOM-OBJECT-WITH-TYPE-NAME . "print_random_object_with_type_name")
     (TL::STRING-DOWNCASE-FUNCTION . "string_downcase_function")
     (TL::STRING-UPCASE-FUNCTION . "string_upcase_function")
     (TL:TERPRI . "terpri")
@@ -93,8 +91,7 @@
     (TL::DEFAULT-STRING-STREAM-SIZE . "default_string_stream_size")
     (TL::FIELD-WIDTH-STRING-LENGTH . "field_width_string_length")
     (TL::FIELD-WIDTH-STRING-LIST . "field_width_string_list")
-    (TL::REVERSED-FIXNUM-WITH-COMMAS-STRING
-     . "reversed_fixnum_with_commas_string"))
+    (TL::REVERSED-FIXNUM-WITH-COMMAS-STRING . "reversed_fixnum_with_commas_string"))
   ;; Used class typedefs.
   NIL
   )

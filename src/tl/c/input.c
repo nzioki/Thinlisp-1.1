@@ -207,7 +207,7 @@ static const Str_5 str_const_6
 static const Str_5 str_const_7
   = { 7, 1, 1, "a" };
 
-/* Translated from CREATE-FILE(STRING &OPTIONAL T) = * */
+/* Translated from CREATE-FILE(STRING &OPTIONAL T) = T */
 
 Obj create_file (unsigned char *filename, Obj binaryP)
 {
@@ -230,7 +230,6 @@ Obj create_file (unsigned char *filename, Obj binaryP)
       if (g_1!=NULL) 
         delete_named_file(((File_strm *)g)->filename);
     }
-    Values_count = 1;
     return (Obj)(&T);
   }
   else {
@@ -244,7 +243,6 @@ Obj create_file (unsigned char *filename, Obj binaryP)
       if (g_3!=NULL) 
         delete_named_file(((File_strm *)g_2)->filename);
     }
-    Values_count = 1;
     return (Obj)(&T);
   }
 }

@@ -545,6 +545,36 @@ unsigned char *coerce_to_string (Obj thing)
   return ((Str *)coerced_string)->body;
 }
 
+/* Translated from BOUNDED-STRING-COMPARE(STRING STRING FIXNUM T FIXNUM T) = FIXNUM */
+
+sint32 bounded_string_compare (unsigned char *a, unsigned char *b, sint32 start1, 
+        Obj end1, sint32 start2, Obj end2)
+{
+  sint32 e1, e2;
+  unsigned char c1, c2;
+
+  if (end1==NULL) 
+    e1 = (sint32)(StrHDR(a)->fill_length);
+  else 
+    e1 = UNBOXFIX(end1);
+  if (end2==NULL) 
+    e2 = (sint32)(StrHDR(b)->fill_length);
+  else 
+    e2 = UNBOXFIX(end2);
+  while (!((start1>=e1) || (start2>=e2))) {
+    c1 = (a[start1]);
+    c2 = (b[start2]);
+    if (c1!=c2) {
+      if (c1<c2) 
+        return -1;
+      else 
+        return 1;
+    }
+  }
+
+  return 0;
+}
+
 /* Translated from STRING-EQUAL(T T) = T */
 
 Obj string_equal (Obj string_or_symbol_1, Obj string_or_symbol_2)

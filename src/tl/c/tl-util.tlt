@@ -39,8 +39,7 @@
     (TL:FILL-ARRAY-UNSIGNED-BYTE-8 . "fill_array_unsigned_byte_8")
     (TL:FILL-LIST . "fill_list")
     (TL:FILL-SIMPLE-VECTOR . "fill_simple_vector")
-    (TL::FLET-SEARCH-PREDICATE-IN-SEARCH-TEST-0
-     . "flet_search_predicate_in_search_test_0")
+    (TL::FLET-SEARCH-PREDICATE-IN-SEARCH-TEST-0 . "flet_search_predicate_in_search_test_0")
     (TL::GENERIC-POSITION . "generic_position")
     (TL::GENERIC-SEARCH . "generic_search")
     (TL::GENERIC-SORT-VECTOR . "generic_sort_vector")

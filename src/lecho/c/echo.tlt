@@ -25,10 +25,7 @@
     (TL::FORMAT-FUNCTION "format_function" FUNCTION (T STRING T) T)
     (TL:TERPRI "terpri" FUNCTION (&OPTIONAL T) NULL)
     (TL:WRITE-CHAR "write_char" FUNCTION (CHARACTER &OPTIONAL T) CHARACTER)
-    (TL::WRITE-STRING-FUNCTION "write_string_function"
-                               FUNCTION
-                               (STRING T FIXNUM T)
-                               STRING))
+    (TL::WRITE-STRING-FUNCTION "write_string_function" FUNCTION (STRING T FIXNUM T) STRING))
   ;; Defined functions.
   '((TL-USER::MAIN . "main_1"))
   ;; Used variables = (symbol c-name . type).

@@ -167,6 +167,9 @@ static const Str_77 str_const_4
 static const Str_113 str_const_5
   = { 7, 110, 110, "The following problem has been detected:  Casting floats to integers cannot be relied on to perform truncation" };
 
+static const Str_121 str_const_6
+  = { 7, 117, 117, "The following problem has been detected:  Division of fixnums does not reliably perform truncation with negative args" };
+
 /* Translated from VALIDATE-FIXNUM-ASSUMPTIONS() = NULL */
 
 Obj validate_fixnum_assumptions (void)
@@ -181,29 +184,29 @@ Obj validate_fixnum_assumptions (void)
       /-1.0))==(-13))) && (((sint32)((-(((Ldouble *)GET_GLOBAL(float_test_value))->body))
       /-1.0))==13))) 
     error((char *)(((Str *)(&str_const_5))->body));     /* "The following problem has been detected:  Casting ..." */
+  if (!((((UNBOXFIX((Obj)(2-(sint32)GET_GLOBAL(fixnum_test_value)))/2)==(-5))
+       && ((UNBOXFIX(GET_GLOBAL(fixnum_test_value))/(-2))==(-5))) && ((
+      UNBOXFIX((Obj)(2-(sint32)GET_GLOBAL(fixnum_test_value)))/(-2))==5))) 
+    error((char *)(((Str *)(&str_const_6))->body));     /* "The following problem has been detected:  Division..." */
   return (Obj)NULL;
 }
 
-/* Translated from FTRUNCATEE-UP(NUMBER) = * */
+/* Translated from FTRUNCATEE-UP(NUMBER) = DOUBLE-FLOAT */
 
-Obj ftruncatee_up (Obj float_1)
+double ftruncatee_up (Obj float_1)
 {
   if (((Ldouble *)float_1)->body>0.0) 
-    return generic_fceiling_one(float_1);
+    return ((Ldouble *)generic_fceiling_one(float_1))->body;
   else 
-    return generic_ffloor_one(float_1);
+    return ((Ldouble *)generic_ffloor_one(float_1))->body;
 }
 
-/* Translated from COERCE-TO-DOUBLE-FLOAT-FUNCTION(T) = * */
+/* Translated from COERCE-TO-DOUBLE-FLOAT-FUNCTION(NUMBER) = DOUBLE-FLOAT */
 
-Obj coerce_to_double_float_function (Obj x)
+double coerce_to_double_float_function (Obj x)
 {
-  Obj temp;
-
-  temp = alloc_ldouble((IMMED_TAG(x)==1) ? ((double)(((sint32)x)    /* Fixnump */
-      >>2)) : (((Ldouble *)x)->body),-1,5);
-  Values_count = 1;
-  return temp;
+  return (IMMED_TAG(x)==1) ? ((double)(((sint32)x)>>2))     /* Fixnump */
+      : (((Ldouble *)x)->body);
 }
 
 Obj destination_for_symbol_with_preserved_cells = (Obj)(&Unbound);
@@ -258,7 +261,7 @@ Obj getfq_function (Obj plist, Obj indicator, Obj default_1)
 
 Obj special_variable_for_use_value_macro = (Obj)(&Unbound);
 
-static const Str_5 str_const_6
+static const Str_5 str_const_7
   = { 7, 2, 2, "#<" };
 
 /* Translated from PRINT-RANDOM-OBJECT-PREFIX(T T) = STRING */
@@ -266,7 +269,7 @@ static const Str_5 str_const_6
 unsigned char *print_random_object_prefix (Obj object, Obj stream)
 {
   (void)object;                                 /* OBJECT was declared ignore */
-  return write_string_function(((Str *)(&str_const_6))->body,   /* "#<" */
+  return write_string_function(((Str *)(&str_const_7))->body,   /* "#<" */
       stream,0,(Obj)NULL);
 }
 

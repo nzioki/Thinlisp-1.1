@@ -1041,9 +1041,7 @@ Obj generic_truncate_two (Obj number, Obj divisor)
   }
 }
 
-/* Translated from FTRUNCATE-TWO-ARG-MULT-VALUE(DOUBLE-FLOAT DOUBLE-FLOAT) = (VALUES
-                                                                              DOUBLE-FLOAT
-                                                                              DOUBLE-FLOAT) */
+/* Translated from FTRUNCATE-TWO-ARG-MULT-VALUE(DOUBLE-FLOAT DOUBLE-FLOAT) = (VALUES DOUBLE-FLOAT DOUBLE-FLOAT) */
 
 Obj ftruncate_two_arg_mult_value (double number, double divisor)
 {
@@ -1064,9 +1062,7 @@ Obj ftruncate_two_arg_mult_value (double number, double divisor)
   return temp;
 }
 
-/* Translated from FTRUNCATE-ONE-ARG-MULT-VALUE(DOUBLE-FLOAT) = (VALUES
-                                                                 DOUBLE-FLOAT
-                                                                 DOUBLE-FLOAT) */
+/* Translated from FTRUNCATE-ONE-ARG-MULT-VALUE(DOUBLE-FLOAT) = (VALUES DOUBLE-FLOAT DOUBLE-FLOAT) */
 
 Obj ftruncate_one_arg_mult_value (double number)
 {

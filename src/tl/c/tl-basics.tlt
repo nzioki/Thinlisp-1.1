@@ -29,6 +29,7 @@
     (TL:ASSOC-EQL . "assoc_eql")
     (TL:ASSOC-EQUAL . "assoc_equal")
     (TL:ASSQ . "assq")
+    (TL::BOUNDED-STRING-COMPARE . "bounded_string_compare")
     (TL::COERCE-TO-STRING . "coerce_to_string")
     (TL:COPY-LIST . "copy_list")
     (TL::DELETE-EQL . "delete_eql")
