@@ -2039,8 +2039,7 @@
   ((lisp-specs :ftype ((compiled-function) fixnum))
    `(progn
       (derror "No Lisp env implementation of (compiled-function-optional-arguments ~s)"
-	     ,compiled-function)
-      0))
+	     ,compiled-function)))
   ((trans-specs :c-type ((obj) sint32))
    (make-c-cast-expr
      'sint32 (make-c-indirect-selection-expr

@@ -1635,8 +1635,7 @@
   (let ((compiled-func-reference?
 	  (or (gethash compiled-function-name *global-compiled-function-registry*)
 	      (make-and-initialize-new-compiled-function-reference
-	        compiled-function-name decls c-file c-func l-expr?)))
-	(last-definition? (c-file-last-compiled-function-definition? c-file)))
+	        compiled-function-name decls c-file c-func l-expr?))))
     (register-needed-variable-extern
       c-file '("extern") '(array func)
       (cons-car compiled-func-reference?))
