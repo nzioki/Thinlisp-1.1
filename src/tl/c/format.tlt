@@ -4,7 +4,7 @@
 
 ;;; Translation data for tl/lisp/format.lisp.
 ;;; The following is the value of the trans-data-tlt-version parameter.
-1
+2
 
 (make-trans-data
   ;; Used quoted symbols = (symbol symbol-array . index).
@@ -41,12 +41,12 @@
     (TL:FORCE-OUTPUT . "force_output")
     (TL::FORMAT-ERROR . "format_error")
     (TL::FORMAT-FUNCTION . "format_function")
-    (TL::GET-LAST-STRING-STREAM-CHARACTER . "get_last_str_stream_character")
+    (TL::GET-LAST-STRING-STREAM-CHARACTER . "get_last_string_stream_character")
     (TL:GET-OUTPUT-STREAM-STRING . "get_output_stream_string")
-    (TL::GET-STRING-OR-FILE-STREAM-FOR-OUTPUT . "get_str_or_file_stream_fr_tpt")
+    (TL::GET-STRING-OR-FILE-STREAM-FOR-OUTPUT . "get_string_or_file_stream_for_output")
     (TL::LAST-STREAM-CHAR? . "last_stream_charP")
     (TL::LAST-STRING-CHAR? . "last_string_charP")
-    (TL::NOT-NULL-DESTRUCTURING-ERROR-1 . "not_null_destructuring_errr_1")
+    (TL::NOT-NULL-DESTRUCTURING-ERROR-1 . "not_null_destructuring_error_1")
     (TL::NSTRING-CAPITALIZE-FUNCTION . "nstring_capitalize_function")
     (TL::NSTRING-DOWNCASE-FUNCTION . "nstring_downcase_function")
     (TL::NSTRING-UPCASE-FUNCTION . "nstring_upcase_function")
@@ -54,14 +54,14 @@
     (TL:PRIN1 . "prin1")
     (TL:PRINC . "princ")
     (TL:PRINT . "print")
-    (TL::PRINT-RANDOM-OBJECT-WITH-TYPE-NAME . "print_random_objct_wth_typ_nm")
+    (TL::PRINT-RANDOM-OBJECT-WITH-TYPE-NAME . "print_random_object_with_type_name")
     (TL::STRING-DOWNCASE-FUNCTION . "string_downcase_function")
     (TL::STRING-UPCASE-FUNCTION . "string_upcase_function")
     (TL:TERPRI . "terpri")
-    (TL::UNSUPPORTED-CONTROL-CHAR-ERROR . "unsupported_ctrl_char_error")
+    (TL::UNSUPPORTED-CONTROL-CHAR-ERROR . "unsupported_control_char_error")
     (TL:WRITE-CHAR . "write_char")
     (TL::WRITE-FIXNUM . "write_fixnum")
-    (TL::WRITE-FIXNUM-IN-ARBITRARY-BASE . "write_fix_in_arbitrary_base")
+    (TL::WRITE-FIXNUM-IN-ARBITRARY-BASE . "write_fixnum_in_arbitrary_base")
     (TL::WRITE-FIXNUM-IN-HEX . "write_fixnum_in_hex")
     (TL::WRITE-FIXNUM-WITH-ARGLIST . "write_fixnum_with_arglist")
     (TL::WRITE-FIXNUM-WITH-COMMAS . "write_fixnum_with_commas")
@@ -91,5 +91,7 @@
     (TL::DEFAULT-STRING-STREAM-SIZE . "default_string_stream_size")
     (TL::FIELD-WIDTH-STRING-LENGTH . "field_width_string_length")
     (TL::FIELD-WIDTH-STRING-LIST . "field_width_string_list")
-    (TL::REVERSED-FIXNUM-WITH-COMMAS-STRING . "reversed_fix_with_commas_str"))
+    (TL::REVERSED-FIXNUM-WITH-COMMAS-STRING . "reversed_fixnum_with_commas_string"))
+  ;; Used class typedefs.
+  NIL
   )

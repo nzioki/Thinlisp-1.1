@@ -82,8 +82,7 @@ sint32 Throw_stack_top = -1;
 
 Obj Current_throw = NULL;
 
-extern void store_values_on_stack (Obj first_value)
-{
+extern void store_values_on_stack (Obj first_value) {
   sint32 new_top, values;
 
   values = Values_count;
@@ -101,8 +100,7 @@ extern void store_values_on_stack (Obj first_value)
   return;
 }
 
-Obj retrieve_values_from_stack(void)
-{
+Obj retrieve_values_from_stack(void) {
   sint32 values, top;
 
   top = Throw_stack_top;
@@ -122,8 +120,7 @@ Obj retrieve_values_from_stack(void)
   }
 }
 
-void throw_towards_catch_tag(Obj throw_tag, Obj first_value)
-{
+void throw_towards_catch_tag(Obj throw_tag, Obj first_value) {
   sint32 index = Throw_stack_top;
   int stack_entry_type;
   jmp_buf *target_jmp_buf;
@@ -264,8 +261,7 @@ static memory_block emergency_block;
 
 static unsigned char emergency_memory[EMERGENCY_MEMORY_SIZE];
 
-void discard_block (sint32 region, memory_block *block)
-{
+void discard_block (sint32 region, memory_block *block) {
   memory_block *current_block, *next_block;
   char msg[256];
 
@@ -291,8 +287,7 @@ void discard_block (sint32 region, memory_block *block)
   }
 }
 
-sint32 blocks_in_region (sint32 region)
-{
+sint32 blocks_in_region (sint32 region) {
   sint32 count = 0;
   memory_block *block = region_blocks[region];
 
@@ -303,8 +298,7 @@ sint32 blocks_in_region (sint32 region)
   return count;
 }
 
-void malloc_block_into_region (sint32 region, sint32 byte_count, sint32 silent)
-{
+void malloc_block_into_region (sint32 region, sint32 byte_count, sint32 silent) {
   memory_block *new_block, *current_block, *next_block;
   void *new_memory;
   char msg[512];
@@ -372,23 +366,19 @@ void malloc_block_into_region (sint32 region, sint32 byte_count, sint32 silent)
   return;
 }
 
-sint32 region_number_bytes_size (sint32 region)
-{
+sint32 region_number_bytes_size (sint32 region) {
   return region_size[region];
 }
 
-sint32 region_number_bytes_used (sint32 region)
-{
+sint32 region_number_bytes_used (sint32 region) {
   return region_used[region];
 }
 
-sint32 region_number_bytes_available (sint32 region)
-{
+sint32 region_number_bytes_available (sint32 region) {
   return region_size[region] - region_used[region];
 }
 
-sint32 bytes_in_first_block_of_region (sint32 region)
-{
+sint32 bytes_in_first_block_of_region (sint32 region) {
   memory_block *first_block;
   
   if ((first_block=region_blocks[region]) == NULL)
@@ -397,8 +387,7 @@ sint32 bytes_in_first_block_of_region (sint32 region)
     return BYTES_IN_BLOCK(region,first_block);
 }
 
-void *alloc_bytes(sint32 region, sint32 alignment, sint32 bytes)
-{
+void *alloc_bytes(sint32 region, sint32 alignment, sint32 bytes) {
   memory_block *block;
   unsigned long base, top, old_top;
   sint32 attempts;
@@ -448,8 +437,7 @@ void *alloc_bytes(sint32 region, sint32 alignment, sint32 bytes)
   return NULL; /* Unreachable, needed to squelch compiler warning. */
 }
 
-void bad_region_warning(sint32 region, char *type)
-{
+void bad_region_warning(sint32 region, char *type) {
   char message[256];
 
   sprintf(message,"Allocating %s from region %d when %d was expected.",
@@ -457,8 +445,7 @@ void bad_region_warning(sint32 region, char *type)
   warn(message);
 }
 
-Obj alloc_cons (Obj new_car, Obj new_cdr, sint32 region)
-{
+Obj alloc_cons (Obj new_car, Obj new_cdr, sint32 region) {
   Cons *new;
 
   if (region!=CURRENT_REGION_NUMBER) {
@@ -481,8 +468,7 @@ Obj alloc_cons (Obj new_car, Obj new_cdr, sint32 region)
  * returned.  Count must be positive.
  */
 
-Obj hook_up_cdrs (Obj *car_cdr_array, sint32 count, Obj final_cdr)
-{
+Obj hook_up_cdrs (Obj *car_cdr_array, sint32 count, Obj final_cdr) {
   sint32 index;
   sint32 max_index = count-1;
   Cons *cons_array;
@@ -494,8 +480,7 @@ Obj hook_up_cdrs (Obj *car_cdr_array, sint32 count, Obj final_cdr)
   return (Obj)((uint32)car_cdr_array + 2);
 }
 
-Obj alloc_list (sint32 length, sint32 init_cars_p, Obj init_elt, sint32 region)
-{
+Obj alloc_list (sint32 length, sint32 init_cars_p, Obj init_elt, sint32 region) {
   Obj last_cdr, first_cons;
   Cons *cons_to_init;
   sint32 bytes_available, conses_available, alloc_count, index;
@@ -534,8 +519,7 @@ Obj alloc_list (sint32 length, sint32 init_cars_p, Obj init_elt, sint32 region)
   return first_cons;
 }
 
-Obj alloc_simple_vector (sint32 length, sint32 region, sint32 type_tag)
-{
+Obj alloc_simple_vector (sint32 length, sint32 region, sint32 type_tag) {
   Sv *new;
 
   if (region!=CURRENT_REGION_NUMBER) {
@@ -545,14 +529,14 @@ Obj alloc_simple_vector (sint32 length, sint32 region, sint32 type_tag)
   }
 
   /* By default the Sv struct contains 1 element. */
-  new = (Sv *)alloc_bytes(region, 4, sizeof(Sv)+((length-1)*sizeof(Obj)));
+  new = (Sv *)alloc_bytes(region, 4, 
+			  sizeof(Sv)+(length<1 ? 0 : (length-1)*sizeof(Obj)));
   new->type = type_tag;
   new->length = length;
   return (Obj)new;
 }
 
-Obj alloc_string (sint32 dimension, sint32 region, sint32 type_tag)
-{
+Obj alloc_string (sint32 dimension, sint32 region, sint32 type_tag) {
   Str *new;
 
   if (region!=CURRENT_REGION_NUMBER) {
@@ -571,8 +555,7 @@ Obj alloc_string (sint32 dimension, sint32 region, sint32 type_tag)
   return (Obj)new;
 }
 
-Obj alloc_uint8_array (sint32 length, sint32 region, sint32 type_tag)
-{
+Obj alloc_uint8_array (sint32 length, sint32 region, sint32 type_tag) {
   Sa_uint8 *new;
 
   if (region!=CURRENT_REGION_NUMBER) {
@@ -588,8 +571,7 @@ Obj alloc_uint8_array (sint32 length, sint32 region, sint32 type_tag)
   return (Obj)new;
 }
 
-Obj alloc_uint16_array (sint32 length, sint32 region, sint32 type_tag)
-{
+Obj alloc_uint16_array (sint32 length, sint32 region, sint32 type_tag) {
   Sa_uint16 *new;
 
   if (region!=CURRENT_REGION_NUMBER) {
@@ -605,8 +587,7 @@ Obj alloc_uint16_array (sint32 length, sint32 region, sint32 type_tag)
   return (Obj)new;
 }
 
-Obj alloc_double_array (sint32 length, sint32 region, sint32 type_tag)
-{
+Obj alloc_double_array (sint32 length, sint32 region, sint32 type_tag) {
   Sa_double *new;
 
   if (region!=CURRENT_REGION_NUMBER) {
@@ -621,8 +602,7 @@ Obj alloc_double_array (sint32 length, sint32 region, sint32 type_tag)
   return (Obj)new;
 }
 
-Obj alloc_ldouble (double new_value, sint32 region, sint32 type_tag)
-{
+Obj alloc_ldouble (double new_value, sint32 region, sint32 type_tag) {
   Ldouble *new;
 
   if (region!=CURRENT_REGION_NUMBER) {
@@ -636,8 +616,7 @@ Obj alloc_ldouble (double new_value, sint32 region, sint32 type_tag)
   return (Obj)new;
 }
 
-Obj alloc_mdouble (double new_value, sint32 region, sint32 type_tag)
-{
+Obj alloc_mdouble (double new_value, sint32 region, sint32 type_tag) {
   Mdouble *new;
 
   if (region!=CURRENT_REGION_NUMBER) {
@@ -652,8 +631,7 @@ Obj alloc_mdouble (double new_value, sint32 region, sint32 type_tag)
   return (Obj)new;
 }
 
-Obj alloc_symbol (sint32 region, sint32 type_tag)
-{
+Obj alloc_symbol (sint32 region, sint32 type_tag) {
   Sym *new;
 
   if (region!=CURRENT_REGION_NUMBER && region!=SYMBOL_REGION) {
@@ -669,8 +647,7 @@ Obj alloc_symbol (sint32 region, sint32 type_tag)
 
 Sym T;
 
-Obj alloc_package (Obj name_string, Obj used, sint32 region, sint32 type_tag)
-{
+Obj alloc_package (Obj name_string, Obj used, sint32 region, sint32 type_tag) {
   Pkg *new;
 
   if (region!=CURRENT_REGION_NUMBER) {
@@ -687,8 +664,7 @@ Obj alloc_package (Obj name_string, Obj used, sint32 region, sint32 type_tag)
   return (Obj)new;
 }
 
-Obj alloc_string_strm (sint32 region, sint32 type_tag)
-{
+Obj alloc_string_strm (sint32 region, sint32 type_tag) {
   String_strm *new;
 
   if (region!=CURRENT_REGION_NUMBER) {
@@ -707,8 +683,7 @@ Obj alloc_string_strm (sint32 region, sint32 type_tag)
 }
 
 Obj alloc_file_strm (FILE *input, FILE *output, char *filename,
-			   char *mode, sint32 region, sint32 type_tag)
-{
+			   char *mode, sint32 region, sint32 type_tag) {
   File_strm *new;
 
   if (region!=CURRENT_REGION_NUMBER) {
@@ -723,6 +698,36 @@ Obj alloc_file_strm (FILE *input, FILE *output, char *filename,
   new->output = output;
   new->filename = filename ;
   new->mode = mode;
+  return (Obj)new;
+}
+
+
+/**
+ * The function alloc_struct is used to malloc a new structure
+ * instance.  The total number of required bytes is passed as the
+ * first argument.  The byte alignment is passed as the second arg.
+ * The byte alignment for a structure will vary depending on the types
+ * of the elements of the structure.  Usually it will be 4 byte
+ * aligned, but there is a double as a element of the structure, then
+ * the alignment will be 8 bytes.  The allocation region and type tag
+ * are passed last.  Note that for structures, the lower 8 bits of the
+ * header should always be the same value, CLASS_HDR_TAG, and that the
+ * upper 24 bits will hold the actual tag, i.e. the extended_type of
+ * the Class_hdr structure. 
+ */
+
+Obj alloc_struct (sint32 bytes, sint32 align, sint32 region, sint32 type_tag) {
+  Class_hdr *new;
+
+  if (region!=CURRENT_REGION_NUMBER) {
+    if (region != -1)
+      bad_region_warning(region, "Struct");
+    region = CURRENT_REGION_NUMBER;
+  }
+
+  new = (Class_hdr *)alloc_bytes(region, align, bytes);
+  new->type = CLASS_HDR_TAG;
+  new->extended_type = type_tag;
   return (Obj)new;
 }
 
@@ -783,8 +788,7 @@ Obj alloc_file_strm (FILE *input, FILE *output, char *filename,
 #define FREEBSD_CODE     28
 #define LINUX386_CODE    29
 
-sint32 get_platform_code(void)
-{
+sint32 get_platform_code(void) {
     sint32 platform_code = 0;
 
 #    if defined(i386) && !defined(_SEQUENT_)
@@ -919,8 +923,7 @@ sint32 get_platform_code(void)
  * differences.  It takes a char * and returns 0 for success and -1 for failure.
  */
 
-sint32 delete_named_file(char *filename)
-{
+sint32 delete_named_file(char *filename) {
 #if defined(vms)
   long success_code = delete(filename);
 #else
@@ -950,42 +953,36 @@ extern time_t time(time_t *timeptr);
  * wrapping message behavior or exits.
  */
 
-static char *current_time_string(void)
-{
+static char *current_time_string(void) {
   time_t now;
 
   now = time(NULL);
   return ctime(&now);
 }
 
-void notify (char *message)
-{
+void notify (char *message) {
   printf("%s%s\n", current_time_string(), message);
   return;
 }
 
-void warn (char *message)
-{
+void warn (char *message) {
   printf("%s**** WARNING ****\n%s\n", current_time_string(), message);
   return;
 }
 
-void error (char *message)
-{
+void error (char *message) {
   /* Insert throw calls here instead of exit.  -jra 12/18/95 */
   fatal_error(message);
 }
 
-void type_cast_error(char *source_type, char *target_type)
-{
+void type_cast_error(char *source_type, char *target_type) {
   char error_message[256];
   sprintf(error_message,"Unable to coerce type %s to type %s.", 
 	  source_type, target_type);
   error(error_message);
 }
 
-void fatal_error (char *message)
-{
+void fatal_error (char *message) {
   printf("%s**** ERROR ****\n%s\n", current_time_string(), message);
   exit(1);
 }
@@ -1002,8 +999,7 @@ void fatal_error (char *message)
  * write_char_into_str, write_fixnum_into_str, and write_double_into_str.
  */
 
-void write_fixnum_into_str (sint32 value, sint32 width, Str *output)
-{
+void write_fixnum_into_str (sint32 value, sint32 width, Str *output) {
   char *base, *current_end, *new_end;
 
   base = (char *)(output->body);
@@ -1022,8 +1018,7 @@ void write_fixnum_into_str (sint32 value, sint32 width, Str *output)
   return;
 }
 
-void write_double_into_str (double value, sint32 width, Str *output)
-{
+void write_double_into_str (double value, sint32 width, Str *output) {
   char *base, *current_end, *new_end;
 
   base = (char *)(output->body);

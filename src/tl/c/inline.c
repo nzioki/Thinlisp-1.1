@@ -13,7 +13,7 @@
 #include "inline.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -27,10 +27,9 @@ static const Str_5 str_const
 
 Obj eql (Obj a, Obj b)
 {
-  if ((a==b) || ((((a!=NULL) && (((((uint32)a)&3)==0) && (((Hdr *)a)->type
-      ==5))) && ((b!=NULL) && (((((uint32)b)    /* DOUBLE-FLOAT type tag */
-      &3)==0) && (((Hdr *)b)->type==5)))) && (  /* DOUBLE-FLOAT type tag */
-      ((Ldouble *)a)->body==(((Ldouble *)b)->body)))) 
+  if ((a==b) || ((((a!=NULL) && ((IMMED_TAG(a)==0) && (STD_TAG(a)==5)))     /* DOUBLE-FLOAT-P */
+       && ((b!=NULL) && ((IMMED_TAG(b)==0) && (STD_TAG(b)==5))))    /* DOUBLE-FLOAT-P */
+       && (((Ldouble *)a)->body==(((Ldouble *)b)->body)))) 
     return (Obj)(&T);
   else 
     return (Obj)NULL;

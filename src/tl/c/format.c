@@ -13,7 +13,7 @@
 #include "format.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -23,7 +23,7 @@ typedef struct{
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -45,7 +45,7 @@ static const Str_5 str_const_4
 static const Str_5 str_const_5
   = { 7, 3, 3, "tab" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -288,7 +288,7 @@ Obj default_string_stream_size = BOXFIX(128);
 
 /* Translated from GET-STRING-OR-FILE-STREAM-FOR-OUTPUT(T FIXNUM) = T */
 
-Obj get_str_or_file_stream_fr_tpt (Obj stream_arg, sint32 needed_space)
+Obj get_string_or_file_stream_for_output (Obj stream_arg, sint32 needed_space)
 {
   sint32 temp;
   Obj string_list, first_string;
@@ -299,8 +299,7 @@ Obj get_str_or_file_stream_fr_tpt (Obj stream_arg, sint32 needed_space)
   Str *string;
   sint32 fill_1;
 
-  switch ((stream_arg==NULL) ? 0 : ((temp = (((uint32)stream_arg)&3)) ? temp 
-      : (sint32)(((Hdr *)stream_arg)->type))) {
+  switch (TYPE_TAG(stream_arg,temp)) {
    case 0:
    case 11:
     if (stream_arg==NULL) 
@@ -358,7 +357,7 @@ Obj last_string_charP (unsigned char *string)
 
 /* Translated from GET-LAST-STRING-STREAM-CHARACTER(TL-STRING-STREAM) = T */
 
-Obj get_last_str_stream_character (Obj string_stream)
+Obj get_last_string_stream_character (Obj string_stream)
 {
   Obj first_stringP, temp;
 
@@ -374,12 +373,11 @@ Obj get_last_str_stream_character (Obj string_stream)
 
 Obj last_stream_charP (Obj stream)
 {
-  if ((stream!=NULL) && (((((uint32)stream)&3)==0) && (((Hdr *)stream)->type
-      ==7)))                                    /* STRING type tag */
+  if ((stream!=NULL) && ((IMMED_TAG(stream)==0) && (STD_TAG(stream)==7)))   /* STRING-P */
     return last_string_charP(((Str *)stream)->body);
-  else if ((stream!=NULL) && (((((uint32)stream)&3)==0) && (((Hdr *)stream)->type
-      ==15)))                                   /* TL-STRING-STREAM type tag */
-    return get_last_str_stream_character(stream);
+  else if ((stream!=NULL) && ((IMMED_TAG(stream)==0) && (STD_TAG(stream)
+      ==15)))                                   /* TL-STRING-STREAM-P */
+    return get_last_string_stream_character(stream);
   else 
     return (Obj)NULL;
 }
@@ -426,9 +424,8 @@ Obj force_output (Obj output_stream)
 {
   Obj stream;
 
-  stream = get_str_or_file_stream_fr_tpt(output_stream,0);
-  if ((stream!=NULL) && (((((uint32)stream)&3)==0) && (((Hdr *)stream)->type
-      ==16)))                                   /* FILE-STREAM type tag */
+  stream = get_string_or_file_stream_for_output(output_stream,0);
+  if ((stream!=NULL) && ((IMMED_TAG(stream)==0) && (STD_TAG(stream)==16)))      /* FILE-STREAM-P */
     fflush(((File_strm *)stream)->output);
   return (Obj)NULL;
 }
@@ -450,9 +447,8 @@ unsigned char *write_string_function (unsigned char *string, Obj streamP,
     end_index = (sint32)(StrHDR(string)->fill_length);
   else 
     end_index = UNBOXFIX(end);
-  stream = get_str_or_file_stream_fr_tpt(streamP,end_index-start);
-  if ((stream!=NULL) && (((((uint32)stream)&3)==0) && (((Hdr *)stream)->type
-      ==7))) {                                  /* STRING type tag */
+  stream = get_string_or_file_stream_for_output(streamP,end_index-start);
+  if ((stream!=NULL) && ((IMMED_TAG(stream)==0) && (STD_TAG(stream)==7))) {     /* STRING-P */
     current_fill = (sint32)(((Str *)stream)->fill_length);
     string_1 = (Str *)stream;
     fill_1 = (current_fill+(end_index-start));
@@ -485,17 +481,16 @@ unsigned char write_char (unsigned char char_1, Obj streamP)
   sint32 fill_1;
 
   stringP = (Obj)NULL;
-  switch ((streamP==NULL) ? 0 : ((temp = (((uint32)streamP)&3)) ? temp 
-      : (sint32)(((Hdr *)streamP)->type))) {
+  switch (TYPE_TAG(streamP,temp)) {
    case 7:
     stringP = (Obj)(&T);
     break;
    case 16:
     break;
    default:
-    streamP = get_str_or_file_stream_fr_tpt(streamP,1);
-    stringP = (((streamP!=NULL) && (((((uint32)streamP)&3)==0) && (((Hdr *)streamP)->type
-        ==7))) ? ((Obj)(&T)) : (Obj)NULL);      /* STRING type tag */
+    streamP = get_string_or_file_stream_for_output(streamP,1);
+    stringP = (((streamP!=NULL) && ((IMMED_TAG(streamP)==0) && (STD_TAG(streamP)
+        ==7))) ? ((Obj)(&T)) : (Obj)NULL);      /* STRING-P */
     break;
   }
   if (stringP!=NULL) {
@@ -533,18 +528,19 @@ void write_fixnum_in_hex (sint32 fixnum, Obj streamP)
 
 /* Translated from WRITE-FIXNUM-IN-ARBITRARY-BASE(FIXNUM FIXNUM T) = VOID */
 
-void write_fix_in_arbitrary_base (sint32 fixnum, sint32 base, Obj stream)
+void write_fixnum_in_arbitrary_base (sint32 fixnum, sint32 base, Obj stream)
 {
   unsigned char arg_temp;
   sint32 g;
 
   if (fixnum<0) {
     write_char('-',stream);
-    write_fix_in_arbitrary_base(-fixnum,base,stream);
+    write_fixnum_in_arbitrary_base(-fixnum,base,stream);
     return;
   }
   else if (fixnum>=base) {
-    write_fix_in_arbitrary_base(fixnum_floor_first(fixnum,base),base,stream);
+    write_fixnum_in_arbitrary_base(fixnum_floor_first(fixnum,base),base,
+        stream);
     g = mod_fixnums(fixnum,base);
     arg_temp = (unsigned char)(((g<10) ? 48 : 55)+g);
     write_char(arg_temp,stream);
@@ -557,7 +553,7 @@ void write_fix_in_arbitrary_base (sint32 fixnum, sint32 base, Obj stream)
   }
 }
 
-Obj reversed_fix_with_commas_str = (Obj)(&Unbound);
+Obj reversed_fixnum_with_commas_string = (Obj)(&Unbound);
 
 /* Translated from WRITE-FIXNUM-WITH-COMMAS(FIXNUM FIXNUM FIXNUM CHARACTER T) = VOID */
 
@@ -570,7 +566,7 @@ void write_fixnum_with_commas (sint32 fixnum, sint32 base, sint32 comma_interval
   unsigned char *arg_temp;
   sint32 arg_temp_1, g, g_1, index;
 
-  reversed_fixnum_with_commas = (((Str *)reversed_fix_with_commas_str)->body);
+  reversed_fixnum_with_commas = (((Str *)reversed_fixnum_with_commas_string)->body);
   if (fixnum<0) {
     write_char('-',stream);
     fixnum = (-fixnum);
@@ -627,8 +623,7 @@ sint32 write_fixnum (sint32 fixnum, sint32 base, sint32 width, Obj streamP)
     g = 11;
   else 
     g = width;
-  switch ((streamP==NULL) ? 0 : ((temp = (((uint32)streamP)&3)) ? temp 
-      : (sint32)(((Hdr *)streamP)->type))) {
+  switch (TYPE_TAG(streamP,temp)) {
    case 0:
    case 11:
     if (streamP==NULL) 
@@ -636,7 +631,7 @@ sint32 write_fixnum (sint32 fixnum, sint32 base, sint32 width, Obj streamP)
     else if (streamP==(Obj)(&T)) 
       stream = Sterminal_ioS;
     else 
-      stream = get_str_or_file_stream_fr_tpt(streamP,g);
+      stream = get_string_or_file_stream_for_output(streamP,g);
     break;
    case 16:
     stream = streamP;
@@ -645,12 +640,11 @@ sint32 write_fixnum (sint32 fixnum, sint32 base, sint32 width, Obj streamP)
     stream = streamP;
     break;
    default:
-    stream = get_str_or_file_stream_fr_tpt(streamP,g);
+    stream = get_string_or_file_stream_for_output(streamP,g);
     break;
   }
   if (base==10) {
-    if ((stream!=NULL) && (((((uint32)stream)&3)==0) && (((Hdr *)stream)->type
-        ==7)))                                  /* STRING type tag */
+    if ((stream!=NULL) && ((IMMED_TAG(stream)==0) && (STD_TAG(stream)==7)))     /* STRING-P */
       write_fixnum_into_str(fixnum,width,(Str *)stream);
     else 
       fprintf(((File_strm *)stream)->output,"%*ld",(int)width,(long)fixnum);
@@ -658,7 +652,7 @@ sint32 write_fixnum (sint32 fixnum, sint32 base, sint32 width, Obj streamP)
   else if (base==16) 
     write_fixnum_in_hex(fixnum,stream);
   else 
-    write_fix_in_arbitrary_base(fixnum,base,stream);
+    write_fixnum_in_arbitrary_base(fixnum,base,stream);
   return fixnum;
 }
 
@@ -670,8 +664,8 @@ static const Str_5 str_const_9
 
 /* Translated from PRINT-RANDOM-OBJECT-WITH-TYPE-NAME(T STRING T T) = VOID */
 
-void print_random_objct_wth_typ_nm (Obj object, unsigned char *name, Obj extra_infoP, 
-        Obj streamP)
+void print_random_object_with_type_name (Obj object, unsigned char *name, 
+        Obj extra_infoP, Obj streamP)
 {
   sint32 arg_temp;
 
@@ -703,7 +697,7 @@ static const Str_5 str_const_12
 static const Str_5 str_const_13
   = { 7, 2, 2, "#\\" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -713,7 +707,7 @@ typedef struct{
 static const Str_17 str_const_14
   = { 7, 13, 13, "Simple-Vector" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -726,7 +720,7 @@ static const Str_25 str_const_15
 static const Str_25 str_const_16
   = { 7, 23, 23, "Unsigned-Byte-16-Vector" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -776,8 +770,7 @@ Obj write_function (Obj object, Obj stream, Obj case_1, Obj escape, sint32 base,
   (void)level;                                  /* LEVEL was declared ignore */
   (void)length_1;                               /* LENGTH was declared ignore */
   (void)circle;                                 /* CIRCLE was declared ignore */
-  switch ((object==NULL) ? 0 : ((temp = (((uint32)object)&3)) ? temp : 
-      (sint32)(((Hdr *)object)->type))) {
+  switch (TYPE_TAG(object,temp)) {
    case 0:
     if (case_1==(Obj)(tl_format_symbols+1))     /* DOWNCASE */
       if_result_temp = (((Str *)(&str_const_10))->body);    /* "nil" */
@@ -810,15 +803,15 @@ Obj write_function (Obj object, Obj stream, Obj case_1, Obj escape, sint32 base,
    case 5:
     g = (((Ldouble *)object)->body);
     g_1 = 0;
-    g_2 = get_str_or_file_stream_fr_tpt(stream,(g_1==0) ? 16 : g_1);
-    if ((g_2!=NULL) && (((((uint32)g_2)&3)==0) && (((Hdr *)g_2)->type==7)))     /* STRING type tag */
+    g_2 = get_string_or_file_stream_for_output(stream,(g_1==0) ? 16 : g_1);
+    if ((g_2!=NULL) && ((IMMED_TAG(g_2)==0) && (STD_TAG(g_2)==7)))      /* STRING-P */
       write_double_into_str(g,g_1,(Str *)g_2);
     else 
       fprintf(((File_strm *)g_2)->output,"%*g",(int)g_1,g);
     (void)g;
     break;
    case 6:
-    print_random_objct_wth_typ_nm(object,((Str *)(&str_const_14))->body,    /* "Simple-Vector" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_14))->body,   /* "Simple-Vector" */
         BOXFIX((sint32)(((Sv *)object)->length)),stream);
     break;
    case 7:
@@ -838,15 +831,15 @@ Obj write_function (Obj object, Obj stream, Obj case_1, Obj escape, sint32 base,
       write_string_function(((Str *)object)->body,stream,0,(Obj)NULL);
     break;
    case 8:
-    print_random_objct_wth_typ_nm(object,((Str *)(&str_const_15))->body,    /* "Unsigned-Byte-8-Vector" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_15))->body,   /* "Unsigned-Byte-8-Vector" */
         BOXFIX((sint32)(((Sa_uint8 *)object)->fill_length)),stream);
     break;
    case 9:
-    print_random_objct_wth_typ_nm(object,((Str *)(&str_const_16))->body,    /* "Unsigned-Byte-16-Vector" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_16))->body,   /* "Unsigned-Byte-16-Vector" */
         BOXFIX((sint32)(((Sa_uint16 *)object)->fill_length)),stream);
     break;
    case 10:
-    print_random_objct_wth_typ_nm(object,((Str *)(&str_const_17))->body,    /* "Double-Float-Vector" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_17))->body,   /* "Double-Float-Vector" */
         BOXFIX((sint32)(((Sa_double *)object)->length)),stream);
     break;
    case 11:
@@ -854,27 +847,27 @@ Obj write_function (Obj object, Obj stream, Obj case_1, Obj escape, sint32 base,
         case_1,stream);
     break;
    case 12:
-    print_random_objct_wth_typ_nm(object,((Str *)(&str_const_19))->body,    /* "Compiled-Function" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_19))->body,   /* "Compiled-Function" */
         ((Func *)object)->name,stream);
     break;
    case 13:
-    print_random_objct_wth_typ_nm(object,((Str *)(&str_const_20))->body,    /* "Package" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_20))->body,   /* "Package" */
         ((Pkg *)object)->name,stream);
     break;
    case 14:
-    print_random_objct_wth_typ_nm(object,((Str *)(&str_const_21))->body,    /* "The-Unbound-Value" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_21))->body,   /* "The-Unbound-Value" */
         (Obj)NULL,stream);
     break;
    case 15:
-    print_random_objct_wth_typ_nm(object,((Str *)(&str_const_22))->body,    /* "String-Stream" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_22))->body,   /* "String-Stream" */
         (Obj)NULL,stream);
     break;
    case 16:
-    print_random_objct_wth_typ_nm(object,((Str *)(&str_const_23))->body,    /* "File-Stream" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_23))->body,   /* "File-Stream" */
         (Obj)NULL,stream);
     break;
    default:
-    print_random_objct_wth_typ_nm(object,((Str *)(&str_const_24))->body,    /* "Unknown-Type" */
+    print_random_object_with_type_name(object,((Str *)(&str_const_24))->body,   /* "Unknown-Type" */
         (Obj)NULL,stream);
     break;
   }
@@ -967,7 +960,7 @@ Obj write_list (Obj cons_1, Obj streamP)
   current_cons = cons_1;
   current_car = CAR(current_cons);
   next_cons = CDR(current_cons);
-  while ((((uint32)next_cons)&3)==2) {          /* Consp */
+  while (IMMED_TAG(next_cons)==2) {             /* Consp */
     write_function(current_car,streamP,Sprint_caseS,Sprint_escapeS,UNBOXFIX(Sprint_baseS),
         Sprint_prettyS,Sprint_levelS,Sprint_lengthS,Sprint_circleS);
     write_char(' ',streamP);
@@ -1182,7 +1175,7 @@ void write_fixnum_with_arglist (Obj stream, sint32 fixnum, Obj arglist,
 static const Str_5 str_const_27
   = { 7, 2, 2, "  " };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -1192,7 +1185,7 @@ typedef struct{
 static const Str_49 str_const_28
   = { 7, 47, 47, "TL:FORMAT doesn\'t support nested ~{ iterations." };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -1208,7 +1201,7 @@ static const Str_49 str_const_30
 static const Str_25 str_const_31
   = { 7, 24, 24, "In FORMAT, unmatched ~}." };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -1316,7 +1309,7 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
         numericP = (Obj)NULL;
       while (1) {
         if (numericP!=NULL) {
-          if ((((uint32)current_argP)&3)==1) {  /* Fixnump */
+          if (IMMED_TAG(current_argP)==1) {     /* Fixnump */
             arg_temp = (UNBOXFIX(current_argP)*10);
             if_result_temp = BOXFIX(arg_temp+UNBOXFIX(numericP));
           }
@@ -1452,7 +1445,7 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
         (Throw_stack[Throw_stack_top-1]) = (Obj)(&Sprint_escapeS);
         (Throw_stack[Throw_stack_top-2]) = Sprint_escapeS;
         Sprint_escapeS = new_Sprint_escapeS;
-        if ((((uint32)object)&3)==1)            /* Fixnump */
+        if (IMMED_TAG(object)==1)               /* Fixnump */
           write_fixnum_with_arglist(stream,UNBOXFIX(object),arglist,atsign_modifierP,
               colon_modifierP);
         else {
@@ -1765,7 +1758,7 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
        case 93:
         break;
        default:
-        unsupported_ctrl_char_error(BOXCHAR(next_char));
+        unsupported_control_char_error(BOXCHAR(next_char));
         break;
       }
     }
@@ -1950,7 +1943,7 @@ Obj error_three_args (Obj control_string, Obj arg1, Obj arg2, Obj arg3)
   return (Obj)NULL;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -1974,7 +1967,7 @@ static const Str_65 str_const_37
 
 /* Translated from UNSUPPORTED-CONTROL-CHAR-ERROR(T) = VOID */
 
-void unsupported_ctrl_char_error (Obj bad_char)
+void unsupported_control_char_error (Obj bad_char)
 {
   error_one_arg((Obj)(&str_const_37),           /* "The character ~s is not a supported format control..." */
       bad_char);
@@ -1993,7 +1986,7 @@ void bad_stream_error (Obj stream_arg)
   return;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -2015,7 +2008,7 @@ Obj format_error (Obj description, Obj control_string)
   return temp;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -2027,14 +2020,14 @@ static const Str_77 str_const_40
 
 /* Translated from NOT-NULL-DESTRUCTURING-ERROR-1(T) = VOID */
 
-void not_null_destructuring_errr_1 (Obj shoulda_been_nil)
+void not_null_destructuring_error_1 (Obj shoulda_been_nil)
 {
   error_one_arg((Obj)(&str_const_40),           /* "The extra value ~a ran off the end of a destructur..." */
       shoulda_been_nil);
   return;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -2051,14 +2044,14 @@ static const Str_57 str_const_42
 
 sint32 check_make_array_dimensions (Obj dimensions)
 {
-  if ((((uint32)dimensions)&3)==2) {            /* Consp */
+  if (IMMED_TAG(dimensions)==2) {               /* Consp */
     if (CDR(dimensions)!=NULL) 
       error_one_arg((Obj)(&str_const_41),       /* "TL make-array does not support multiple-dimensions..." */
           dimensions);
     else 
       dimensions = CAR(dimensions);
   }
-  if (!((((uint32)dimensions)&3)==1))           /* Fixnump */
+  if (!(IMMED_TAG(dimensions)==1))              /* Fixnump */
     error_one_arg((Obj)(&str_const_42),         /* "TL make-array dimension argument was not an intege..." */
         dimensions);
   return UNBOXFIX(dimensions);
@@ -2166,7 +2159,7 @@ void init_tl_format (void)
   g = (((Str *)alloc_string(64,0,7))->body);
   memset((void *)(g+0),'\000',(sint32)(StrHDR(g)->fill_length));
   (void)g;
-  reversed_fix_with_commas_str = ObjStrHDR(g);
+  reversed_fixnum_with_commas_string = ObjStrHDR(g);
   if (field_width_string_list==(Obj)(&Unbound)) {
     g_1 = (((Str *)alloc_string(256,0,7))->body);
     memset((void *)(g_1+0),'\000',(sint32)(StrHDR(g_1)->fill_length));

@@ -13,7 +13,7 @@
 #include "stubs.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -44,7 +44,7 @@ Obj cdr (Obj x)
   return (x!=NULL) ? CDR(x) : (Obj)NULL;
 }
 
-Obj c_native_clock_ticks_per_scnd = (Obj)(&Unbound);
+Obj c_native_clock_ticks_per_second = (Obj)(&Unbound);
 
 Obj maximum_backtrace_depth = (Obj)(&Unbound);
 
@@ -63,8 +63,8 @@ void syms_tl_stubs (void)
 void init_tl_stubs (void)
 {
   SpackageS = find_package_1((Obj)(&str_const));    /* "TL" */
-  if (c_native_clock_ticks_per_scnd==(Obj)(&Unbound)) 
-    c_native_clock_ticks_per_scnd = BOXFIX(60);
+  if (c_native_clock_ticks_per_second==(Obj)(&Unbound)) 
+    c_native_clock_ticks_per_second = BOXFIX(60);
   if (maximum_backtrace_depth==(Obj)(&Unbound)) 
     maximum_backtrace_depth = BOXFIX(50);
   if (def_foreign_function==(Obj)(&Unbound)) 

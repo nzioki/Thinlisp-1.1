@@ -13,7 +13,7 @@
 #include "tl-prim.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -47,8 +47,8 @@ Obj eval_feature (Obj feature_form)
   Obj loop_var, g, temp;
 
   loop_var = (Obj)NULL;
-  if ((feature_form!=NULL) && (((((uint32)feature_form)&3)==0) && (((Hdr *)feature_form)->type
-      ==11))) {                                 /* SYMBOL type tag */
+  if ((feature_form!=NULL) && ((IMMED_TAG(feature_form)==0) && (STD_TAG(feature_form)
+      ==11))) {                                 /* SYMBOL-P */
     for (loop_var = SfeaturesS;loop_var!=NULL;loop_var = CDR(loop_var)) {
       if (CAR(loop_var)==feature_form) {
         Values_count = 1;
@@ -58,7 +58,7 @@ Obj eval_feature (Obj feature_form)
     Values_count = 1;
     return (Obj)NULL;
   }
-  else if (!((((uint32)feature_form)&3)==2)) {  /* Consp */
+  else if (!(IMMED_TAG(feature_form)==2)) {     /* Consp */
     Values_count = 1;
     return (Obj)NULL;
   }
@@ -1110,7 +1110,7 @@ Obj last (Obj list)
     return (Obj)NULL;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -1126,8 +1126,7 @@ Obj reverse (Obj sequence)
 {
   sint32 temp;
 
-  switch ((sequence==NULL) ? 0 : ((temp = (((uint32)sequence)&3)) ? temp 
-      : (sint32)(((Hdr *)sequence)->type))) {
+  switch (TYPE_TAG(sequence,temp)) {
    case 0:
    case 2:
     return reverse_list(sequence);
@@ -1206,7 +1205,7 @@ Obj nreverse (Obj list)
     return (Obj)NULL;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -1225,7 +1224,7 @@ static const Str_5 str_const_4
 static const Str_5 str_const_5
   = { 7, 3, 3, "NOT" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -1250,7 +1249,7 @@ static const Str_9 str_const_10
 static const Str_9 str_const_11
   = { 7, 6, 6, "&WHOLE" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;

@@ -68,3 +68,8 @@
       unless first? do (write-char #\space)
       do (write-string arg))
     0)))
+
+
+(defstruct uffda x y z)
+
+(defun blatz (x) (uffda-x x))

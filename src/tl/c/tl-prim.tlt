@@ -4,7 +4,7 @@
 
 ;;; Translation data for tl/lisp/tl-prim.lisp.
 ;;; The following is the value of the trans-data-tlt-version parameter.
-1
+2
 
 (make-trans-data
   ;; Used quoted symbols = (symbol symbol-array . index).
@@ -90,4 +90,6 @@
     (TL:ALL-SYSTEMS . "all_systems")
     (TL:CURRENT-SYSTEM-BEING-LOADED . "current_system_being_loaded")
     (TL:LAMBDA-LIST-KEYWORDS . "lambda_list_keywords"))
+  ;; Used class typedefs.
+  NIL
   )

@@ -13,7 +13,7 @@
 #include "loop.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;

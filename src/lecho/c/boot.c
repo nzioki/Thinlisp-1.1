@@ -13,7 +13,7 @@
 #include "boot.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -26,7 +26,7 @@ static const Str_9 str_const
 static const Str_9 str_const_1
   = { 7, 5, 5, "LECHO" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;

@@ -4,7 +4,7 @@
 
 ;;; Translation data for tl/lisp/input.lisp.
 ;;; The following is the value of the trans-data-tlt-version parameter.
-1
+2
 
 (make-trans-data
   ;; Used quoted symbols = (symbol symbol-array . index).
@@ -47,4 +47,6 @@
   ;; Defined variables
   '((TL::*INPUT-STRING-BUFFER* . "Sinput_string_bufferS")
     (TL::*INPUT-STRING-BUFFER-SIZE* . "Sinput_string_buffer_sizeS"))
+  ;; Used class typedefs.
+  NIL
   )

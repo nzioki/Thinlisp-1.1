@@ -13,7 +13,7 @@
 #include "tl-extension.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -54,7 +54,7 @@ static const Str_5 str_const_1
 
 Obj keyword_package_1 = (Obj)(&Unbound);
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -159,13 +159,13 @@ sint32 two_arg_gcdf (sint32 u, sint32 v)
 
 Obj negative_fifty_million = (Obj)(&Unbound);
 
-Obj compile_time_most_positive_fx = (Obj)(&Unbound);
+Obj compile_time_most_positive_fixnum = (Obj)(&Unbound);
 
 Obj float_test_value = (Obj)(&Unbound);
 
 Obj fixnum_test_value = (Obj)(&Unbound);
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -182,7 +182,7 @@ static const Str_125 str_const_3
       't','i','m','e',' ','m','o','s','t','-','p','o','s','i','t','i','v',
       'e','-','f','i','x','n','u','m','.', '\000' } };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -192,7 +192,7 @@ typedef struct{
 static const Str_77 str_const_4
   = { 7, 74, 74, "The following problem has been detected:  Right shift doesn\'t sign extend." };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -202,11 +202,21 @@ typedef struct{
 static const Str_113 str_const_5
   = { 7, 110, 110, "The following problem has been detected:  Casting floats to integers cannot be relied on to perform truncation" };
 
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[121];
+} Str_121;
+
+static const Str_121 str_const_6
+  = { 7, 117, 117, "The following problem has been detected:  Division of fixnums does not reliably perform truncation with negative args" };
+
 /* Translated from VALIDATE-FIXNUM-ASSUMPTIONS() = NULL */
 
 Obj validate_fixnum_assumptions (void)
 {
-  if (((sint32)BOXFIX(536870911))!=(sint32)compile_time_most_positive_fx) 
+  if (((sint32)BOXFIX(536870911))!=(sint32)compile_time_most_positive_fixnum) 
     error((char *)(((Str *)(&str_const_3))->body));     /* "The following problem has been detected:  Compile ..." */
   if ((UNBOXFIX(negative_fifty_million)>>8)!=(-195313)) 
     error((char *)(((Str *)(&str_const_4))->body));     /* "The following problem has been detected:  Right sh..." */
@@ -215,6 +225,10 @@ Obj validate_fixnum_assumptions (void)
       (sint32)(((Ldouble *)float_test_value)->body/-1.0))==(-13))) && ((
       (sint32)((-(((Ldouble *)float_test_value)->body))/-1.0))==13))) 
     error((char *)(((Str *)(&str_const_5))->body));     /* "The following problem has been detected:  Casting ..." */
+  if (!((((UNBOXFIX((Obj)(2-(sint32)fixnum_test_value))/2)==(-5)) && ((
+      UNBOXFIX(fixnum_test_value)/(-2))==(-5))) && ((UNBOXFIX((Obj)(2-(sint32)fixnum_test_value))
+      /(-2))==5))) 
+    error((char *)(((Str *)(&str_const_6))->body));     /* "The following problem has been detected:  Division..." */
   return (Obj)NULL;
 }
 
@@ -230,23 +244,23 @@ Obj ftruncatee_up (Obj float_1)
 
 /* Translated from COERCE-TO-DOUBLE-FLOAT-FUNCTION(T) = * */
 
-Obj coerce_to_double_float_func (Obj x)
+Obj coerce_to_double_float_function (Obj x)
 {
   Obj temp;
 
-  temp = alloc_ldouble(((((uint32)x)&3)==1) ? ((double)((   /* Fixnump */
-      (sint32)x)>>2)) : (((Ldouble *)x)->body),-1,5);
+  temp = alloc_ldouble((IMMED_TAG(x)==1) ? ((double)(((sint32)x)    /* Fixnump */
+      >>2)) : (((Ldouble *)x)->body),-1,5);
   Values_count = 1;
   return temp;
 }
 
-Obj dstntn_fr_sym_wth_prsrvd_clls = (Obj)(&Unbound);
+Obj destination_for_symbol_with_preserved_cells = (Obj)(&Unbound);
 
 /* Translated from EQ-OR-MEMQ(T T) = T */
 
 Obj eq_or_memq (Obj x, Obj y)
 {
-  if (!((((uint32)y)&3)==2))                    /* Consp */
+  if (!(IMMED_TAG(y)==2))                       /* Consp */
     return (x==y) ? ((Obj)(&T)) : (Obj)NULL;
   else 
     return memq(x,y);
@@ -290,9 +304,9 @@ Obj getfq_function (Obj plist, Obj indicator, Obj default_1)
   return default_1;
 }
 
-Obj special_variable_for_s_vl_mcr = (Obj)(&Unbound);
+Obj special_variable_for_use_value_macro = (Obj)(&Unbound);
 
-static const Str_5 str_const_6
+static const Str_5 str_const_7
   = { 7, 2, 2, "#<" };
 
 /* Translated from PRINT-RANDOM-OBJECT-PREFIX(T T) = STRING */
@@ -300,7 +314,7 @@ static const Str_5 str_const_6
 unsigned char *print_random_object_prefix (Obj object, Obj stream)
 {
   (void)object;                                 /* OBJECT was declared ignore */
-  return write_string_function(((Str *)(&str_const_6))->body,   /* "#<" */
+  return write_string_function(((Str *)(&str_const_7))->body,   /* "#<" */
       stream,0,(Obj)NULL);
 }
 
@@ -360,14 +374,14 @@ void init_tl_tl_extension (void)
   if (within_managed_object_scope==(Obj)(&Unbound)) 
     within_managed_object_scope = (Obj)NULL;
   negative_fifty_million = BOXFIX(-50000000);
-  compile_time_most_positive_fx = BOXFIX(536870911);
+  compile_time_most_positive_fixnum = BOXFIX(536870911);
   float_test_value = alloc_ldouble(13.4,0,5);
   fixnum_test_value = BOXFIX(11);
   validate_fixnum_assumptions();
-  if (dstntn_fr_sym_wth_prsrvd_clls==(Obj)(&Unbound)) 
-    dstntn_fr_sym_wth_prsrvd_clls = (Obj)NULL;
-  if (special_variable_for_s_vl_mcr==(Obj)(&Unbound)) 
-    special_variable_for_s_vl_mcr = (Obj)NULL;
+  if (destination_for_symbol_with_preserved_cells==(Obj)(&Unbound)) 
+    destination_for_symbol_with_preserved_cells = (Obj)NULL;
+  if (special_variable_for_use_value_macro==(Obj)(&Unbound)) 
+    special_variable_for_use_value_macro = (Obj)NULL;
   return;
 }
 

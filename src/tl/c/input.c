@@ -13,7 +13,7 @@
 #include "input.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -23,7 +23,7 @@ typedef struct{
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -44,7 +44,7 @@ Obj analyze_file_stream_error (Obj file_stream, Obj eof_error_p, Obj eof_value)
         file_stream);
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -65,7 +65,7 @@ Obj error_or_value (Obj stream, Obj eof_error_p, Obj eof_value)
     return eof_value;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -83,8 +83,7 @@ Obj generic_read_char (Obj stream, Obj eof_error_p, Obj eof_value)
   Obj g;
   sint32 g_1, g_2;
 
-  switch ((stream==NULL) ? 0 : ((temp = (((uint32)stream)&3)) ? temp : 
-      (sint32)(((Hdr *)stream)->type))) {
+  switch (TYPE_TAG(stream,temp)) {
    case 16:
     g = stream;
     g_1 = (sint32)getc(((File_strm *)g)->input);
@@ -112,7 +111,7 @@ Obj Sinput_string_bufferS = (Obj)(&Unbound);
 
 Obj Sinput_string_buffer_sizeS = (Obj)(&Unbound);
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -223,8 +222,7 @@ Obj generic_read_line (Obj stream, Obj eof_error_p, Obj eof_value)
   sint32 temp;
   Obj temp_1;
 
-  switch ((stream==NULL) ? 0 : ((temp = (((uint32)stream)&3)) ? temp : 
-      (sint32)(((Hdr *)stream)->type))) {
+  switch (TYPE_TAG(stream,temp)) {
    case 16:
     return read_line_from_file_stream(stream,eof_error_p,eof_value);
    case 15:
@@ -289,7 +287,7 @@ Obj create_file (unsigned char *filename, Obj binaryP)
 static const Str_5 str_const_8
   = { 7, 2, 2, "rb" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -348,7 +346,7 @@ Obj open_for_binary_input (unsigned char *filename, Obj if_does_not_exist)
 static const Str_5 str_const_10
   = { 7, 1, 1, "r" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -405,7 +403,7 @@ Obj open_for_text_input (unsigned char *filename, Obj if_does_not_exist)
         if_does_not_exist);
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -421,7 +419,7 @@ static const Str_5 str_const_13
 static const Str_5 str_const_14
   = { 7, 2, 2, "wb" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -731,7 +729,7 @@ Obj open_for_text_output (unsigned char *filename, Obj if_exists, Obj if_does_no
     return (Obj)NULL;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -747,8 +745,7 @@ Obj generic_close (Obj stream, Obj abort_1)
 {
   sint32 temp, temp_1;
 
-  switch ((stream==NULL) ? 0 : ((temp = (((uint32)stream)&3)) ? temp : 
-      (sint32)(((Hdr *)stream)->type))) {
+  switch (TYPE_TAG(stream,temp)) {
    case 0:
     break;
    case 16:
@@ -786,7 +783,7 @@ Obj read_from_string_1 (Obj string, Obj eof_error_p, Obj eof_value, Obj start,
   return temp;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -802,7 +799,7 @@ static const Str_9 str_const_22
 static const Str_9 str_const_23
   = { 7, 6, 6, "CREATE" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;

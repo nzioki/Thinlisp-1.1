@@ -13,7 +13,7 @@
 #include "main.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -23,7 +23,7 @@ typedef struct{
 static const Str_9 str_const
   = { 7, 7, 7, "KEYWORD" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -39,7 +39,7 @@ static const Str_5 str_const_2
 static const Str_9 str_const_3
   = { 7, 7, 7, "TL-USER" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;

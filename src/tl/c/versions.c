@@ -13,7 +13,7 @@
 #include "versions.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -25,7 +25,7 @@ static const Str_5 str_const
 
 Obj tl_user_package = (Obj)(&Unbound);
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -256,7 +256,7 @@ Obj linux386_code = BOXFIX(29);
 
 Obj g2_operating_system = (Obj)(&Unbound);
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -270,7 +270,7 @@ Obj g2_machine_type = (Obj)(&Unbound);
 
 Obj machine_model_var = (Obj)(&Unbound);
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -280,7 +280,7 @@ typedef struct{
 static const Str_21 str_const_4
   = { 7, 20, 20, " Data General AViiON" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -299,7 +299,7 @@ static const Str_21 str_const_7
 static const Str_9 str_const_8
   = { 7, 8, 8, " Sequent" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -336,7 +336,7 @@ static const Str_9 str_const_17
 static const Str_9 str_const_18
   = { 7, 8, 8, " Vax VMS" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -349,7 +349,7 @@ static const Str_25 str_const_19
 static const Str_21 str_const_20
   = { 7, 19, 19, " Sun 4/SPARCstation" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;

@@ -13,7 +13,7 @@
 #include "tl-util.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -81,10 +81,10 @@ Obj *fill_simple_vector (Obj *sequence, Obj elt_1)
   return sequence;
 }
 
-/* Translated from FILL-ARRAY-UNSIGNED-BYTE-8((ARRAY (UNSIGNED-BYTE 8))
-                                              (UNSIGNED-BYTE 8)) = (ARRAY
-                                                                    (UNSIGNED-BYTE
-                                                                     8)) */
+/* Translated from FILL-ARRAY-UNSIGNED-BYTE-8((ARRAY (INTEGER 0 255)) (INTEGER 0 255)) = (ARRAY
+                                                                                          (INTEGER
+                                                                                           0
+                                                                                           255)) */
 
 uint8 *fill_array_unsigned_byte_8 (uint8 *sequence, uint8 elt_1)
 {
@@ -98,10 +98,8 @@ uint8 *fill_array_unsigned_byte_8 (uint8 *sequence, uint8 elt_1)
   return sequence;
 }
 
-/* Translated from FILL-ARRAY-UNSIGNED-BYTE-16((ARRAY (UNSIGNED-BYTE 16))
-                                               (UNSIGNED-BYTE 16)) = (ARRAY
-                                                                      (UNSIGNED-BYTE
-                                                                       16)) */
+/* Translated from FILL-ARRAY-UNSIGNED-BYTE-16((ARRAY (INTEGER 0 65535))
+                                               (INTEGER 0 65535)) = (ARRAY (INTEGER 0 65535)) */
 
 uint16 *fill_array_unsigned_byte_16 (uint16 *sequence, uint16 elt_1)
 {
@@ -130,7 +128,7 @@ double *fill_array_double_float (double *sequence, double elt_1)
   return sequence;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -146,8 +144,7 @@ Obj fill (Obj sequence, Obj elt_1)
 {
   sint32 temp;
 
-  switch ((sequence==NULL) ? 0 : ((temp = (((uint32)sequence)&3)) ? temp 
-      : (sint32)(((Hdr *)sequence)->type))) {
+  switch (TYPE_TAG(sequence,temp)) {
    case 0:
     break;
    case 2:
@@ -247,8 +244,8 @@ Obj generic_search (Obj pattern, Obj source, Obj test_func, sint32 start1,
   sint32 index, tl_loop_bind_, index2;
   int block_temp;
 
-  if (((pattern==NULL) || ((((uint32)pattern)&3)==2)) && ((source   /* Consp */
-      ==NULL) || ((((uint32)source)&3)==2)))    /* Consp */
+  if (((pattern==NULL) || (IMMED_TAG(pattern)==2)) && ((source  /* Consp */
+      ==NULL) || (IMMED_TAG(source)==2)))       /* Consp */
     return search_list_function(pattern,source,test_func,start1,end1,start2,
         end2);
   else {
@@ -283,12 +280,12 @@ Obj generic_search (Obj pattern, Obj source, Obj test_func, sint32 start1,
 
 /* Translated from FLET-SEARCH-PREDICATE-IN-SEARCH-TEST-0(T T) = T */
 
-Obj flet_serch_prdct_n_srch_tst_0 (Obj x, Obj y)
+Obj flet_search_predicate_in_search_test_0 (Obj x, Obj y)
 {
   return eql(x,y);
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -412,7 +409,7 @@ Obj generic_position (Obj item, Obj sequence, sint32 start, Obj end, Obj test_fu
   sint32 index, tl_loop_bind_;
   Obj elt_1;
 
-  if ((sequence==NULL) || ((((uint32)sequence)&3)==2)) {    /* Consp */
+  if ((sequence==NULL) || (IMMED_TAG(sequence)==2)) {   /* Consp */
     elt_cons = nthcdr(start,sequence);
     index = start;
     if (end!=NULL) 
@@ -443,7 +440,7 @@ Obj generic_position (Obj item, Obj sequence, sint32 start, Obj end, Obj test_fu
   }
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -491,7 +488,7 @@ Obj list_length (Obj lis)
 
 Obj tree_equal_test (Obj a, Obj b, Obj test)
 {
-  if (((((uint32)a)&3)==2) && ((((uint32)b)&3)==2)) {   /* Consp, Consp */
+  if ((IMMED_TAG(a)==2) && (IMMED_TAG(b)==2)) {     /* Consp, Consp */
     if (tree_equal_test(CAR(a),CAR(b),test)!=NULL) 
       return tree_equal_test(CDR(a),CDR(b),test);
     else 
@@ -507,7 +504,7 @@ Obj copy_tree (Obj tree)
 {
   Obj arg_temp;
 
-  if ((((uint32)tree)&3)==2) {                  /* Consp */
+  if (IMMED_TAG(tree)==2) {                     /* Consp */
     arg_temp = copy_tree(CAR(tree));
     return alloc_cons(arg_temp,copy_tree(CDR(tree)),-1);
   }
@@ -531,7 +528,7 @@ Obj nsubst_eql_ident_aux (Obj new_1, Obj old, Obj tree)
 {
   Obj temp;
 
-  if ((((uint32)tree)&3)==2) {                  /* Consp */
+  if (IMMED_TAG(tree)==2) {                     /* Consp */
     if (eql(old,CAR(tree))!=NULL) 
       CAR(tree) = new_1;
     else 
@@ -561,7 +558,7 @@ Obj copy_seq (Obj sequence)
   sint32 temp;
   unsigned char *g;
 
-  if ((sequence==NULL) || ((((uint32)sequence)&3)==2)) {    /* Consp */
+  if ((sequence==NULL) || (IMMED_TAG(sequence)==2)) {   /* Consp */
     item = (Obj)NULL;
     tl_loop_list_ = sequence;
     tl_loopvar_ = (Obj)NULL;
@@ -583,8 +580,7 @@ Obj copy_seq (Obj sequence)
     return tl_loopvar_;
   }
   else 
-    switch ((sequence==NULL) ? 0 : ((temp = (((uint32)sequence)&3)) ? temp 
-        : (sint32)(((Hdr *)sequence)->type))) {
+    switch (TYPE_TAG(sequence,temp)) {
      case 6:
       return alloc_simple_vector(length(sequence),-1,6);
      case 7:
@@ -612,7 +608,7 @@ Obj substitute (Obj new_item, Obj old_item, Obj sequence)
   sint32 index, tl_loop_bind_;
   Obj item_1;
 
-  if ((sequence==NULL) || ((((uint32)sequence)&3)==2)) {    /* Consp */
+  if ((sequence==NULL) || (IMMED_TAG(sequence)==2)) {   /* Consp */
     item = (Obj)NULL;
     tl_loop_list_ = sequence;
     tl_loopvar_ = (Obj)NULL;
@@ -656,8 +652,7 @@ Obj vectorp (Obj object)
 {
   sint32 temp;
 
-  switch ((object==NULL) ? 0 : ((temp = (((uint32)object)&3)) ? temp : 
-      (sint32)(((Hdr *)object)->type))) {
+  switch (TYPE_TAG(object,temp)) {
    case 6:
     return (Obj)(&T);
    case 7:
@@ -679,11 +674,9 @@ Obj equalp (Obj a, Obj b)
 {
   sint32 temp, temp_1, temp_2, temp_3, temp_4, a_length, index;
 
-  switch ((a==NULL) ? 0 : ((temp = (((uint32)a)&3)) ? temp : (sint32)((
-      (Hdr *)a)->type))) {
+  switch (TYPE_TAG(a,temp)) {
    case 1:
-    switch ((b==NULL) ? 0 : ((temp_1 = (((uint32)b)&3)) ? temp_1 : (sint32)(
-        ((Hdr *)b)->type))) {
+    switch (TYPE_TAG(b,temp_1)) {
      case 1:
       return (((sint32)a)==(sint32)b) ? ((Obj)(&T)) : (Obj)NULL;
      case 5:
@@ -693,8 +686,7 @@ Obj equalp (Obj a, Obj b)
       return (Obj)NULL;
     }
    case 5:
-    switch ((b==NULL) ? 0 : ((temp_2 = (((uint32)b)&3)) ? temp_2 : (sint32)(
-        ((Hdr *)b)->type))) {
+    switch (TYPE_TAG(b,temp_2)) {
      case 1:
       return (((Ldouble *)a)->body==(double)UNBOXFIX(b)) ? ((Obj)(&T)) 
           : (Obj)NULL;
@@ -705,21 +697,19 @@ Obj equalp (Obj a, Obj b)
       return (Obj)NULL;
     }
    case 3:
-    switch ((b==NULL) ? 0 : ((temp_3 = (((uint32)b)&3)) ? temp_3 : (sint32)(
-        ((Hdr *)b)->type))) {
+    switch (TYPE_TAG(b,temp_3)) {
      case 3:
       return (a==b) ? ((Obj)(&T)) : (Obj)NULL;
      default:
       return (Obj)NULL;
     }
    case 2:
-    if (((((uint32)b)&3)==2) && (equalp(CAR(a),CAR(b))!=NULL))      /* Consp */
+    if ((IMMED_TAG(b)==2) && (equalp(CAR(a),CAR(b))!=NULL))     /* Consp */
       return equalp(CDR(a),CDR(b));
     else 
       return (Obj)NULL;
    case 7:
-    switch ((b==NULL) ? 0 : ((temp_4 = (((uint32)b)&3)) ? temp_4 : (sint32)(
-        ((Hdr *)b)->type))) {
+    switch (TYPE_TAG(b,temp_4)) {
      case 7:
       return string_equal(a,b);
      default:
@@ -832,8 +822,7 @@ Obj copy_optimized_constant (Obj arg)
   (Throw_stack[Throw_stack_top-1]) = (Obj)(&current_region);
   (Throw_stack[Throw_stack_top-2]) = current_region;
   current_region = temp;
-  switch ((arg==NULL) ? 0 : ((temp_2 = (((uint32)arg)&3)) ? temp_2 : (sint32)(
-      ((Hdr *)arg)->type))) {
+  switch (TYPE_TAG(arg,temp_2)) {
    case 0:
     temp_1 = arg;
     break;
@@ -852,12 +841,11 @@ Obj copy_optimized_constant (Obj arg)
     next_consP = (Obj)NULL;
     for (;1;copied_cons = next_consP) {
       next_consP = CDR(copied_cons);
-      if (!((((uint32)next_consP)&3)==2))       /* Consp */
+      if (!(IMMED_TAG(next_consP)==2))          /* Consp */
         goto end_loop;
       arg_temp = copied_cons;
       g = CAR(copied_cons);
-      switch ((g==NULL) ? 0 : ((temp_3 = (((uint32)g)&3)) ? temp_3 : (sint32)(
-          ((Hdr *)g)->type))) {
+      switch (TYPE_TAG(g,temp_3)) {
        case 0:
         temp_4 = g;
         break;
@@ -878,8 +866,7 @@ Obj copy_optimized_constant (Obj arg)
     }
    end_loop:
     arg_temp = copied_cons;
-    switch ((next_consP==NULL) ? 0 : ((temp_5 = (((uint32)next_consP)&3)) 
-        ? temp_5 : (sint32)(((Hdr *)next_consP)->type))) {
+    switch (TYPE_TAG(next_consP,temp_5)) {
      case 0:
       temp_6 = next_consP;
       break;
@@ -910,8 +897,7 @@ Obj copy_optimized_constant (Obj arg)
       arg_temp_1 = new_sv;
       arg_temp_2 = index;
       g = (sv[index]);
-      switch ((g==NULL) ? 0 : ((temp_7 = (((uint32)g)&3)) ? temp_7 : (sint32)(
-          ((Hdr *)g)->type))) {
+      switch (TYPE_TAG(g,temp_7)) {
        case 0:
         temp_8 = g;
         break;
@@ -952,7 +938,7 @@ Obj copy_optimized_constant (Obj arg)
   return temp_1;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -1020,8 +1006,7 @@ sint32 generic_sxhash (Obj object)
 {
   sint32 temp;
 
-  switch ((object==NULL) ? 0 : ((temp = (((uint32)object)&3)) ? temp : 
-      (sint32)(((Hdr *)object)->type))) {
+  switch (TYPE_TAG(object,temp)) {
    case 1:
     return (sint32)abs((int)UNBOXFIX(object));
    case 5:
@@ -1044,7 +1029,7 @@ sint32 generic_sxhash (Obj object)
   }
 }
 
-/* Translated from SXHASH-ARRAY-16((ARRAY (UNSIGNED-BYTE 16))) = FIXNUM */
+/* Translated from SXHASH-ARRAY-16((ARRAY (INTEGER 0 65535))) = FIXNUM */
 
 sint32 sxhash_array_16 (uint16 *array_16)
 {
@@ -1090,7 +1075,7 @@ sint32 sxhash_cons_tree (Obj cons_tree)
     arg_temp = (((hash<<5)&268435455)+(hash>>23));
     hash = (arg_temp^generic_sxhash(CAR(next_cons)));
     g = CDR(next_cons);
-    if (!((((uint32)g)&3)==2)) {                /* Consp */
+    if (!(IMMED_TAG(g)==2)) {                   /* Consp */
       arg_temp = (((hash<<5)&268435455)+(hash>>23));
       return arg_temp^generic_sxhash(CDR(next_cons));
     }
@@ -1098,7 +1083,7 @@ sint32 sxhash_cons_tree (Obj cons_tree)
   return hash;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -1114,7 +1099,7 @@ static const Str_9 str_const_8
 static const Str_9 str_const_9
   = { 7, 6, 6, "STATIC" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -1161,7 +1146,7 @@ void init_tl_tl_util (void)
   (tl_tl_util_funcs[0]).sets_values_count = 0;
   (tl_tl_util_funcs[0]).default_arguments = (Obj)NULL;
   (tl_tl_util_funcs[0]).name = (Obj)(&str_const_2);     /* "FLET-SEARCH-PREDICATE-IN-SEARCH-TEST-0" */
-  (tl_tl_util_funcs[0]).c_function = (Obj (*)(Obj))flet_serch_prdct_n_srch_tst_0;
+  (tl_tl_util_funcs[0]).c_function = (Obj (*)(Obj))flet_search_predicate_in_search_test_0;
   SpackageS = find_package_1((Obj)(&str_const));    /* "TL" */
   if (Sdecompose_float_bufferS==(Obj)(&Unbound)) 
     Sdecompose_float_bufferS = alloc_uint16_array(4,0,9);

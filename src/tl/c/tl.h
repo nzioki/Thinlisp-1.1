@@ -1,74 +1,29 @@
-/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- +
- + Copyright (c) 1994-1995 Gensym Corporation.  All Rights Reserved.
- +
- + Module:      tlt.h
- +
- + Copyright (c) 1999 The Thinlisp Group
- + All Rights Reserved.
- +
- + This file is part of ThinLisp.
- +
- + ThinLisp is open source; you can redistribute it and/or modify it
- + under the terms of the ThinLisp License as published by the ThinLisp
- + Group; either version 1 or (at your option) any later version.
- +
- + ThinLisp is distributed in the hope that it will be useful, but
- + WITHOUT ANY WARRANTY; without even the implied warranty of
- + MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- +
- + For additional information see <http://www.thinlisp.org/>
- +
- + Author Jim Allard
- +
- + Description: Declarations and externs for the ThinLisp (TL) runtime
- + library.
- + 
- + Key:
- +   +++++++ Module Header.   Used for file-wide information.
- +   %%%%%%% Section Header.  Used to delimit logical sections.
- +   ******* Function Header. Used to define a single function.
- +
- +   0000000 Externally visible function
- +   1111111 Internal (static) function
- +   ??????? Function existence is questionable.
- +
- +   A function banner may contain the following: 
- +      Multiply Defined    Function appears multiple times, each definition
- +                          for an #ifdef specified platform.
- +      Mixed Ifdefs        Single definition for function containing platform
- +                          specific code #ifdef's.
- +
- + File Organization:
- +   Section:      INCLUDE FILES 
- +   Section:      Typedefs
- +      Uint8, Sint8, Uint16, Sint16, Uint32, Sint32,
- +      Hdr, Obj, Str, Sv, Sa_uint8, Sa_uint16, Sa_double
- +   Section:      Externs for tlt.c
- +      Values_count, Values_buffer
- +
- +   Section:      TESTING
- +
- + External Interface:
- +
- + Dependencies:
- +      This file has no external dependencies.
- +
- + Notes:
- +
- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- %
- % Section:      INCLUDE FILES
- %
- % Description:  All required include files are referenced here.
- %
- % Notes:
- %
- % Modifications:
- %
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
+/**
+ *
+ * Copyright (c) 1994-1995 Gensym Corporation.  All Rights Reserved.
+ *
+ * Module:      tlt.h
+ *
+ * Copyright (c) 1999 The Thinlisp Group
+ * All Rights Reserved.
+ *
+ * This file is part of ThinLisp.
+ *
+ * ThinLisp is open source; you can redistribute it and/or modify it
+ * under the terms of the ThinLisp License as published by the ThinLisp
+ * Group; either version 1 or (at your option) any later version.
+ *
+ * ThinLisp is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * For additional information see <http://www.thinlisp.org/>
+ *
+ * Author Jim Allard
+ *
+ * This file contains declarations and externs for the ThinLisp (TL) runtime
+ * library.
+ */
 
 #include <ctype.h>
 #include <math.h>
@@ -80,40 +35,15 @@
 #include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+
 /**
- * Get rid of the old inlining cruft.  We have new cruft here.  -jallard 5/21/99
- * #include "ab-macros.h"
+ * Integer types in TL translated code will always refer to the following types,
+ * representing signed and unsigned integers containing the given number of
+ * bits.  The one except to this rule is the type unsigned char, which may
+ * appear in TL translated code and is assumed to be equivalent to uint8.  Twos
+ * complement representation of all integers is assumed.
  */
-
-
-/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- %
- % Section:      Typedefs
- %
- % Description:
- %      All tll built-in types are found here.
- %
- % Notes:
- %
- % Modifications:
- %
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
-
-/*****************************************************************************
- * Integer Types
- *
- *   Description:
- *     Integer types in TL translated code will always refer to the following
- *     types, representing signed and unsigned integers containing the given
- *     number of bits.  The one except to this rule is the type unsigned char,
- *     which may appear in TL translated code and is assumed to be equivalent to
- *     uint8.  Twos complement representation of all integers is assumed.
- * 
- *       uint8, sint8, uint16, sint16, uint32, sint32
- *   Notes:
- *
- *   Modifications:
- ******************************************************************************/
 
 typedef unsigned char  uint8;
 typedef   signed char  sint8;
@@ -122,33 +52,28 @@ typedef   signed short sint16;
 typedef unsigned int   uint32;
 typedef   signed int   sint32;
 
-/*****************************************************************************
- * Base TLL Stucture Types
+
+/**
+
+ * Structure types in TL provide the base level data structure needed to
+ * build the rest of the runtime system.
  *
- *   Description:
- *     Structure types in TL provide the base level data structure needed to
- *     build the rest of the runtime system.
- *
- *       Hdr - The header of all heap allocated Lisp objects, has type tag,
- *       Obj - an unsigned int 32 holding pointers and immediate values,
- *       Sv - heap allocated simple-vectors,
- *       Str - heap allocated strings,
- *       Sa_uint8 - heap allocated (unsigned-byte 8) simple-arrays,
- *       Sa_uint16 - heap allocated (unsigned-byte 16) simple-arrays,
- *       Sa_double - heap allocated double-float simple-arrays,
- *       Ldouble - heap allocated double-floats,
- *       Mdouble - heap allocated managed-floats,
- *       Sym - symbols,
- *       Func - compiled-functions,
- *       Pkg - packages,
- *       String_strm - string-streams,
- *       File_strm - file-streams.
- *
- *   Notes:
- *     See tlt.txt for a description of the design of the other types.  -jra
- *     1/4/95
- *   Modifications:
- *****************************************************************************/
+ *   Hdr - The header of all heap allocated Lisp objects, has type tag,
+ *   Obj - an unsigned int 32 holding pointers and immediate values,
+ *   Sv - heap allocated simple-vectors,
+ *   Str - heap allocated strings,
+ *   Sa_uint8 - heap allocated (unsigned-byte 8) simple-arrays,
+ *   Sa_uint16 - heap allocated (unsigned-byte 16) simple-arrays,
+ *   Sa_double - heap allocated double-float simple-arrays,
+ *   Ldouble - heap allocated double-floats,
+ *   Mdouble - heap allocated managed-floats,
+ *   Sym - symbols,
+ *   Func - compiled-functions,
+ *   Pkg - packages,
+ *   String_strm - string-streams,
+ *   File_strm - file-streams, and 
+ *   Class_hdr - class and structure instances.
+ */
 
 typedef struct {
   unsigned int type:  8;
@@ -479,22 +404,15 @@ typedef struct {
   char       *mode;
 } File_strm;
 
+typedef struct {
+  unsigned int type:  8;
+  unsigned int extended_type: 24;
+} Class_hdr;
 
-
-/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- %
- % Section:      Externs for Handwritten TLT C files
- %
- % Description:
- %      Externs for the hand-written C utilities in tlt.c and notify.c
- %
- % Notes:
- %
- % Modifications:
- %
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-/* The first set are for tlt.c */
+/**
+ * Externs for the hand-written C utilities in tl.c
+ */
 
 extern sint32 Values_count;
 
@@ -553,11 +471,11 @@ extern Obj alloc_package(Obj name, Obj used, sint32 region, sint32 type_tag);
 
 extern Obj alloc_string_strm(sint32 region, sint32 type_tag);
 
-extern Obj alloc_file_strm (FILE *input, FILE* output, char *filename,
-				 char* mode, sint32 region, sint32 type_tag);
+extern Obj alloc_file_strm(FILE *input, FILE* output, char *filename,
+			   char* mode, sint32 region, sint32 type_tag);
 
-
-/* The following are for notify.c */
+extern Obj alloc_struct(sint32 bytes, sint32 align, sint32 region,
+			sint32 type_tag);
 
 extern void notify(char *message);
 
@@ -574,21 +492,11 @@ extern void write_fixnum_into_str(sint32 value, sint32 width, Str *output);
 extern void write_double_into_str(double value, sint32 width, Str *output);
 
 
-
-/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- %
- % Section:      Externs for System Library Functions
- %
- % Description:
- %      In some cases it seems that externs have been explicitly left out on
- %      some platforms.  The following section implements declarations for those
- %      functions to suppress warnings from C compilers.
- %
- % Notes:
- %
- % Modifications:
- %
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
+/**
+ * In some cases it seems that externs have been explicitly left out on some
+ * platforms.  The following section implements declarations for those functions
+ * to suppress warnings from C compilers.
+ */
 
 #if defined(sun4)
 extern int printf(const char *format, ...);
@@ -603,24 +511,15 @@ extern int unlink(char *filename);
 #endif
 
 
-
-/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- %
- % Section:      Defines for DLL generation
- %
- % Description:
- %      External and imported functions of DLL libraries on Windows platforms
- %      need an extra declaration.  The macros DLLIMPORT and DLLEXPORT abstract
- %      those declarations for use within our machine independent C translated
- %      files.
- %
- % Notes:
- %
- % Modifications:
- %
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-#if defined(WIN32) && defined(GSI_DLL)
+/**
+ * External and imported functions of DLL libraries on Windows platforms
+ * need an extra declaration.  The macros DLLIMPORT and DLLEXPORT abstract
+ * those declarations for use within our machine independent C translated
+ * files.
+ */
+
+#if defined(WIN32)
 #define DLLIMPORT __declspec( dllimport )
 #define DLLEXPORT __declspec( dllexport )
 #else
@@ -629,38 +528,50 @@ extern int unlink(char *filename);
 #endif
 
 
-
-/*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- %
- % Section:      Defines for Translated Files
- %
- % Description:
- %      This section contains a few defines used by the translator.  The number
- %      of defines has purposefully been kept to a minimum in order to keep it
- %      clear to the reader of translated C code what the cost is of various
- %      operations.  However, for a few operations, such as CAR and CDR, there
- %      are single machine instruction macros that greatly improve the clarity
- %      of the translated code.
- %
- % Notes:
- %
- % Modifications:
- %
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
+/**
+ * This section contains a few defines used by the translator.  The number of
+ * defines has purposefully been kept to a minimum in order to keep it clear to
+ * the reader of translated C code what the cost is of various operations.
+ * However, for a few operations, such as CAR and CDR, there are single machine
+ * instruction macros that greatly improve the clarity of the translated code.
+ */
 
 #define CAR(cons_as_obj) (((Cons *)((uint32)(cons_as_obj)-2))->car)
 #define CDR(cons_as_obj) (((Cons *)((uint32)(cons_as_obj)-2))->cdr)
 
-#if defined(__osf__)
-#  define NO_ADDRESS_CONSTANTS 1
-#endif
+
+
+/**
+
+ * When defining list or simple-vector constants, initialized C Obj arrays are
+ * used for constant sub-elements so that the linker can initialize these data
+ * structures rather than having it occur at process launch time.  This works
+ * fine, except on the Alpha OSF platform, where we've used 32-bit fields to
+ * store addresses, which usually are 64 bit.  We've made that work by using an
+ * Alpha OSF linker option which will guarantee that all significant bits of
+ * addresses can be stored in the lower 32 bits of an address.  This hack cuts
+ * our runtime memory usage in half.  However, the Alpha OSF compiler refuses to
+ * do "narrowing" type casts in constant expressions.  Therefore, on this
+ * platform we had to use runtime initialization of constant pointers rather
+ * than the linker time version.  The NO_ADDRESS_CONSTANTS define was used to
+ * select which approach was used.
+ *
+ * Since we currently have no users on the Alpha OSF, I'm commenting all code
+ * that dealt with this function so that the emitted C code is simplified.
+ * Search for NO_ADDRESS_CONSTANTS in tlt/lisp to find relevant code if you wish
+ * to re-enable this feature.  -jallard, 10/31/99
+ */
+
+/* #if defined(__osf__)
+ * #  define NO_ADDRESS_CONSTANTS 1
+ * #endif
+ */
 
 /**
  * The macro BOXFIX takes sint32 values and convert them to fixnum format (left
  * shift by 2 and add the immediate type tag 1).  The macro UNBOXFIX does the
  * inverse transform.  The macro BOXCHAR and UNBOXCHAR do the same for unsigned
- * char and Lisp characters (immediate type tag of 3).
- */
+ * char and Lisp characters (immediate type tag of 3).  */
 
 #define BOXFIX(any_int) (Obj)(((uint32)(any_int)<<2)+1)
 #define UNBOXFIX(fixnum_int) ((sint32)(fixnum_int)>>2)
@@ -681,3 +592,24 @@ extern int unlink(char *filename);
 
 #define SvHDR(obj_ptr) ((Sv *)((uint32)(obj_ptr) - sizeof(Hdr)))
 #define ObjSvHDR(obj_ptr) ((Obj)((uint32)(obj_ptr) - sizeof(Hdr)))
+
+
+
+
+/**
+ * The macro TYPE_TAG takes a Lisp Obj and an sint32 temporary variable, and
+ * returns its int type tag.  
+ */
+
+#define CLASS_HDR_TAG 17
+
+#define IMMED_TAG(object) ((uint32)(object) & 3)
+
+#define STD_TAG(object) (((Hdr *)(object))->type)
+
+#define EXTENDED_TAG(object) (((Class_hdr *)(object))->extended_type)
+
+#define TYPE_TAG(object,temp_var) ((object) == NULL ? 0 : \
+  (temp_var = IMMED_TAG(object)) != 0 ?  temp_var : \
+  (temp_var = STD_TAG(object)) != CLASS_HDR_TAG ? temp_var : \
+  EXTENDED_TAG(object))

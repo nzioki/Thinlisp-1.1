@@ -30,6 +30,6 @@ extern Obj last(Obj);
 extern sint32 length(Obj);
 extern sint32 mod_fixnums(sint32, sint32);
 extern Obj princ(Obj, Obj);
-extern void unsupported_ctrl_char_error(Obj);
+extern void unsupported_control_char_error(Obj);
 extern Obj write_list(Obj, Obj);
 extern void write_symbol(Obj, Obj, Obj);

@@ -1,10 +1,16 @@
 #
 # TL Linux Makefile
 #
-# Copyright (c) 1999 Jim Allard
+# Copyright (c) 1999 The ThinLisp Grouprd
 
 CC=gcc -o
+
+ifdef OPT
+CFLAGS=-O2 -ansi -pedantic -W -Wall -fomit-frame-pointer -c
+else
 CFLAGS=-ggdb3 -ansi -pedantic -W -Wall -c
+endif
+
 ARCHIVE=ar rsc
 OBJECTS= tl.o boot.o stubs.o tl-types.o \
         inline.o tl-prim.o do.o format.o input.o \

@@ -13,7 +13,7 @@
 #include "generic-math.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -23,7 +23,7 @@ typedef struct{
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -42,7 +42,7 @@ void math_type_error (Obj op_string, Obj number1, Obj number2)
   return;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -61,7 +61,7 @@ void math_one_arg_type_error (Obj op_string, Obj number)
   return;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -84,14 +84,14 @@ void fixnum_overflow_error (Obj op_string, Obj number1, Obj number2)
 
 Obj generic_less_than (Obj arg1, Obj arg2)
 {
-  if ((((uint32)arg1)&3)==1) {                  /* Fixnump */
-    if ((((uint32)arg2)&3)==1)                  /* Fixnump */
+  if (IMMED_TAG(arg1)==1) {                     /* Fixnump */
+    if (IMMED_TAG(arg2)==1)                     /* Fixnump */
       return (((sint32)arg1)<(sint32)arg2) ? ((Obj)(&T)) : (Obj)NULL;
     else 
       return (((double)UNBOXFIX(arg1))<(((Ldouble *)arg2)->body)) ? ((Obj)(
           &T)) : (Obj)NULL;
   }
-  else if ((((uint32)arg2)&3)==1)               /* Fixnump */
+  else if (IMMED_TAG(arg2)==1)                  /* Fixnump */
     return (((Ldouble *)arg1)->body<(double)UNBOXFIX(arg2)) ? ((Obj)(&T)) 
         : (Obj)NULL;
   else 
@@ -103,14 +103,14 @@ Obj generic_less_than (Obj arg1, Obj arg2)
 
 Obj generic_greater_than (Obj arg1, Obj arg2)
 {
-  if ((((uint32)arg1)&3)==1) {                  /* Fixnump */
-    if ((((uint32)arg2)&3)==1)                  /* Fixnump */
+  if (IMMED_TAG(arg1)==1) {                     /* Fixnump */
+    if (IMMED_TAG(arg2)==1)                     /* Fixnump */
       return (((sint32)arg1)>(sint32)arg2) ? ((Obj)(&T)) : (Obj)NULL;
     else 
       return (((double)UNBOXFIX(arg1))>(((Ldouble *)arg2)->body)) ? ((Obj)(
           &T)) : (Obj)NULL;
   }
-  else if ((((uint32)arg2)&3)==1)               /* Fixnump */
+  else if (IMMED_TAG(arg2)==1)                  /* Fixnump */
     return (((Ldouble *)arg1)->body>(double)UNBOXFIX(arg2)) ? ((Obj)(&T)) 
         : (Obj)NULL;
   else 
@@ -122,14 +122,14 @@ Obj generic_greater_than (Obj arg1, Obj arg2)
 
 Obj generic_less_than_or_equal (Obj arg1, Obj arg2)
 {
-  if ((((uint32)arg1)&3)==1) {                  /* Fixnump */
-    if ((((uint32)arg2)&3)==1)                  /* Fixnump */
+  if (IMMED_TAG(arg1)==1) {                     /* Fixnump */
+    if (IMMED_TAG(arg2)==1)                     /* Fixnump */
       return (((sint32)arg1)<=(sint32)arg2) ? ((Obj)(&T)) : (Obj)NULL;
     else 
       return (((double)UNBOXFIX(arg1))<=(((Ldouble *)arg2)->body)) ? ((Obj)(
           &T)) : (Obj)NULL;
   }
-  else if ((((uint32)arg2)&3)==1)               /* Fixnump */
+  else if (IMMED_TAG(arg2)==1)                  /* Fixnump */
     return (((Ldouble *)arg1)->body<=(double)UNBOXFIX(arg2)) ? ((Obj)(&T)) 
         : (Obj)NULL;
   else 
@@ -141,14 +141,14 @@ Obj generic_less_than_or_equal (Obj arg1, Obj arg2)
 
 Obj generic_greater_than_or_equal (Obj arg1, Obj arg2)
 {
-  if ((((uint32)arg1)&3)==1) {                  /* Fixnump */
-    if ((((uint32)arg2)&3)==1)                  /* Fixnump */
+  if (IMMED_TAG(arg1)==1) {                     /* Fixnump */
+    if (IMMED_TAG(arg2)==1)                     /* Fixnump */
       return (((sint32)arg1)>=(sint32)arg2) ? ((Obj)(&T)) : (Obj)NULL;
     else 
       return (((double)UNBOXFIX(arg1))>=(((Ldouble *)arg2)->body)) ? ((Obj)(
           &T)) : (Obj)NULL;
   }
-  else if ((((uint32)arg2)&3)==1)               /* Fixnump */
+  else if (IMMED_TAG(arg2)==1)                  /* Fixnump */
     return (((Ldouble *)arg1)->body>=(double)UNBOXFIX(arg2)) ? ((Obj)(&T)) 
         : (Obj)NULL;
   else 
@@ -160,14 +160,14 @@ Obj generic_greater_than_or_equal (Obj arg1, Obj arg2)
 
 Obj generic_numeric_equal (Obj arg1, Obj arg2)
 {
-  if ((((uint32)arg1)&3)==1) {                  /* Fixnump */
-    if ((((uint32)arg2)&3)==1)                  /* Fixnump */
+  if (IMMED_TAG(arg1)==1) {                     /* Fixnump */
+    if (IMMED_TAG(arg2)==1)                     /* Fixnump */
       return (((sint32)arg1)==(sint32)arg2) ? ((Obj)(&T)) : (Obj)NULL;
     else 
       return (((double)UNBOXFIX(arg1))==(((Ldouble *)arg2)->body)) ? ((Obj)(
           &T)) : (Obj)NULL;
   }
-  else if ((((uint32)arg2)&3)==1)               /* Fixnump */
+  else if (IMMED_TAG(arg2)==1)                  /* Fixnump */
     return (((Ldouble *)arg1)->body==(double)UNBOXFIX(arg2)) ? ((Obj)(&T)) 
         : (Obj)NULL;
   else 
@@ -179,14 +179,14 @@ Obj generic_numeric_equal (Obj arg1, Obj arg2)
 
 Obj generic_numeric_not_equal (Obj arg1, Obj arg2)
 {
-  if ((((uint32)arg1)&3)==1) {                  /* Fixnump */
-    if ((((uint32)arg2)&3)==1)                  /* Fixnump */
+  if (IMMED_TAG(arg1)==1) {                     /* Fixnump */
+    if (IMMED_TAG(arg2)==1)                     /* Fixnump */
       return (((sint32)arg1)!=(sint32)arg2) ? ((Obj)(&T)) : (Obj)NULL;
     else 
       return (((double)UNBOXFIX(arg1))!=(((Ldouble *)arg2)->body)) ? ((Obj)(
           &T)) : (Obj)NULL;
   }
-  else if ((((uint32)arg2)&3)==1)               /* Fixnump */
+  else if (IMMED_TAG(arg2)==1)                  /* Fixnump */
     return (((Ldouble *)arg1)->body!=(double)UNBOXFIX(arg2)) ? ((Obj)(&T)) 
         : (Obj)NULL;
   else 
@@ -206,11 +206,9 @@ Obj generic_plus (Obj number1, Obj number2)
   sint32 temp_3;
   Obj temp_4;
 
-  switch ((number1==NULL) ? 0 : ((temp = (((uint32)number1)&3)) ? temp 
-      : (sint32)(((Hdr *)number1)->type))) {
+  switch (TYPE_TAG(number1,temp)) {
    case 1:
-    switch ((number2==NULL) ? 0 : ((temp_1 = (((uint32)number2)&3)) ? temp_1 
-        : (sint32)(((Hdr *)number2)->type))) {
+    switch (TYPE_TAG(number2,temp_1)) {
      case 1:
       temp_2 = (Obj)((((sint32)number1)+(sint32)number2)-1);    /* Fixnum add */
       break;
@@ -225,8 +223,7 @@ Obj generic_plus (Obj number1, Obj number2)
     }
     return temp_2;
    case 5:
-    switch ((number2==NULL) ? 0 : ((temp_3 = (((uint32)number2)&3)) ? temp_3 
-        : (sint32)(((Hdr *)number2)->type))) {
+    switch (TYPE_TAG(number2,temp_3)) {
      case 1:
       temp_4 = alloc_ldouble(((Ldouble *)number1)->body+(double)UNBOXFIX(number2),
           -1,5);
@@ -259,11 +256,9 @@ Obj generic_minus (Obj number1, Obj number2)
   sint32 temp_3;
   Obj temp_4;
 
-  switch ((number1==NULL) ? 0 : ((temp = (((uint32)number1)&3)) ? temp 
-      : (sint32)(((Hdr *)number1)->type))) {
+  switch (TYPE_TAG(number1,temp)) {
    case 1:
-    switch ((number2==NULL) ? 0 : ((temp_1 = (((uint32)number2)&3)) ? temp_1 
-        : (sint32)(((Hdr *)number2)->type))) {
+    switch (TYPE_TAG(number2,temp_1)) {
      case 1:
       temp_2 = (Obj)((((sint32)number1)-(sint32)number2)+1);    /* Fixnum subtract */
       break;
@@ -278,8 +273,7 @@ Obj generic_minus (Obj number1, Obj number2)
     }
     return temp_2;
    case 5:
-    switch ((number2==NULL) ? 0 : ((temp_3 = (((uint32)number2)&3)) ? temp_3 
-        : (sint32)(((Hdr *)number2)->type))) {
+    switch (TYPE_TAG(number2,temp_3)) {
      case 1:
       temp_4 = alloc_ldouble(((Ldouble *)number1)->body-(double)UNBOXFIX(number2),
           -1,5);
@@ -312,11 +306,9 @@ Obj generic_multiply (Obj number1, Obj number2)
   sint32 temp_3;
   Obj temp_4;
 
-  switch ((number1==NULL) ? 0 : ((temp = (((uint32)number1)&3)) ? temp 
-      : (sint32)(((Hdr *)number1)->type))) {
+  switch (TYPE_TAG(number1,temp)) {
    case 1:
-    switch ((number2==NULL) ? 0 : ((temp_1 = (((uint32)number2)&3)) ? temp_1 
-        : (sint32)(((Hdr *)number2)->type))) {
+    switch (TYPE_TAG(number2,temp_1)) {
      case 1:
       temp_2 = BOXFIX(UNBOXFIX(number1)*UNBOXFIX(number2));
       break;
@@ -331,8 +323,7 @@ Obj generic_multiply (Obj number1, Obj number2)
     }
     return temp_2;
    case 5:
-    switch ((number2==NULL) ? 0 : ((temp_3 = (((uint32)number2)&3)) ? temp_3 
-        : (sint32)(((Hdr *)number2)->type))) {
+    switch (TYPE_TAG(number2,temp_3)) {
      case 1:
       temp_4 = alloc_ldouble(((Ldouble *)number1)->body*(double)UNBOXFIX(number2),
           -1,5);
@@ -365,11 +356,9 @@ Obj generic_divide (Obj number1, Obj number2)
   sint32 temp_3;
   Obj temp_4;
 
-  switch ((number1==NULL) ? 0 : ((temp = (((uint32)number1)&3)) ? temp 
-      : (sint32)(((Hdr *)number1)->type))) {
+  switch (TYPE_TAG(number1,temp)) {
    case 1:
-    switch ((number2==NULL) ? 0 : ((temp_1 = (((uint32)number2)&3)) ? temp_1 
-        : (sint32)(((Hdr *)number2)->type))) {
+    switch (TYPE_TAG(number2,temp_1)) {
      case 1:
       integer_divide_error(number1,number2);
       temp_2 = BOXFIX(0);
@@ -385,8 +374,7 @@ Obj generic_divide (Obj number1, Obj number2)
     }
     return temp_2;
    case 5:
-    switch ((number2==NULL) ? 0 : ((temp_3 = (((uint32)number2)&3)) ? temp_3 
-        : (sint32)(((Hdr *)number2)->type))) {
+    switch (TYPE_TAG(number2,temp_3)) {
      case 1:
       temp_4 = alloc_ldouble(((Ldouble *)number1)->body/(double)UNBOXFIX(number2),
           -1,5);
@@ -407,7 +395,7 @@ Obj generic_divide (Obj number1, Obj number2)
   }
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -433,8 +421,7 @@ Obj generic_negate (Obj number)
   sint32 temp;
   Obj temp_1;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
     temp_1 = (Obj)(2-(sint32)number);
     break;
@@ -514,7 +501,7 @@ sint32 fixnum_floor_first (sint32 fixnum, sint32 divisor_fixnum)
     return fixnum/divisor_fixnum;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -535,11 +522,9 @@ Obj generic_floor (Obj number, Obj divisor)
   double float_divisor;
   Obj temp_5, temp_6, temp_7, temp_8;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
-    switch ((divisor==NULL) ? 0 : ((temp_1 = (((uint32)divisor)&3)) ? temp_1 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_1)) {
      case 1:
       return fixnum_floor(UNBOXFIX(number),UNBOXFIX(divisor));
      case 5:
@@ -557,8 +542,7 @@ Obj generic_floor (Obj number, Obj divisor)
       return temp_3;
     }
    case 5:
-    switch ((divisor==NULL) ? 0 : ((temp_4 = (((uint32)divisor)&3)) ? temp_4 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_4)) {
      case 1:
       float_divisor = (double)UNBOXFIX(divisor);
       temp_5 = BOXFIX((sint32)floor(((Ldouble *)number)->body/float_divisor));
@@ -597,8 +581,7 @@ Obj generic_floor_one (Obj number)
   sint32 floored_value;
   Obj temp_2, temp_3;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
     temp_1 = number;
     (Values_buffer[0]) = BOXFIX(0);
@@ -635,11 +618,9 @@ Obj generic_ffloor (Obj number, Obj divisor)
   double float_divisor;
   Obj temp_6, temp_7, temp_8, temp_9;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
-    switch ((divisor==NULL) ? 0 : ((temp_1 = (((uint32)divisor)&3)) ? temp_1 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_1)) {
      case 1:
       temp_2 = alloc_ldouble((double)fixnum_floor_first(UNBOXFIX(number),
           UNBOXFIX(divisor)),-1,5);
@@ -662,8 +643,7 @@ Obj generic_ffloor (Obj number, Obj divisor)
       return temp_4;
     }
    case 5:
-    switch ((divisor==NULL) ? 0 : ((temp_5 = (((uint32)divisor)&3)) ? temp_5 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_5)) {
      case 1:
       float_divisor = (double)UNBOXFIX(divisor);
       temp_6 = alloc_ldouble(floor(((Ldouble *)number)->body/float_divisor),
@@ -704,8 +684,7 @@ Obj generic_ffloor_one (Obj number)
   double floored_value;
   Obj temp_2, temp_3;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
     temp_1 = alloc_ldouble((double)UNBOXFIX(number),-1,5);
     (Values_buffer[0]) = BOXFIX(0);
@@ -750,11 +729,9 @@ Obj generic_ceiling (Obj number, Obj divisor)
   Obj temp_8, temp_9;
 
   ceiling_value = 0;
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
-    switch ((divisor==NULL) ? 0 : ((temp_1 = (((uint32)divisor)&3)) ? temp_1 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_1)) {
      case 1:
       ceiling_value = (sint32)ceil(((double)UNBOXFIX(number))/(double)UNBOXFIX(divisor));
       temp_2 = BOXFIX(ceiling_value);
@@ -779,8 +756,7 @@ Obj generic_ceiling (Obj number, Obj divisor)
       return temp_4;
     }
    case 5:
-    switch ((divisor==NULL) ? 0 : ((temp_5 = (((uint32)divisor)&3)) ? temp_5 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_5)) {
      case 1:
       float_divisor = (double)UNBOXFIX(divisor);
       ceiling_value = (sint32)ceil(((Ldouble *)number)->body/float_divisor);
@@ -823,8 +799,7 @@ Obj generic_ceiling_one (Obj number)
   sint32 ceiled_value;
   Obj temp_2, temp_3;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
     temp_1 = number;
     (Values_buffer[0]) = BOXFIX(0);
@@ -870,11 +845,9 @@ Obj generic_fceiling (Obj number, Obj divisor)
   Obj temp_8, temp_9;
 
   ceiling_value = 0.0;
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
-    switch ((divisor==NULL) ? 0 : ((temp_1 = (((uint32)divisor)&3)) ? temp_1 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_1)) {
      case 1:
       fixnum_ceiling_value = (sint32)ceil(((double)UNBOXFIX(number))/(double)
           UNBOXFIX(divisor));
@@ -901,8 +874,7 @@ Obj generic_fceiling (Obj number, Obj divisor)
       return temp_4;
     }
    case 5:
-    switch ((divisor==NULL) ? 0 : ((temp_5 = (((uint32)divisor)&3)) ? temp_5 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_5)) {
      case 1:
       float_divisor = (double)UNBOXFIX(divisor);
       ceiling_value = ceil(((Ldouble *)number)->body/float_divisor);
@@ -945,8 +917,7 @@ Obj generic_fceiling_one (Obj number)
   double ceiled_value;
   Obj temp_2, temp_3;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
     temp_1 = alloc_ldouble((double)UNBOXFIX(number),-1,5);
     (Values_buffer[0]) = BOXFIX(0);
@@ -977,8 +948,7 @@ sint32 generic_truncate_one_first (Obj number)
 {
   sint32 temp;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
     return UNBOXFIX(number);
    case 5:
@@ -998,8 +968,7 @@ Obj generic_truncate_one (Obj number)
   sint32 truncate_value;
   Obj temp_2, temp_3;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
     temp_1 = number;
     (Values_buffer[0]) = BOXFIX(0);
@@ -1027,11 +996,9 @@ sint32 generic_truncate_two_first (Obj number, Obj divisor)
 {
   sint32 temp, temp_1, temp_2;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
-    switch ((divisor==NULL) ? 0 : ((temp_1 = (((uint32)divisor)&3)) ? temp_1 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_1)) {
      case 1:
       return UNBOXFIX(number)/UNBOXFIX(divisor);
      case 5:
@@ -1041,8 +1008,7 @@ sint32 generic_truncate_two_first (Obj number, Obj divisor)
       return 0;
     }
    case 5:
-    switch ((divisor==NULL) ? 0 : ((temp_2 = (((uint32)divisor)&3)) ? temp_2 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_2)) {
      case 1:
       return (sint32)(((Ldouble *)number)->body/(double)UNBOXFIX(divisor));
      case 5:
@@ -1066,11 +1032,9 @@ Obj generic_truncate_two (Obj number, Obj divisor)
   sint32 temp_5;
   Obj temp_6, temp_7, temp_8, temp_9;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
-    switch ((divisor==NULL) ? 0 : ((temp_1 = (((uint32)divisor)&3)) ? temp_1 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_1)) {
      case 1:
       temp_2 = BOXFIX(UNBOXFIX(number)/UNBOXFIX(divisor));
       (Values_buffer[0]) = BOXFIX(UNBOXFIX(number)%UNBOXFIX(divisor));
@@ -1090,8 +1054,7 @@ Obj generic_truncate_two (Obj number, Obj divisor)
       return temp_4;
     }
    case 5:
-    switch ((divisor==NULL) ? 0 : ((temp_5 = (((uint32)divisor)&3)) ? temp_5 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_5)) {
      case 1:
       temp_6 = BOXFIX((sint32)(((Ldouble *)number)->body/(double)UNBOXFIX(divisor)));
       (Values_buffer[0]) = alloc_ldouble(fmod(((Ldouble *)number)->body,
@@ -1172,8 +1135,7 @@ sint32 generic_round_one_first (Obj number)
   sint32 temp;
   double g;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
     return UNBOXFIX(number);
    case 5:
@@ -1195,8 +1157,7 @@ Obj generic_round_one (Obj number)
   double g;
   Obj temp_2, temp_3;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
     temp_1 = number;
     (Values_buffer[0]) = BOXFIX(0);
@@ -1226,8 +1187,7 @@ sint32 generic_round_two_first (Obj number, Obj divisor)
   sint32 temp;
   double temp_1;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
     break;
    case 5:
@@ -1236,8 +1196,7 @@ sint32 generic_round_two_first (Obj number, Obj divisor)
     math_type_error((Obj)(&str_const_14),number,divisor);   /* "round" */
     break;
   }
-  switch ((divisor==NULL) ? 0 : ((temp = (((uint32)divisor)&3)) ? temp 
-      : (sint32)(((Hdr *)divisor)->type))) {
+  switch (TYPE_TAG(divisor,temp)) {
    case 1:
     break;
    case 5:
@@ -1246,8 +1205,8 @@ sint32 generic_round_two_first (Obj number, Obj divisor)
     math_type_error((Obj)(&str_const_14),number,divisor);   /* "round" */
     break;
   }
-  temp_1 = ((((((uint32)number)&3)==1) ? ((double)(((sint32)number)     /* Fixnump */
-      >>2)) : (((Ldouble *)number)->body))/(((((uint32)divisor)&3)==1)      /* Fixnump */
+  temp_1 = (((IMMED_TAG(number)==1) ? ((double)(((sint32)number)    /* Fixnump */
+      >>2)) : (((Ldouble *)number)->body))/((IMMED_TAG(divisor)==1)     /* Fixnump */
       ? ((double)(((sint32)divisor)>>2)) : (((Ldouble *)divisor)->body)));
   return (temp_1<0.0) ? ((sint32)(temp_1-0.5)) : (sint32)(temp_1+0.5);
 }
@@ -1273,11 +1232,9 @@ Obj generic_round_two (Obj number, Obj divisor)
   Obj temp_12, temp_13;
 
   round_value = 0;
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
-    switch ((divisor==NULL) ? 0 : ((temp_1 = (((uint32)divisor)&3)) ? temp_1 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_1)) {
      case 1:
       temp_2 = (((double)UNBOXFIX(number))/(double)UNBOXFIX(divisor));
       round_value = ((temp_2<0.0) ? ((sint32)(temp_2-0.5)) : (sint32)(temp_2
@@ -1305,8 +1262,7 @@ Obj generic_round_two (Obj number, Obj divisor)
       return temp_6;
     }
    case 5:
-    switch ((divisor==NULL) ? 0 : ((temp_7 = (((uint32)divisor)&3)) ? temp_7 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_7)) {
      case 1:
       temp_8 = (((Ldouble *)number)->body/(double)UNBOXFIX(divisor));
       round_value = ((temp_8<0.0) ? ((sint32)(temp_8-0.5)) : (sint32)(temp_8
@@ -1409,11 +1365,9 @@ Obj generic_mod (Obj number, Obj divisor)
   sint32 temp_3;
   Obj temp_4;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
-    switch ((divisor==NULL) ? 0 : ((temp_1 = (((uint32)divisor)&3)) ? temp_1 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_1)) {
      case 1:
       temp_2 = BOXFIX(mod_fixnums(UNBOXFIX(number),UNBOXFIX(divisor)));
       break;
@@ -1428,8 +1382,7 @@ Obj generic_mod (Obj number, Obj divisor)
     }
     return temp_2;
    case 5:
-    switch ((divisor==NULL) ? 0 : ((temp_3 = (((uint32)divisor)&3)) ? temp_3 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_3)) {
      case 1:
       temp_4 = alloc_ldouble(mod_float(((Ldouble *)number)->body,(double)
           UNBOXFIX(divisor)),-1,5);
@@ -1462,11 +1415,9 @@ Obj generic_rem (Obj number, Obj divisor)
   sint32 temp_3;
   Obj temp_4;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
-    switch ((divisor==NULL) ? 0 : ((temp_1 = (((uint32)divisor)&3)) ? temp_1 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_1)) {
      case 1:
       temp_2 = BOXFIX(UNBOXFIX(number)%UNBOXFIX(divisor));
       break;
@@ -1481,8 +1432,7 @@ Obj generic_rem (Obj number, Obj divisor)
     }
     return temp_2;
    case 5:
-    switch ((divisor==NULL) ? 0 : ((temp_3 = (((uint32)divisor)&3)) ? temp_3 
-        : (sint32)(((Hdr *)divisor)->type))) {
+    switch (TYPE_TAG(divisor,temp_3)) {
      case 1:
       temp_4 = alloc_ldouble(fmod(((Ldouble *)number)->body,(double)UNBOXFIX(divisor)),
           -1,5);
@@ -1513,8 +1463,7 @@ Obj generic_abs (Obj number)
   sint32 temp;
   Obj temp_1;
 
-  switch ((number==NULL) ? 0 : ((temp = (((uint32)number)&3)) ? temp : 
-      (sint32)(((Hdr *)number)->type))) {
+  switch (TYPE_TAG(number,temp)) {
    case 1:
     temp_1 = BOXFIX((sint32)abs((int)UNBOXFIX(number)));
     break;
@@ -1628,8 +1577,8 @@ Obj generic_expt (Obj base, Obj power)
 {
   Obj if_result_temp;
 
-  if ((((uint32)base)&3)==1) {                  /* Fixnump */
-    if ((((uint32)power)&3)==1)                 /* Fixnump */
+  if (IMMED_TAG(base)==1) {                     /* Fixnump */
+    if (IMMED_TAG(power)==1)                    /* Fixnump */
       if_result_temp = BOXFIX(expt_fixnum(UNBOXFIX(base),UNBOXFIX(power)));
     else 
       if_result_temp = alloc_ldouble(pow((double)UNBOXFIX(base),((Ldouble *)power)->body),
@@ -1637,9 +1586,9 @@ Obj generic_expt (Obj base, Obj power)
     return if_result_temp;
   }
   else 
-    return alloc_ldouble(pow(((Ldouble *)base)->body,((((uint32)power)&3)
-        ==1) ? (((((uint32)power)&3)==1) ? ((double)((  /* Fixnump, Fixnump */
-        (sint32)power)>>2)) : (((Ldouble *)power)->body)) : (((Ldouble *)power)->body)),
+    return alloc_ldouble(pow(((Ldouble *)base)->body,(IMMED_TAG(power)==1)      /* Fixnump */
+        ? ((IMMED_TAG(power)==1) ? ((double)(((sint32)power)    /* Fixnump */
+        >>2)) : (((Ldouble *)power)->body)) : (((Ldouble *)power)->body)),
         -1,5);
 }
 

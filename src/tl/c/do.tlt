@@ -4,7 +4,7 @@
 
 ;;; Translation data for tl/lisp/do.lisp.
 ;;; The following is the value of the trans-data-tlt-version parameter.
-1
+2
 
 (make-trans-data
   ;; Used quoted symbols = (symbol symbol-array . index).
@@ -26,5 +26,7 @@
   ;; Used variables = (symbol c-name . type).
   '((*PACKAGE* "SpackageS" . OBJ))
   ;; Defined variables
+  NIL
+  ;; Used class typedefs.
   NIL
   )

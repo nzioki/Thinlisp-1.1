@@ -13,7 +13,7 @@
 #include "packages.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -70,7 +70,7 @@ Obj init_symbol_into_package (Obj symbol, Obj string, sint32 string_hash,
   return symbol;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -191,7 +191,7 @@ Obj list_all_packages (void)
 static const Str_5 str_const_2
   = { 7, 3, 3, "NIL" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -210,8 +210,7 @@ Obj find_package_1 (Obj string_or_symbol_or_package)
   Obj package, tl_loop_list_;
   unsigned char *g;
 
-  switch ((string_or_symbol_or_package==NULL) ? 0 : ((temp = (((uint32)string_or_symbol_or_package)
-      &3)) ? temp : (sint32)(((Hdr *)string_or_symbol_or_package)->type))) {
+  switch (TYPE_TAG(string_or_symbol_or_package,temp)) {
    case 7:
     name = (((Str *)string_or_symbol_or_package)->body);
     package = (Obj)NULL;
@@ -237,7 +236,7 @@ Obj find_package_1 (Obj string_or_symbol_or_package)
   }
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -262,7 +261,7 @@ Obj find_package_or_error_1 (Obj name)
   return if_result_temp;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -438,7 +437,7 @@ Obj intern_string_in_package (unsigned char *string, sint32 hash_number,
   }
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -467,8 +466,8 @@ Obj import (Obj symbol_or_symbol_list, Obj package_arg)
   (Throw_stack[Throw_stack_top-1]) = (Obj)(&current_region);
   (Throw_stack[Throw_stack_top-2]) = current_region;
   current_region = temp;
-  if ((symbol_or_symbol_list==NULL) || ((((uint32)symbol_or_symbol_list)
-      &3)==2))                                  /* Consp */
+  if ((symbol_or_symbol_list==NULL) || (IMMED_TAG(symbol_or_symbol_list)
+      ==2))                                     /* Consp */
     symbol_list = symbol_or_symbol_list;
   else {
     (temp_list[0]) = symbol_or_symbol_list;
@@ -511,7 +510,7 @@ Obj import (Obj symbol_or_symbol_list, Obj package_arg)
   return temp_1;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -521,7 +520,7 @@ typedef struct{
 static const Str_105 str_const_7
   = { 7, 103, 103, "The symbol ~a cannot be exported from ~a, it is not ~\n                    accessible from that package." };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -550,8 +549,8 @@ Obj export (Obj symbol_or_symbol_list, Obj package_arg)
   (Throw_stack[Throw_stack_top-1]) = (Obj)(&current_region);
   (Throw_stack[Throw_stack_top-2]) = current_region;
   current_region = temp;
-  if ((symbol_or_symbol_list==NULL) || ((((uint32)symbol_or_symbol_list)
-      &3)==2))                                  /* Consp */
+  if ((symbol_or_symbol_list==NULL) || (IMMED_TAG(symbol_or_symbol_list)
+      ==2))                                     /* Consp */
     symbol_list = symbol_or_symbol_list;
   else {
     (temp_list[0]) = symbol_or_symbol_list;
@@ -602,7 +601,7 @@ Obj export (Obj symbol_or_symbol_list, Obj package_arg)
 
 Obj Skeyword_packageS = (Obj)(&Unbound);
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -637,10 +636,10 @@ Obj make_gensymed_symbol (Obj string_or_counterP)
 
   prefix = (Obj)(&str_const_10);                /* "G" */
   counter = UNBOXFIX(Sgensym_counterS);
-  if ((((uint32)string_or_counterP)&3)==1)      /* Fixnump */
+  if (IMMED_TAG(string_or_counterP)==1)         /* Fixnump */
     counter = UNBOXFIX(string_or_counterP);
-  else if ((string_or_counterP!=NULL) && (((((uint32)string_or_counterP)
-      &3)==0) && (((Hdr *)string_or_counterP)->type==7))) {     /* STRING type tag */
+  else if ((string_or_counterP!=NULL) && ((IMMED_TAG(string_or_counterP)
+      ==0) && (STD_TAG(string_or_counterP)==7))) {  /* STRING-P */
     prefix = string_or_counterP;
     Sgensym_counterS = (Obj)((((sint32)Sgensym_counterS)+(sint32)BOXFIX(1))
         -1);                                    /* Fixnum add */
@@ -717,8 +716,8 @@ void write_symbol (Obj symbol, Obj case_1, Obj streamP)
   else 
     name_string = (Obj)(&str_const_2);          /* "NIL" */
   if (Sprint_escapeS!=NULL) {
-    if ((((symbol!=NULL) && (((((uint32)symbol)&3)==0) && (((Hdr *)symbol)->type
-        ==11))) && (symbol!=NULL)) && (((Sym *)symbol)->symbol_package  /* SYMBOL type tag */
+    if ((((symbol!=NULL) && ((IMMED_TAG(symbol)==0) && (STD_TAG(symbol)
+        ==11))) && (symbol!=NULL)) && (((Sym *)symbol)->symbol_package  /* SYMBOL-P */
         ==Skeyword_packageS)) 
       write_string_function(((Str *)(&str_const_12))->body,streamP,     /* ":" */
           0,(Obj)NULL);
@@ -742,8 +741,7 @@ void write_symbol (Obj symbol, Obj case_1, Obj streamP)
   }
   name = (((Str *)name_string)->body);
   length_1 = (sint32)(((Str *)name_string)->fill_length);
-  switch ((streamP==NULL) ? 0 : ((temp_1 = (((uint32)streamP)&3)) ? temp_1 
-      : (sint32)(((Hdr *)streamP)->type))) {
+  switch (TYPE_TAG(streamP,temp_1)) {
    case 0:
    case 11:
     if (streamP==NULL) 
@@ -751,7 +749,7 @@ void write_symbol (Obj symbol, Obj case_1, Obj streamP)
     else if (streamP==(Obj)(&T)) 
       stream = Sterminal_ioS;
     else 
-      stream = get_str_or_file_stream_fr_tpt(streamP,length_1);
+      stream = get_string_or_file_stream_for_output(streamP,length_1);
     break;
    case 16:
     stream = streamP;
@@ -760,11 +758,11 @@ void write_symbol (Obj symbol, Obj case_1, Obj streamP)
     stream = streamP;
     break;
    default:
-    stream = get_str_or_file_stream_fr_tpt(streamP,length_1);
+    stream = get_string_or_file_stream_for_output(streamP,length_1);
     break;
   }
-  stringP = (((stream!=NULL) && (((((uint32)stream)&3)==0) && (((Hdr *)stream)->type
-      ==7))) ? ((Obj)(&T)) : (Obj)NULL);        /* STRING type tag */
+  stringP = (((stream!=NULL) && ((IMMED_TAG(stream)==0) && (STD_TAG(stream)
+      ==7))) ? ((Obj)(&T)) : (Obj)NULL);        /* STRING-P */
   if (case_1==(Obj)(tl_format_symbols+0)) {     /* UPCASE */
     if (stringP!=NULL) {
       index = 0;
@@ -871,7 +869,7 @@ void write_symbol (Obj symbol, Obj case_1, Obj streamP)
   }
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;

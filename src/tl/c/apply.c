@@ -13,7 +13,7 @@
 #include "apply.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -23,7 +23,7 @@ typedef struct{
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -33,7 +33,7 @@ typedef struct{
 static const Str_45 str_const_1
   = { 7, 43, 43, "NIL given as the function argument to apply" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -49,7 +49,7 @@ static const Str_45 str_const_3
 static const Str_45 str_const_4
   = { 7, 41, 41, "Argument count mismatch in APPLY ~s on ~s" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -86,8 +86,7 @@ Obj apply_1 (Obj function, Obj args)
   else 
     function_args = CAR(args);
   given_arg_count = length(function_args);
-  switch ((function==NULL) ? 0 : ((temp = (((uint32)function)&3)) ? temp 
-      : (sint32)(((Hdr *)function)->type))) {
+  switch (TYPE_TAG(function,temp)) {
    case 0:
     error((char *)(((Str *)(&str_const_1))->body));     /* "NIL given as the function argument to apply" */
     compiled_function = (Obj)NULL;

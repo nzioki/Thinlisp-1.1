@@ -13,7 +13,7 @@
 #include "tl-basics.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -23,7 +23,7 @@ typedef struct{
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -40,8 +40,7 @@ sint32 length (Obj sequence)
   sint32 temp, count;
   Obj consP;
 
-  switch ((sequence==NULL) ? 0 : ((temp = (((uint32)sequence)&3)) ? temp 
-      : (sint32)(((Hdr *)sequence)->type))) {
+  switch (TYPE_TAG(sequence,temp)) {
    case 0:
     return 0;
    case 2:
@@ -78,31 +77,29 @@ Obj equal (Obj a, Obj b)
 
   temp_2 = (a==b);
   if (!temp_2) {
-    switch ((a==NULL) ? 0 : ((temp = (((uint32)a)&3)) ? temp : (sint32)(
-        ((Hdr *)a)->type))) {
+    switch (TYPE_TAG(a,temp)) {
      case 5:
-      temp_1 = (((b!=NULL) && (((((uint32)b)&3)==0) && (((Hdr *)b)->type
-          ==5))) && (((Ldouble *)a)->body==(    /* DOUBLE-FLOAT type tag */
-          ((Ldouble *)b)->body)));
+      temp_1 = (((b!=NULL) && ((IMMED_TAG(b)==0) && (STD_TAG(b)==5)))   /* DOUBLE-FLOAT-P */
+           && (((Ldouble *)a)->body==(((Ldouble *)b)->body)));
       break;
      case 7:
-      temp_1 = (((b!=NULL) && (((((uint32)b)&3)==0) && (((Hdr *)b)->type
-          ==7))) && (strcmp((char *)(((Str *)a)->body),     /* STRING type tag */
-          (char *)(((Str *)b)->body))==0));
+      temp_1 = (((b!=NULL) && ((IMMED_TAG(b)==0) && (STD_TAG(b)==7)))   /* STRING-P */
+           && (strcmp((char *)(((Str *)a)->body),(char *)(((Str *)b)->body))
+          ==0));
       break;
      case 2:
       a_cons = a;
       b_cons = b;
-      for (;((((uint32)a_cons)&3)==2) && ((((uint32)b_cons)     /* Consp */
-          &3)==2);b_cons = CDR(b_cons)) {       /* Consp */
+      for (;(IMMED_TAG(a_cons)==2) && (IMMED_TAG(b_cons)==2);   /* Consp, Consp */
+          b_cons = CDR(b_cons)) {
         if (equal(CAR(a_cons),CAR(b_cons))==NULL) {
           temp_1 = 0;
           goto exit_nil;
         }
         a_cons = CDR(a_cons);
       }
-      temp_1 = ((a_cons==b_cons) || (((!((((uint32)a_cons)&3)==2))  /* Consp */
-           && (!((((uint32)b_cons)&3)==2))) && (equal(a_cons,   /* Consp */
+      temp_1 = ((a_cons==b_cons) || (((!(IMMED_TAG(a_cons)==2))     /* Consp */
+           && (!(IMMED_TAG(b_cons)==2))) && (equal(a_cons,  /* Consp */
           b_cons)!=NULL)));
       goto exit_nil;
      exit_nil:
@@ -134,7 +131,7 @@ Obj copy_list (Obj list)
     old_cons = list;
     old_cdr = CDR(old_cons);
     new_cons = new_list;
-    while ((((uint32)old_cdr)&3)==2) {          /* Consp */
+    while (IMMED_TAG(old_cdr)==2) {             /* Consp */
       CAR(new_cons) = CAR(old_cons);
       old_cons = old_cdr;
       old_cdr = CDR(old_cons);
@@ -164,7 +161,7 @@ Obj append_function (Obj lists)
     list_holder = lists;
     next_list_holder = CDR(lists);
     old_list = CAR(list_holder);
-    while ((((uint32)next_list_holder)&3)==2) {     /* Consp */
+    while (IMMED_TAG(next_list_holder)==2) {    /* Consp */
       if (old_list!=NULL) {
         new_copy = copy_list(old_list);
         if (cons_in_new_listP!=NULL) {
@@ -416,7 +413,7 @@ Obj nth (sint32 n, Obj list)
   return (Obj)NULL;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -435,7 +432,7 @@ void endp_error_function (Obj arg)
   return;
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -451,8 +448,7 @@ sint32 generic_array_dimension (Obj array)
 {
   sint32 temp;
 
-  switch ((array==NULL) ? 0 : ((temp = (((uint32)array)&3)) ? temp : (sint32)(
-      ((Hdr *)array)->type))) {
+  switch (TYPE_TAG(array,temp)) {
    case 6:
     return (sint32)(((Sv *)array)->length);
    case 7:
@@ -470,7 +466,7 @@ sint32 generic_array_dimension (Obj array)
   }
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -486,8 +482,7 @@ sint32 generic_fill_pointer (Obj vector)
 {
   sint32 temp;
 
-  switch ((vector==NULL) ? 0 : ((temp = (((uint32)vector)&3)) ? temp : 
-      (sint32)(((Hdr *)vector)->type))) {
+  switch (TYPE_TAG(vector,temp)) {
    case 7:
     return (sint32)(((Str *)vector)->fill_length);
    case 8:
@@ -511,8 +506,7 @@ sint32 generic_set_fill_pointer (Obj vector, sint32 new_fill_pointer)
   sint32 temp;
   Str *string;
 
-  switch ((vector==NULL) ? 0 : ((temp = (((uint32)vector)&3)) ? temp : 
-      (sint32)(((Hdr *)vector)->type))) {
+  switch (TYPE_TAG(vector,temp)) {
    case 7:
     string = (Str *)vector;
     (string->body[new_fill_pointer]) = '\000';
@@ -534,8 +528,7 @@ Obj array_has_fill_pointer_p (Obj vector)
 {
   sint32 temp;
 
-  switch ((vector==NULL) ? 0 : ((temp = (((uint32)vector)&3)) ? temp : 
-      (sint32)(((Hdr *)vector)->type))) {
+  switch (TYPE_TAG(vector,temp)) {
    case 7:
     return (Obj)(&T);
    case 8:
@@ -547,7 +540,7 @@ Obj array_has_fill_pointer_p (Obj vector)
   }
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -578,8 +571,7 @@ unsigned char *coerce_to_string (Obj thing)
   Obj g;
 
   coerced_string = (Obj)NULL;
-  switch ((thing==NULL) ? 0 : ((temp = (((uint32)thing)&3)) ? temp : (sint32)(
-      ((Hdr *)thing)->type))) {
+  switch (TYPE_TAG(thing,temp)) {
    case 0:
    case 11:
     g = thing;
@@ -745,7 +737,7 @@ Obj nreconc (Obj list1, Obj list2)
   }
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;

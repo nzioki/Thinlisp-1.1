@@ -13,7 +13,7 @@
 #include "generic-prim.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -23,7 +23,7 @@ typedef struct{
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -39,8 +39,7 @@ Obj generic_aref (Obj array, sint32 index)
 {
   sint32 temp;
 
-  switch ((array==NULL) ? 0 : ((temp = (((uint32)array)&3)) ? temp : (sint32)(
-      ((Hdr *)array)->type))) {
+  switch (TYPE_TAG(array,temp)) {
    case 6:
     return ((Sv *)array)->body[index];
    case 7:
@@ -57,7 +56,7 @@ Obj generic_aref (Obj array, sint32 index)
   }
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -73,8 +72,7 @@ Obj generic_set_aref (Obj array, sint32 index, Obj value)
 {
   sint32 temp;
 
-  switch ((array==NULL) ? 0 : ((temp = (((uint32)array)&3)) ? temp : (sint32)(
-      ((Hdr *)array)->type))) {
+  switch (TYPE_TAG(array,temp)) {
    case 6:
     (((Sv *)array)->body[index]) = value;
     break;
@@ -107,8 +105,7 @@ Obj generic_elt (Obj sequence, sint32 index)
 {
   sint32 temp;
 
-  switch ((sequence==NULL) ? 0 : ((temp = (((uint32)sequence)&3)) ? temp 
-      : (sint32)(((Hdr *)sequence)->type))) {
+  switch (TYPE_TAG(sequence,temp)) {
    case 0:
    case 2:
     return nth(index,sequence);
@@ -128,7 +125,7 @@ Obj generic_elt (Obj sequence, sint32 index)
   }
 }
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -144,8 +141,7 @@ Obj generic_set_elt (Obj sequence, sint32 index, Obj value)
 {
   sint32 temp;
 
-  switch ((sequence==NULL) ? 0 : ((temp = (((uint32)sequence)&3)) ? temp 
-      : (sint32)(((Hdr *)sequence)->type))) {
+  switch (TYPE_TAG(sequence,temp)) {
    case 0:
    case 2:
     CAR(nthcdr(index,sequence)) = value;

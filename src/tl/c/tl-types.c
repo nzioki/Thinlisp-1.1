@@ -13,7 +13,7 @@
 #include "tl-types.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -27,9 +27,19 @@ Obj current_region = (Obj)(&Unbound);
 
 Obj temporary_area_top = (Obj)(&Unbound);
 
+Obj fixnum_signed_byte_width = BOXFIX(30);
+
 Obj most_positive_fixnum = BOXFIX(536870911);
 
 Obj most_negative_fixnum = BOXFIX(-536870912);
+
+/* Translated from INSTALL-STRUCTURE-FUNCTION(T) = NULL */
+
+Obj install_structure_function (Obj ignored)
+{
+  (void)ignored;                                /* IGNORED was declared ignore */
+  return (Obj)NULL;
+}
 
 /* Translated from SYMS-TL-TL-TYPES() = VOID */
 

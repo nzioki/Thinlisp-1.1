@@ -30,7 +30,7 @@ extern Obj error_two_args(Obj, Obj, Obj);
 extern Obj find_package_1(Obj);
 extern Obj format_function(Obj, unsigned char *, Obj);
 extern sint32 generic_set_fill_pointer(Obj, sint32);
-extern Obj get_str_or_file_stream_fr_tpt(Obj, sint32);
+extern Obj get_string_or_file_stream_for_output(Obj, sint32);
 extern Obj init_symbol_into_package(Obj, Obj, sint32, Obj);
 extern void insert_symbol_into_package(Obj, Obj);
 extern unsigned char * string_upcase_function(unsigned char *, sint32, 

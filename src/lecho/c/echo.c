@@ -13,7 +13,7 @@
 #include "echo.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -26,7 +26,7 @@ static const Str_9 str_const
 static const Str_9 str_const_1
   = { 7, 6, 6, "--help" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -36,7 +36,7 @@ typedef struct{
 static const Str_69 str_const_2
   = { 7, 66, 66, "Usage: lecho [arg] ...~%  all arguments will be echoed to stdout~%" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -99,6 +99,91 @@ sint32 main_1 (Obj args)
       terpri((Obj)NULL);
     return 0;
   }
+}
+
+/* Translated from UFFDA-X(T) = T */
+
+Obj uffda_x_1 (Obj uffda_1)
+{
+  return ((uffda *)uffda_1)->uffda_x;
+}
+
+/* Translated from SETF-UFFDA-X(T T) = T */
+
+Obj setf_uffda_x (Obj uffda_1, Obj new_value)
+{
+  return ((uffda *)uffda_1)->uffda_x = new_value;
+}
+
+/* Translated from UFFDA-Y(T) = T */
+
+Obj uffda_y_1 (Obj uffda_1)
+{
+  return ((uffda *)uffda_1)->uffda_y;
+}
+
+/* Translated from SETF-UFFDA-Y(T T) = T */
+
+Obj setf_uffda_y (Obj uffda_1, Obj new_value)
+{
+  return ((uffda *)uffda_1)->uffda_y = new_value;
+}
+
+/* Translated from UFFDA-Z(T) = T */
+
+Obj uffda_z_1 (Obj uffda_1)
+{
+  return ((uffda *)uffda_1)->uffda_z;
+}
+
+/* Translated from SETF-UFFDA-Z(T T) = T */
+
+Obj setf_uffda_z (Obj uffda_1, Obj new_value)
+{
+  return ((uffda *)uffda_1)->uffda_z = new_value;
+}
+
+/* Translated from MAKE-UFFDA-FUNCTION(T T T) = UFFDA */
+
+Obj make_uffda_function (Obj x, Obj y, Obj z)
+{
+  Obj g;
+
+  g = alloc_struct(sizeof(uffda),4,-1,17);
+  ((uffda *)g)->uffda_x = x;
+  ((uffda *)g)->uffda_y = y;
+  ((uffda *)g)->uffda_z = z;
+  return g;
+}
+
+/* Translated from UFFDA-P(T) = T */
+
+Obj uffda_p (Obj x)
+{
+  sint32 temp;
+
+  return (TYPE_TAG(x,temp)==32) ? ((Obj)(&T)) : (Obj)NULL;
+}
+
+/* Translated from COPY-UFFDA(UFFDA) = UFFDA */
+
+Obj copy_uffda (Obj uffda_1)
+{
+  Obj new_1;
+
+  new_1 = alloc_struct(sizeof(uffda),4,-1,17);
+  ((uffda *)new_1)->uffda_x = (((uffda *)uffda_1)->uffda_x);
+  ((uffda *)new_1)->uffda_y = (((uffda *)uffda_1)->uffda_y);
+  ((uffda *)new_1)->uffda_z = (((uffda *)uffda_1)->uffda_z);
+  return new_1;
+}
+
+/* Translated from BLATZ(UFFDA) = * */
+
+Obj blatz (Obj x)
+{
+  Values_count = 1;
+  return ((uffda *)x)->uffda_x;
 }
 
 /* Translated from SYMS-LECHO-ECHO() = VOID */

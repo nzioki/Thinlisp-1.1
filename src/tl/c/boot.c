@@ -13,7 +13,7 @@
 #include "boot.h"
 
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -55,7 +55,7 @@ static Obj cons_const[36]
 #endif
   ;
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -68,7 +68,7 @@ static const Str_9 str_const_1
 static const Str_9 str_const_2
   = { 7, 7, 7, "KEYWORD" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -78,7 +78,7 @@ typedef struct{
 static const Str_17 str_const_3
   = { 7, 16, 16, "SYSTEM-NICKNAMES" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
@@ -115,7 +115,7 @@ static const Str_9 str_const_12
 static const Str_9 str_const_13
   = { 7, 5, 5, "INPUT" };
 
-typedef struct{
+typedef struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
