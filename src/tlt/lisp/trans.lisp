@@ -420,7 +420,7 @@
 	(glt-write-string (module-file-name-string module) output)
 	(glt-write-char #\newline output))))
   ;; Generate a makefile from the list of files.
-  (generate-makefile system verbose))
+  (generate-makefiles system verbose))
 
 (defun emit-top-level-function-calls (system c-file main-func main-body prefix)
   (loop for subsystem-name in (system-all-used-systems system)

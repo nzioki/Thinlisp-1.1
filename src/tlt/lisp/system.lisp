@@ -360,9 +360,12 @@
     (intern (format nil "~a-FILES" (system-name system)))
     "txt" nil (system-c-dir system)))
 
-(defun system-makefile (system)
+(defun system-makefile (system &optional port-name)
   (make-system-file-pathname
-   'makefile nil nil (system-c-dir system)))
+   (if port-name 
+       (intern (format nil "makefile-~a" port-name))
+     'makefile)
+   nil nil (system-c-dir system)))
 
 (defun system-temporary-makefile (system)
   (make-system-file-pathname
@@ -374,9 +377,12 @@
      :directory (append (butlast (pathname-directory c-dir)) '("bin"))
      :defaults c-dir)))
 
-(defun system-binary-makefile (system)
+(defun system-binary-makefile (system &optional port-name)
   (make-system-file-pathname
-   'makefile nil nil (system-bin-dir system)))
+   (if port-name 
+       (intern (format nil "makefile-~a" port-name))
+     'makefile)
+   nil nil (system-bin-dir system)))
 
 
 (defun relative-path-to-directory (start-pathname end-pathname output)

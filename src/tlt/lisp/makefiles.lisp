@@ -48,21 +48,35 @@
       (obj-postfix . ".o")
       ))
 
+(defparameter makefile-ports
+  '(("linux"
+     (exe-postfix . "")
+     (system-libs . "-lm"))
+    ("cygnus")))     
+
+(defvar makefile-elements nil)
+
 (defun makeup (key)
-  (or (cdr (assoc key makefile-element-alist))
+  (or (cdr (assoc key makefile-elements))
       ""))
 
 (defparameter debuggable-makefile t)
 
+(defun generate-makefiles (system verbose)
+  (loop for (port-name . port-alist) in makefile-ports
+	for makefile-elements = (append port-alist makefile-element-alist)
+	do
+    (generate-makefile system verbose port-name)))
 
 
 
-;;; The function generate-makefile takes a system, and uses information from the
-;;; system and from the makefile-info file to generate a GNU compatible
-;;; makefile.
 
-(defun generate-makefile (system verbose)
-  (let ((path (system-makefile system))
+;;; The function generate-makefiles takes a system, and uses information from
+;;; the system and from the makefile-ports file to generate a set of makefiles
+;;; for the current ports.
+
+(defun generate-makefile (system verbose port-name)
+  (let ((path (system-makefile system port-name))
 	(temp-path (system-temporary-makefile system))
 	(bin-dir (system-bin-dir system))
 	(current-year
@@ -100,7 +114,7 @@
 		bin-dir (system-bin-dir (gl:find-system subsystem))
 		output)
 	       (format output "lib~(~a~).a" subsystem))
-	     (format output " ~a~%" (makeup 'system-libs))))
+	     (format output "~%SYSLIBS=~a~%" (makeup 'system-libs))))
       (glt-write-string "OBJECTS=" output)
       (loop for file-count = 1 then (1+ file-count)
 	  for file-name in (system-extra-c-files system) do
@@ -126,10 +140,11 @@
       (glt-write-char #\tab output)
       (format output "-rm ~a~%" target)
       (glt-write-char #\tab output)
-      (if (system-is-library-p system)
-	  (format output "$(ARCHIVE) ~a $(OBJECTS)~%~%" target)
-	(format output "$(LINK) ~a $(LINKFLAGS) $(OBJECTS) $(LIBS)~%~%"
-		target))
+      (cond ((system-is-library-p system)
+	     (format output "$(ARCHIVE) ~a $(OBJECTS)~%~%" target))
+	    (t
+	     (format output "$(LINK) ~a $(LINKFLAGS) $(OBJECTS) " target)
+	     (format output "$(LIBS) $(SYSLIBS)~%~%")))
       
       (format output "~a~a : ../c/~a.c ../c/~a.h makefile"
 	      pattern obj pattern pattern)
@@ -159,7 +174,7 @@
     
     ;; If the makefile is different from the one in the binary directory, push
     ;; it into the binary directory.
-    (let ((binary-makefile (system-binary-makefile system)))
+    (let ((binary-makefile (system-binary-makefile system port-name)))
       (ensure-directories-exist binary-makefile)
       (when (or (not (probe-file binary-makefile))
 		(not (file-contents-equal path binary-makefile)))
