@@ -13,12 +13,11 @@ following command.
   cd <install-directory>
   unzip thinlisp-1.0.tgz
 
-2.  Start your Lisp environment such that the default directory is the
-one where you unpacked the Thinlisp distribution, such that the
-following line would work appropriately.  (Note that tlt stands for
-ThinLisp Translator.)
+2.  Start your Lisp environment such that the default directory is the src
+directory within the Thinlisp distribution, such that the following line would
+work appropriately.  (Note that tlt stands for ThinLisp Translator.)
 
-  (truename "tlt") 
+  (truename "tlt/") 
     => "/home/jallard/work/tlt/"
 
 3.  Bootstrap the translator by loading its boot file.
@@ -37,8 +36,9 @@ form.
 
   (tl:translate-system 'lecho)
 
-6.  The translator also emits makefiles.  On a Linux system you could
-produce the Lecho executable with the following commands from a shell.
+6.  The translator also emits makefiles.  On a Linux system you could produce
+the Lecho executable with the following commands from a shell.  Look in the bin
+directories for other makefiles for BSD, Cygnus, and Mac.
 
   cd tl/bin
   make -f makefile-linux
@@ -58,4 +58,4 @@ Lisp-based libraries and executables.
 Enjoy.
 
 --------
-$Id: INSTALL,v 1.3 2001/06/08 06:36:10 jallard Exp $
+$Id: INSTALL,v 1.4 2001/07/01 11:15:24 jallard Exp $
