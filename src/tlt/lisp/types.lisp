@@ -134,7 +134,7 @@
 					      superior-value-type))))
 	   t))
 	((or (memqp superior-type
-		    '(unbound managed-float string-stream file-stream))
+		    '(unbound managed-float gl-string-stream file-stream))
 	     (memqp subtype '(unbound)))
 	 (values (eq subtype superior-type) t))
 	;; Since all of our arrays are one-dimensional, all array types are
@@ -155,7 +155,7 @@
 	 (gl-subtypep (or (second subtype) 'null) superior-type))
 	((eq subtype 'managed-float)
 	 (values (eq superior-type 't) t))
-	((memqp subtype '(string-stream file-stream))
+	((memqp subtype '(gl-string-stream file-stream))
 	 (values (memqp superior-type '(stream t)) t))
 	(t
 	 (subtypep subtype superior-type))))
@@ -177,8 +177,12 @@
 	((eq type 'unbound)
 	 nil)
 	;; Lucid doesn't implement the types string-stream or file-stream.  -jra
-	;; 3/4/96
-	((eq type 'string-stream)
+	;; 3/4/96 However, CMU Lisp and other ANSI CL implementations do, and on
+	;; those Lisps the interpretation of the type string-stream was messing
+	;; us up.  Instead, switch over to gl-string-stream, which is the
+	;; structure type that will actually implement this functionality in GL.
+	;; -jallard 5/27/99
+	((eq type 'gl-string-stream)
 	 (typep object 'gl-string-stream))
 	((eq type 'managed-float)
 	 (and (typep object '(array double-float))
@@ -258,7 +262,7 @@
       symbol
       compiled-function
       package
-      string-stream
+      gl-string-stream
       file-stream)))
       
       

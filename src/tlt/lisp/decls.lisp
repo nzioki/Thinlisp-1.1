@@ -114,8 +114,24 @@
     list long-float nil null number package pathname random-state ratio rational
     readtable sequence short-float signed-byte simple-array simple-bit-vector
     simple-string simple-vector single-float standard-char stream string
-    string-char string-stream symbol t unsigned-byte vector base-character
+    string-char symbol t unsigned-byte vector base-character
     extended-character real)
+
+
+
+
+;;; The type `string-stream' must be handled specially, since I am not using the
+;;; underlying Lisp's implementation of this type in development-time GL
+;;; programs.
+
+(gl:declaim (variable-declaration gl:string-stream gl-string-stream))
+
+(define-declaration gl:string-stream (decl-spec env)
+  (process-type-declaration
+   (cons 'type (cons 'gl-string-stream (cons-cdr decl-spec))) env))
+
+(define-declaration gl-string-stream (decl-spec env)
+  (process-type-declaration (cons 'type decl-spec) env))
 
 
 

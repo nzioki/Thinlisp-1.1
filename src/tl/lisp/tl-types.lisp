@@ -137,7 +137,7 @@
 (defmacro streamp (object)
   `(typep ,object 'gli::stream))
 
-(deftype string-stream () 'gli::string-stream)
+(deftype string-stream () 'gli::gl-string-stream)
 
 (deftype file-stream () 'gli::file-stream)
 

@@ -444,7 +444,7 @@
 
 (def-c-type unbound "Hdr" "Hdr *" unbound 14)
 
-(def-c-type string-strm "String_strm" "String_strm *" string-stream 15)
+(def-c-type string-strm "String_strm" "String_strm *" gl-string-stream 15)
 
 (def-c-type file-strm "File_strm" "File_strm *" file-stream 16)
 

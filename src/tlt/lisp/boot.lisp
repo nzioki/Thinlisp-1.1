@@ -122,7 +122,8 @@
 	     (setq delete-from-preventer nil))
 	   (unless delete-from-preventer
 	     (delete-glt-module-binary module)))
-	 (compile-load-glt-module 'boot (and recompile (null from)))
+	 (compile-load-glt-module 'boot (and recompile (null from)) 
+				  1 (1+ (length glt-modules)))
 	 ;; After loading BOOT, call this function to get into the
 	 ;; newest compiled form.
 	 (compile-glt-modules recompile from))
@@ -132,12 +133,15 @@
   (with-compilation-unit ()
     (loop with *readtable* = (copy-readtable nil)
 	with recompile-module? = (and recompile (null from))
-	for module in glt-modules do
+	with total-modules = (1+ (length glt-modules))
+	for module in glt-modules 
+	for module-count from 2 do
       (when (and recompile
 		 (null recompile-module?)
 		 (string= (symbol-name from) (symbol-name module)))
 	(setq recompile-module? t))
-      (compile-load-glt-module module recompile-module?)))
+      (compile-load-glt-module module recompile-module? 
+			       module-count total-modules)))
   (let ((gli-compile-glt (intern "COMPILE-GLT" "GLI"))
 	(gl-compile-glt (intern "COMPILE-GLT" "GL")))
     (unless (fboundp gli-compile-glt)
@@ -217,7 +221,7 @@
 
 (defvar exports-file-write-date nil)
 
-(defun compile-load-glt-module (module force-recompile?)
+(defun compile-load-glt-module (module force-recompile? count total)
   (let* ((file-name (string-downcase (symbol-name module)))
 	 (lisp-file 
 	   (finalize-pathname
@@ -251,13 +255,13 @@
 		   (<= bin-date? lisp-date))
 	      (and exports-file-write-date
 		   (<= bin-date? exports-file-write-date)))
-      (format t "Compiling ~a~%" lisp-file)
+      (format t "Compiling ~40a  [~3d/~3d]~%" lisp-file count total)
       (force-output)
       (compile-file lisp-file :output-file relative-bin-file)
       (setq bin-date? (file-write-date bin-file)))
     (when (or (null load-date?)
 	      (/= load-date? bin-date?))
-      (format t "Loading   ~a~%" bin-file)
+      (format t "Loading   ~40a  [~3d/~3d]~%" bin-file count total)
       (force-output)
       (load bin-file)
       (setf (get module :glt-load-date) bin-date?))))

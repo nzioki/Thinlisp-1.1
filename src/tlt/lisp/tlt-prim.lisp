@@ -1032,17 +1032,17 @@
 ;;; implementation.
 
 (def-c-translation gl:make-string-output-stream ()
-  ((lisp-specs :ftype (() string-stream))
+  ((lisp-specs :ftype (() gl-string-stream))
    `(make-gl-string-stream))
   ((trans-specs :c-type (() obj))
    (make-c-function-call-expr
      (make-c-name-expr "alloc_string_strm")
      (list (make-c-literal-expr
 	     (region-number-for-type-and-area
-	       'string-stream
+	       'gl-string-stream
 	       (declared-area-name
 		 (l-expr-env function-call-l-expr)
-		 'string-stream)))
+		 'gl-string-stream)))
 	   (make-c-literal-expr (c-type-tag 'string-strm))))))
 
 (def-gl-macro gl:make-string-input-stream (string)
@@ -1057,7 +1057,7 @@
 (gl:declaim (gl:side-effect-free string-stream-strings))
 
 (def-c-translation string-stream-strings (string-stream)
-  ((lisp-trans :ftype ((string-stream) list))
+  ((lisp-trans :ftype ((gl-string-stream) list))
    `(gl-string-stream-strings ,string-stream))
   ((trans-specs :c-type ((obj) obj))
    (make-c-indirect-selection-expr
@@ -1065,7 +1065,7 @@
      "strings")))
 
 (def-c-translation set-string-stream-strings (string-stream list)
-  ((lisp-trans :ftype ((string-stream list) list))
+  ((lisp-trans :ftype ((gl-string-stream list) list))
    `(setf (gl-string-stream-strings ,string-stream) ,list))
   ((trans-specs :c-type ((obj obj) obj))
    (make-c-infix-expr
@@ -1079,7 +1079,7 @@
 (gl:declaim (gl:side-effect-free string-stream-input-string))
 
 (def-c-translation string-stream-input-string (string-stream)
-  ((lisp-trans :ftype ((string-stream) string))
+  ((lisp-trans :ftype ((gl-string-stream) string))
    `(gl-string-stream-input-string ,string-stream))
   ((trans-specs :c-type ((obj) (array unsigned-char)))
    (make-c-indirect-selection-expr
@@ -1087,7 +1087,7 @@
      "input_string")))
 
 (def-c-translation set-string-stream-input-string (string-stream string)
-  ((lisp-trans :ftype ((string-stream string) string))
+  ((lisp-trans :ftype ((gl-string-stream string) string))
    `(setf (gl-string-stream-input-string ,string-stream)
 	  ,string))
   ((trans-specs :c-type ((obj (array unsigned-char)) (array unsigned-char)))
@@ -1102,7 +1102,7 @@
 (gl:declaim (gl:side-effect-free string-stream-input-index))
 
 (def-c-translation string-stream-input-index (string-stream)
-  ((lisp-trans :ftype ((string-stream) fixnum))
+  ((lisp-trans :ftype ((gl-string-stream) fixnum))
    `(gl-string-stream-input-index ,string-stream))
   ((trans-specs :c-type ((obj) sint32))
    (make-c-indirect-selection-expr
@@ -1110,7 +1110,7 @@
      "input_index")))
 
 (def-c-translation set-string-stream-input-index (string-stream fixnum)
-  ((lisp-trans :ftype ((string-stream fixnum) fixnum))
+  ((lisp-trans :ftype ((gl-string-stream fixnum) fixnum))
    `(setf (gl-string-stream-input-index ,string-stream)
 	  ,fixnum))
   ((trans-specs :c-type ((obj sint32) sint32))
@@ -1125,7 +1125,7 @@
 (gl:declaim (gl:side-effect-free string-stream-input-index-bounds))
 
 (def-c-translation string-stream-input-index-bounds (string-stream)
-  ((lisp-trans :ftype ((string-stream) fixnum))
+  ((lisp-trans :ftype ((gl-string-stream) fixnum))
    `(gl-string-stream-input-index-bounds ,string-stream))
   ((trans-specs :c-type ((obj) sint32))
    (make-c-indirect-selection-expr
@@ -1133,7 +1133,7 @@
      "input_index_bounds")))
 
 (def-c-translation set-string-stream-input-index-bounds (string-stream fixnum)
-  ((lisp-trans :ftype ((string-stream fixnum) fixnum))
+  ((lisp-trans :ftype ((gl-string-stream fixnum) fixnum))
    `(setf (gl-string-stream-input-index-bounds ,string-stream)
 	  ,fixnum))
   ((trans-specs :c-type ((obj sint32) sint32))
@@ -1934,8 +1934,10 @@
 
 (def-c-translation compiled-function-optional-arguments (compiled-function)
   ((lisp-specs :ftype ((compiled-function) fixnum))
-   `(error "No Lisp env implementation of (compiled-function-optional-arguments ~s)"
-	   ,compiled-function))
+   `(progn
+      (error "No Lisp env implementation of (compiled-function-optional-arguments ~s)"
+	     ,compiled-function)
+      0))
   ((trans-specs :c-type ((obj) sint32))
    (make-c-cast-expr
      'sint32 (make-c-indirect-selection-expr
@@ -1944,8 +1946,10 @@
 
 (def-c-translation compiled-function-sets-values-count (compiled-function)
   ((lisp-specs :ftype ((compiled-function) fixnum))
-   `(error "No Lisp env implementation of (compiled-function-optional-arguments ~s)"
-	   ,compiled-function))
+   `(progn
+      (error "No Lisp env implementation of (compiled-function-optional-arguments ~s)"
+	     ,compiled-function)
+      0))
   ((trans-specs :c-type ((obj) sint32))
    (make-c-cast-expr
      'sint32 (make-c-indirect-selection-expr
@@ -1954,8 +1958,10 @@
 
 (def-c-translation compiled-function-default-arguments (compiled-function)
   ((lisp-specs :ftype ((compiled-function) t))
-   `(error "No Lisp env implementation of (compiled-function-default-arguments ~s)"
-	   ,compiled-function))
+   `(progn
+      (error "No Lisp env implementation of (compiled-function-default-arguments ~s)"
+	     ,compiled-function)
+      0))
   ((trans-specs :c-type ((obj) obj))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer func) compiled-function)
@@ -1968,8 +1974,10 @@
    #+cmu
    `(kernel:%function-name ,compiled-function)
    #-(or lucid cmu)
-   `(error "No Lisp env implementation of (compiled-function-name ~s)"
-	   ,compiled-function))
+   `(progn
+      (error "No Lisp env implementation of (compiled-function-name ~s)"
+	     ,compiled-function)
+      :dummy-name))
   ((trans-specs :c-type ((obj) obj))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer func) compiled-function)
