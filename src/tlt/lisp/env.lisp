@@ -320,9 +320,9 @@
   (unless (memq :translator *features*)
     `(progn
        ,@(loop for decl in decl-specs
-	       when (eq (car decl) 'special)
+	       when (memqp (car decl) '(special declaration))
 		 collect `(lisp-declaim ,decl))
-       (gl:eval-when (compile load eval)
+       (gl:eval-when (:compile-toplevel :load-toplevel :execute)
 	 (proclaim-decl-list ',decl-specs)))))
 
 

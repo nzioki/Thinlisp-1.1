@@ -3496,6 +3496,11 @@
 	  (,new-name ,@args))))
        
     (t
+     (fat-and-slow-warning-with-description
+      env 
+      "FUNCALL can be further optimized using FUNCALL-SIMPLE-COMPILED-FUNCTION~@
+       or this warning can be suppressed with a FAT-AND-SLOW declaration."
+      `(gl:funcall ,function ,@args))
      `(gl:apply ,function (list-dynamic-extent ,@args)))))
 
 

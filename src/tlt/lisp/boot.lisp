@@ -146,8 +146,9 @@
     #+lucid                    "sbin"
     #+aclpc                    "acl"
     #+allegro                  "fasl"
-    #+cmu17                    "x86f"
-    #-(or lucid aclpc allegro cmu17) "bin")
+    #+cmu                      "x86f"
+    #+mcl                      "pfsl"
+    #-(or lucid aclpc allegro cmu mcl) "bin")
 
 
 

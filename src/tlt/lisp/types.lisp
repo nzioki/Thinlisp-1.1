@@ -137,8 +137,11 @@
 	;; sequences.  In CL, only vectors and simple-arrays are subtypes of
 	;; sequence.
 	((eq superior-type 'sequence)
-	 (or (gl-subtypep subtype 'array)
-	     (gl-subtypep subtype 'list)))
+	 (multiple-value-bind (result certainp)
+	     (gl-subtypep subtype 'array)
+	   (if result
+	       (values result certainp)
+	     (gl-subtypep subtype 'list))))
 	((eq subtype 'void)
 	 (values nil t))
 	((eq subtype '*)

@@ -98,13 +98,24 @@
   (lcl:cd *default-pathname-defaults*)
   #+allegro
   (excl:chdir *default-pathname-defaults*)
+  #+cmu
+  (unix:unix-chdir *default-pathname-defaults*)
+
   *default-pathname-defaults*)
 
 (defun default-directory ()
   #+lucid
   (lcl::pwd)
   #+allegro
-  (excl:current-directory))
+  (excl:current-directory)
+  #+cmu
+  (multiple-value-bind (a b)
+      (unix:unix-current-directory)
+    (declare (ignore a))
+    b)
+  #-(or lucid allegro cmu)
+  *default-pathname-defaults*
+  )
 
 
 
@@ -120,9 +131,11 @@
 (defconstant lisp-file-type "lisp")
 
 (defconstant lisp-binary-file-type
-    #+lucid "sbin"
-    #+allegro "fasl"
-    #-(or lucid allegro) "bin")
+    #+lucid                      "sbin"
+    #+allegro                    "fasl"
+    #+cmu                        "x86f"
+    #+mcl                        "pfsl"
+    #-(or lucid allegro cmu mcl) "bin")
 
 (defconstant c-file-type "c")		; duh
 
@@ -314,9 +327,9 @@
 (defmacro cons-car (cons)
   #+fastest-glt
   `(car (the cons ,cons))
-  #+(and (not fastest-glt) cmu17)
+  #+(and (not fastest-glt) cmu)
   `(safe-car ,cons)
-  #+(and (not fastest-glt) (not cmu17))
+  #+(and (not fastest-glt) (not cmu))
   (cond ((and (constantp cons)
 	      (not (consp (eval cons))))
 	 `(cons-error ,cons))
@@ -342,9 +355,9 @@
 (defmacro cons-cdr (cons)
   #+fastest-glt
   `(cdr (the cons ,cons))
-  #+(and (not fastest-glt) cmu17)
+  #+(and (not fastest-glt) cmu)
   `(safe-cdr ,cons)
-  #+(and (not fastest-glt) (not cmu17))
+  #+(and (not fastest-glt) (not cmu))
   (cond ((and (constantp cons)
 	      (not (consp (eval cons))))
 	 `(cons-error ,cons))
@@ -628,11 +641,11 @@
       #+lucid
       `(lcl:with-buffered-terminal-output (*standard-output*)
 	 ,@forms)
-      #+allegro
+      #+(or allegro cmu)
       `(multiple-value-prog1
 	   (progn ,@forms)
 	 (force-output))
-      #-(or lucid allegro)
+      #-(or lucid allegro cmu)
       `(progn ,@forms)))
 
 

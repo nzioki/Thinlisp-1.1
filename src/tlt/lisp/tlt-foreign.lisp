@@ -102,7 +102,9 @@
 (defvar underlying-def-foreign-callable
   #+lucid
   'lcl:def-foreign-callable
-  #-lucid
+  #+(and cmu verify)
+  'alien:def-alien-routine
+  #-(or lucid (and cmu verify))
   nil)
 
 (defun underlying-lisp-callable-type (type)
@@ -115,8 +117,19 @@
 			(:char-pointer           . (:pointer :char))
 			)))
       type)
+  #+(and cmu verify)
+  (or (cdr (assq type '((:fixnum-long            . '(alien (signed 64)))
+			(:fixnum-int             . '(alian (signed 32)))
+			(:object                 . '(alian '(* void)))
+			(:string                 . '(alien '(* (unsigned 16))))
+			(:unisgned-32bit-pointer . '(alien '(* (unsigned 32))))
+			(:char-pointer           . '(alien '(* char))))))
+      type)
   #-lucid
   type)
+
+
+
 
 ;;; The macro `gli::def-foreign-callable' is written to be compatible with the
 ;;; Lucid and Chestnut implementations.  It defines the function in question,

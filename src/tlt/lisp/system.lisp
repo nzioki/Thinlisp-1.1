@@ -133,6 +133,23 @@
 ;;;     delta
 ;;;     systems ...)
 
+;;; A more bland example might be for a simple Lisp-based echo command.  
+
+;;;   (declare-system (lecho)
+;;;     boot
+;;;     echo)
+
+;;; This declaration would expect to find a "lecho" directory as a sibling to
+;;; glt and gl.  Within lecho, there should be lisp, c, opt, o, and o-pg
+;;; subdirectories.  In the Lisp directory there should be files boot.lisp and
+;;; echo.lisp.  Inside of boot.lisp, it should default to the package "GL-USER",
+;;; there should be the following declare-system form, and any needed packages
+;;; should be created.  Note that the symbol naming the main function must have
+;;; a package matching what will be found in the body of the system.  In the
+;;; second file, echo.lisp, there should be an in-package to the lecho package,
+;;; and the function gl-user::main (or some such name) that takes a single
+;;; argument, which is the list of given args.
+
 (defmacro gl:declare-system ((name &key
 				   (library nil)
 				   (main-function nil)

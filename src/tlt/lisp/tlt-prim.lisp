@@ -1435,7 +1435,7 @@
 				    `((gl:inline ,op-name))
 				    nil))
 		  (gl:defun ,op-name (gl:list)
-		    (gl:declare (gl:list gl:list)
+		    (gl:declare (gl:type gl:list gl:list)
 				(gl:return-type t))
 		    ,@(loop for op-cons on (reverse car-cdr-list)
 			    for op = (car op-cons)
@@ -1978,7 +1978,9 @@
   ((lisp-specs :ftype ((compiled-function) t))
    #+lucid
    `(lucid::function-name ,compiled-function)
-   #-lucid
+   #+cmu
+   `(kernel:%function-name ,compiled-function)
+   #-(or lucid cmu)
    `(error "No Lisp env implementation of (compiled-function-name ~s)"
 	   ,compiled-function))
   ((trans-specs :c-type ((obj) obj))
