@@ -109,7 +109,8 @@
 		  tli::*tli-package*))
 	(op-string (string-downcase (symbol-name op-symbol))))
     `(progn
-       (declaim (functional ,function-name))
+       (declaim (functional ,function-name)
+		(conser ,function-name))
        (defun ,function-name (number1 number2)
 	 (declare (number number1 number2)
 		  (return-type number))
@@ -201,7 +202,8 @@
   (error "Integer /, use floor or another truncating operator: arg1 = ~a, arg2 = ~a"
 	 number1 number2))
 
-(declaim (functional generic-negate))
+(declaim (functional generic-negate)
+	 (conser generic-negate))
 
 (defun generic-negate (number)
   (declare (return-type number))
@@ -309,7 +311,8 @@
 	     (truncate fixnum divisor-fixnum)))))
 
 (defun generic-floor (number divisor)
-  (declare (return-type (values fixnum number)))
+  (declare (consing-area either)
+	   (return-type (values fixnum number)))
   (typecase number
     (fixnum
      (typecase divisor
@@ -345,7 +348,8 @@
      (values 0 0))))
 
 (defun generic-floor-one (number)
-  (declare (return-type (values fixnum number)))
+  (declare (consing-area either)
+	   (return-type (values fixnum number)))
   (typecase number
     (fixnum
      (values number 0))
@@ -360,7 +364,8 @@
      (values 0 0))))
 
 (defun generic-ffloor (number divisor)
-  (declare (return-type (values double-float number)))
+  (declare (consing-area either)
+	   (return-type (values double-float number)))
   (typecase number
     (fixnum
      (typecase divisor
@@ -397,7 +402,8 @@
      (values 0.0 0))))
 
 (defun generic-ffloor-one (number)
-  (declare (return-type (values double-float number)))
+  (declare (consing-area either)
+	   (return-type (values double-float number)))
   (typecase number
     (fixnum
      (values (float (the fixnum number) 1.0) 0))
@@ -413,7 +419,8 @@
      (values 0.0 0))))
 
 (defun generic-ceiling (number divisor)
-  (declare (return-type (values fixnum number)))
+  (declare (consing-area either)
+	   (return-type (values fixnum number)))
   (let ((ceiling-value 0))
     (declare (fixnum ceiling-value))
     (typecase number

@@ -205,7 +205,8 @@
   (getf-macro (symbol-plist symbol) property default))
 
 (defun set-get (symbol property new-value)
-  (declare (return-type t))
+  (declare (return-type t)
+	   (consing-area either))
   (if symbol
       (let* ((original-plist (tli::non-null-symbol-plist symbol))
 	     (plist original-plist))

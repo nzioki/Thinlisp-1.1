@@ -309,7 +309,8 @@
 	  t))
 
 (defun create-file (filename &optional binary?)
-  (declare (string filename))
+  (declare (string filename)
+	   (consing-area either))
   (if binary?
       (close-file-stream (tli::call-fopen filename "ab"))
       (close-file-stream (tli::call-fopen filename "a"))))
@@ -361,6 +362,7 @@
 
 (defun open-for-binary-input (filename if-does-not-exist)
   (declare (string filename)
+	   (consing-area either)
 	   (return-type t))
   (case if-does-not-exist
     ((nil)
@@ -379,6 +381,7 @@
 
 (defun open-for-text-input (filename if-does-not-exist)
   (declare (string filename)
+	   (consing-area either)
 	   (return-type t))
   (case if-does-not-exist
     ((nil)
@@ -399,6 +402,7 @@
 
 (defun open-for-binary-output (filename if-exists if-does-not-exist)
   (declare (string filename)
+	   (consing-area either)
 	   (return-type t))
   (case if-does-not-exist
     (:create   ; don't need to check existence for this (except for :overwrite)
@@ -451,6 +455,7 @@
 
 (defun open-for-text-output (filename if-exists if-does-not-exist)
   (declare (string filename)
+	   (consing-area either)
 	   (return-type t))
   (case if-does-not-exist
     (:create				; don't need to check existence for this

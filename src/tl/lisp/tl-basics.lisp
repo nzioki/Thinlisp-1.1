@@ -101,6 +101,7 @@
 
 (defun copy-list (list)
   (declare (list list)
+	   (consing-area either)
 	   (return-type list))
   (if (null list)
       nil

@@ -1984,7 +1984,7 @@
 	     `(float (the fixnum ,fixnum) 0.0)))))
 
 (defun coerce-to-double-float-function (x)
-;;  (declare (eliminate-for-gsi))
+  (declare (consing-area either))
   (coerce-to-double-float x))
 
 

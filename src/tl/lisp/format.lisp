@@ -248,7 +248,8 @@
 
 (defun copy-string (string length)
   (declare (string string)
-	   (fixnum length))
+	   (fixnum length)
+	   (consing-area either))
   (let ((new-string (make-string length)))
     (replace-strings new-string string :end2 length)
     new-string))
@@ -896,6 +897,7 @@
 (defvar field-width-string-list (list (make-string field-width-string-length)))
 
 (defun alloc-field-width-string ()
+  (declare (consing-area permanent))
   (let* ((this-cons field-width-string-list)
 	 (this-string (car this-cons))
 	 (next-cons? (cdr this-cons)))
