@@ -52,7 +52,7 @@
   (or (cdr (assoc key makefile-element-alist))
       ""))
 
-(defparameter debuggable-makefile nil)
+(defparameter debuggable-makefile t)
 
 
 

@@ -8,9 +8,23 @@
 
 
 
+;;;; Things that need attention.
 
+The princ handling of pathnames in cmu lisp is different
+from other platforms.  That should be patched and submitted
+back to them.
 
+Jim should review my change to avoid using packages that
+are otherwise not referenced in the translate.
 
+Jim should decide where to put the compile time error
+funtion derror, etc.
+
+Jim should decide where the unix-style-namestring function
+should really reside.
+
+We need to have a way for systems to declare thier C library
+dependencies, for example so -lm can appear on the unix makefile.
 
 
 ;;;; Wish List of Future Work
