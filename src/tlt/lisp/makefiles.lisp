@@ -185,13 +185,13 @@
 	     (format output "SYSLIBS = ~a~%" (makeup 'system-libs))))
       (tlt-write-string "OBJECTS = " output)
       (loop for file-count = 1 then (1+ file-count)
-	  for file-name in (system-extra-c-files system) do
+	    for file-name in (system-extra-c-files system) do
 	(when (= (mod file-count files-per-line) 0)
 	  (format output " \\~%        "))
 	(format output " ~a~a" file-name obj))
       (loop with file-count = (length (system-extra-c-files system))
-	  for module in (system-modules system)
-	  do
+	    for module in (system-modules system)
+	    do
 	(when (system-module-included-p system module)
 	  (incf file-count)
 	  (when (= (mod file-count files-per-line) 0)
@@ -239,7 +239,7 @@
 	(with-open-file (output path :direction 
 			 :output :if-exists :supersede)
 	  (loop for line = (read-line input nil :eof)
-	      until (eq line :eof) do
+		until (eq line :eof) do
 	    (write-line line output)))))
     (delete-file temp-path)
     

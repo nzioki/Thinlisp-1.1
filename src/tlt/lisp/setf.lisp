@@ -55,11 +55,11 @@
 	   `(append
 	      '(,function)
 	      (list place)
-	      ,@(loop for arg-cons = lambda-list then (cdr arg-cons)
-		      with within-keyword-args? = nil
+	      ,@(loop with within-keyword-args? = nil
+		      for arg-cons = lambda-list then (cdr arg-cons)
+		      for arg = (car arg-cons)
+		      for arg-symbol = (if (consp arg) (cons-car arg) arg)
 		      while arg-cons
-		      for arg = (cons-car arg-cons)
-		      for arg-symbol = (if (consp arg) (car arg) arg)
 		      nconcing
 		      (cond ((eq arg '&rest)
 			     (setq arg-cons (cdr arg-cons))
