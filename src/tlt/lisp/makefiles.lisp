@@ -95,9 +95,11 @@
      (link . "$(CC)")
      (archive . "ar -r -c -u"))
 
-    (("config")
-     (cc          . "@CC@")
+    (("autoconf")
+     (cc          . "@CC@ -o")
      (cc-flags    . "@CFLAGS@ -pipe -ansi -pedantic -W -Wall -c")
+     (link        . "@CC@ -o")
+     (exe-postfix . "$(EXEEXT)")
      )
 
     ))
@@ -125,7 +127,9 @@
 		do (setq alist (append subalist alist))
 		finally (return-from portalist (append port-alist alist)))
 	do
-    (generate-makefile system verbose port-name)))
+    (generate-makefile system verbose port-name))
+  (generate-autoconf-input system verbose))
+
 
 
 
@@ -135,25 +139,29 @@
 ;;; for the current ports.
 
 (defun generate-makefile (system verbose port-name)
-  (let ((path (system-makefile system port-name))
-	(temp-path (system-temporary-makefile system))
-	(bin-dir (system-bin-dir system))
-	(optimized-bin-dir (system-optimized-bin-dir system))
-	(current-year
-	 (sixth (multiple-value-list
-		 (decode-universal-time (get-universal-time)))))
-	(target (if (system-is-library-p system)
-		    (format nil "~a~(~a~)~a"
-			    (makeup 'lib-prefix)
-			    (system-name system)
-			    (makeup 'lib-postfix))
-		  (format nil "~a~(~a~)~a"
-			  (makeup 'exe-prefix)
-			  (system-name system)
-			  (makeup 'exe-postfix))))
-	(obj (makeup 'obj-postfix))
-	(pattern (makeup 'wild))
-	(files-per-line 5))
+  (let* ((path (system-makefile system port-name))
+	 (makefile-name
+	  (if (string= port-name "autoconf")
+	      "../c/makefile" ;; bogus
+	    (pathname-name path)))
+	 (temp-path (system-temporary-makefile system))
+	 (bin-dir (system-bin-dir system))
+	 (optimized-bin-dir (system-optimized-bin-dir system))
+	 (current-year
+	  (sixth (multiple-value-list
+		  (decode-universal-time (get-universal-time)))))
+	 (target (if (system-is-library-p system)
+		     (format nil "~a~(~a~)~a"
+			     (makeup 'lib-prefix)
+			     (system-name system)
+			     (makeup 'lib-postfix))
+		   (format nil "~a~(~a~)~a"
+			   (makeup 'exe-prefix)
+			   (system-name system)
+			   (makeup 'exe-postfix))))
+	 (obj (makeup 'obj-postfix))
+	 (pattern (makeup 'wild))
+	 (files-per-line 5))
     (with-open-file (output temp-path :direction :output :if-exists :supersede)
       (format output "#~%# ~a ~a Makefile~%#~%# Copyright (c) ~a The ThinLisp Group~%~%"
 	      (system-name system) (string-capitalize port-name) current-year)
@@ -213,7 +221,7 @@
       (tlt-write-char #\tab output)
       (format output "-( if [ -f ~a ] ; then rm ~a ; fi )~%~%" target target)
       
-      (format output "~a : ~a $(OBJECTS) $(LIBS)~%" target (pathname-name path))
+      (format output "~a : ~a $(OBJECTS) $(LIBS)~%" target makefile-name)
       (tlt-write-char #\tab output)
       (format output "-( if [ -f ~a ] ; then rm ~a ; fi )~%" target target)
       (tlt-write-char #\tab output)
@@ -228,7 +236,7 @@
 	     (format output "$(LIBS) $(SYSLIBS)~%~%")))
       
       (format output "~a~a : ../c/~a.c ../c/~a.h ~a"
-	      pattern obj pattern pattern (pathname-name path))
+	      pattern obj pattern pattern makefile-name)
       (loop for file in (system-extra-h-files system) do
 	(format output " ../c/~a.h" file))
       (tlt-write-char #\newline output)
@@ -275,3 +283,23 @@
 		until (eq line :eof)
 		do
 	      (write-line line output))))))))
+
+(defun generate-autoconf-input (system verbose)
+  (let ((path
+	 (make-system-file-pathname
+	  'CONFIGURE
+	  "in" nil (system-c-dir system)))
+	(typical-c-file
+	 (first (system-extra-c-files system))))
+    (with-open-file (output path
+			    :direction :output
+			    :if-exists :supersede)
+      (format output "dnl File created by ThinLisp~%")
+      (format output "dnl   autoconf input for ~a~%"
+	      (system-name system))
+      (format output "AC_PREREQ(2.13)~%")
+      (format output "AC_INIT(~a.c)~%" typical-c-file)
+      (format output "AC_PROG_CC~%")
+      (format output "AC_EXEEXT~%")
+      (format output "AC_OUTPUT(makefile)~%")
+      (format output "dnl End of file~%"))))

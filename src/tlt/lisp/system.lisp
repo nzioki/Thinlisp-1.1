@@ -401,15 +401,15 @@
     "txt" nil (system-c-dir system)))
 
 (defun system-makefile (system &optional port-name)
-  (make-system-file-pathname
-   (if port-name 
-       (intern (format nil "makefile~a~a"
-		       (if (string= port-name "config")
-			   "."
-			 "-")
-		       port-name))
-     'makefile)
-   nil nil (system-c-dir system)))
+  (let ((autoconf-p (string= "autoconf" port-name)))
+    (make-system-file-pathname
+     (if port-name
+	 (intern
+	  (format nil "makefile~a~a"
+		  (if autoconf-p "." "-")
+		  (if autoconf-p "in" port-name)))
+       'makefile)
+     nil nil (system-c-dir system))))
 
 (defun system-temporary-makefile (system)
   (make-system-file-pathname
