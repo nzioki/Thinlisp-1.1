@@ -1,13 +1,13 @@
 <HTML>
 <HEAD>
-<!-- Created by texi2html 1.56k from tl-manual.texinfo on 12 October 1999 -->
+<!-- Created by texi2html 1.56k from tl-manual.texinfo on 13 October 1999 -->
 
 <TITLE>ThinLisp Manual</TITLE>
 </HEAD>
 <BODY>
 <H1>ThinLisp Manual</H1>
 <H2>Version 0.5</H2>
-<H2>12 October 1999</H2>
+<H2>13 October 1999</H2>
 <ADDRESS>The ThinLisp Group:</ADDRESS>
 <ADDRESS>Jim Allard</ADDRESS>
 <ADDRESS>Ben Hyde</ADDRESS>
@@ -1454,27 +1454,18 @@ argument to be type T, turning off all attempts to specialize that argument.
 <H1><A NAME="SEC41" HREF="tl-manual_toc.html#TOC41">Memory Architecture</A></H1>
 
 <P>
-Use pointers to a one word (4 byte) header structure as the basic mechanism.
-The type should be an 8-bit unsigned byte value.  The upper 3 bytes of the
-header word should be used for type specific data.  For vectors this should be
-the length, giving us a simple vector with one word of overhead (all previous
-Lisp implementations we've used, except the Lispm, had two or more words of
-header).  All Lisp objects should be aligned on 4 byte addresses.  There is an
-argument that they should be aligned on 8 byte addresses.  There are two
-advantages to 8 byte alignment.  One is that it would enable us to reliably
-store immediate double floats and pointers into the same array.  The second is
-that it would can give us an immediate type tag for conses that is itself the
-offset to the cdr of a cons.  The argument for 4 byte alignment is that all
-current C compilers we use align structures on 4 byte addresses, but some won't
-align them on 8 byte addresses, even if they contain doubles.  The other
-argument for 4 byte alignment is that we would not need to occasionally skip
-forward 4 bytes when allocating from heap in order to find the next 8 byte
-aligned address.  For now, the 4 byte alignment wins.
+ThinLisp uses pointers to a one word (4 byte) header structure as the basic
+mechanism.  The type element of the structure is an 8-bit unsigned byte value.
+The upper 3 bytes of the header word should be used for type specific data.  For
+vectors this should be the length, giving us a simple vector with one word of
+overhead (all previous Lisp implementations we've used, except the Lispm, had
+two or more words of header).  All Lisp objects should be aligned on 4 byte
+addresses. <A NAME="DOCF3" HREF="tl-manual_foot.html#FOOT3">(3)</A>
 
 
 <P>
 The exceptions to the pointer to a type tag rule are the following types, which
-have immediate type tags.  These types are fixnums, conses, and managed-floats.
+have immediate type tags.  These types are fixnums, conses, and characters.
 If all pointers are 4 byte aligned, then the lower 2 bits of all pointers are
 always zeros.  This gives us 3 non-zero immediate type tags.  The following are
 the immediate type tag assignments:
@@ -1504,14 +1495,15 @@ A determination of type can be made from a hex value of the pointer.
 The arguments for a 30 bit fixnum instead of a 31 is that it makes for fast
 fixnum additions and subtractions without risking overflow.  31 bit fixnums
 require a sequence point between operations to avoid the potential for overflow.
+<A NAME="DOCF4" HREF="tl-manual_foot.html#FOOT4">(4)</A>
 
 
 <P>
 Characters could be either immediate or remote, though there is some performance
 benefit to characters being immediate.  We could have a preallocated array of
-remote character objects, and allocate a Lisp character is arefing into this
-array.  For now we are going with immediate characters, especially since we are
-thinking hard about UNICODE characters, which require 16 bits and so make a
+remote character objects, and allocating a Lisp character is then arefing into
+this array.  For now we are going with immediate characters, especially since we
+are thinking hard about UNICODE characters, which require 16 bits and so make a
 pre-allocated array become somewhat too large.
 
 
@@ -1527,16 +1519,14 @@ equality test.
 
 
 <P>
-In C, the type for object should be an unsigned integer type 32 bits long.
-There are several advantages to this.  All architectures (including the Alpha
-OSF when using a linker option) can have pointer values be represented in 32
-bits, but for some platforms (the Alpha OSF) pointer types can consume something
-other that 4 bytes, 8 for all pointers on the Alpha OSF.  By forcing all objects
+In C, the implemetation type for object should be an unsigned integer type 32
+bits long.  There are several advantages to this.  All architectures (including
+the Alpha OSF <A NAME="DOCF5" HREF="tl-manual_foot.html#FOOT5">(5)</A> when
+using a linker option) can have pointer values be represented in 32 bits, but
+for some platforms (the Alpha OSF) pointer types can consume something other
+than 4 bytes, i.e. 8 for all pointers on the Alpha OSF.  By forcing all objects
 to consume 4 bytes, we can get interesting packing in structures and vectors on
-all platforms.  [The following comment applies only to 8 byte alignment: For
-example, we could put immediate floats into odd-indexed simple vector locations,
-and those floats would consume 2 elements.  For structures and frames, this
-could provide significant savings.  -jra 8/30/95]
+all platforms.  <A NAME="DOCF6" HREF="tl-manual_foot.html#FOOT6">(6)</A>
 
 
 <P>
@@ -1555,7 +1545,7 @@ that use an immediate type tag.
 The type tags for heap allocated data structures have no special issues, except
 that these values should not collide with any immediate type tags (i.e. be
 greater than 3), and be able to quickly determine if a data structure is
-reclaimed (i.e. use bit 7 as a flag).
+reclaimed (i.e. use bit 7 as a flag). <A NAME="DOCF7" HREF="tl-manual_foot.html#FOOT7">(7)</A>
 
 
 <P>
@@ -1567,7 +1557,7 @@ So the type tag table is as follows:
 Tag Value							Reclaimed Tag
 Dec     Hex	Lisp Type		C Type &#38; Conv		Dec    Hex
 -------------	---------		-------------		-------------
-0	00	immed pointer		(Header *)Obj
+0	00	immed pointer (or nil)	(Header *)Obj
 1	01	immed fixnum		((sint32)Obj)&#62;&#62;2
 2	02	cons			(Obj *)(Obj-2)
 3	03	immed character		(unsigned char)(Obj&#62;&#62;2)
@@ -1581,10 +1571,14 @@ Dec     Hex	Lisp Type		C Type &#38; Conv		Dec    Hex
 11	0B	symbol			(Sym *)Obj	 	139	8B
 12	0C	compiled-function	(Func *)Obj	 	140	8C
 13	0D	package			(Package *)Obj	 	141	8D
+14      0E      unbound                 (Hdr *)Obj
+15      0F      string-stream           (String_strm *)Obj
+16      10      file-stream		(File_strm *)Obj
 </PRE>
 
 <P>
-Each of the data structures are described below.
+The table above can be verified with the implementation by calling
+<CODE>(tli::print-type-tags)</CODE>.  Each of the data structures are described below.
 
 
 
@@ -1609,8 +1603,8 @@ typedef struct {
 </PRE>
 
 <P>
-In C references to array are guaranteed to not be bounds clicked.  this means
-that this one type can be used to all elements of arbitrarily sized simple
+In C, references to array are guaranteed to not be bounds clicked.  this means
+that this one type can be used to access all elements of arbitrarily sized simple
 vectors.  Constant vectors can be made by having a type of simple-vector local
 to the C file containing the constant so that we can use an initialized
 structure.  For example, a constant simple vector containing 5 fixnums could be
@@ -1949,7 +1943,7 @@ in the translator implement data structure allocation and manipulation, the
 defining of constants, parameters, variables, macros, and functions.  The system
 will not contain many of the features normally present in a full Common Lisp
 implementation, most notably no garbage collector, lexical closures, rest
-arguments, condition system, bignums, complex numbers, or CLOS.  <A NAME="DOCF3" HREF="tl-manual_foot.html#FOOT3">(3)</A>  The built-in types will be
+arguments, condition system, bignums, complex numbers, or CLOS.  <A NAME="DOCF8" HREF="tl-manual_foot.html#FOOT8">(8)</A>  The built-in types will be
 limited to packages, symbols, conses, fixnums, doubles, simple-vectors, simple-
 arrays of unsigned-byte 1, 8, and 16 bits, simple-arrays of doubles, and
 fill-pointered non-adjustable strings.  Notable complex features that will be
@@ -1969,7 +1963,276 @@ functions that return a single value.
 
 
 
-<H1><A NAME="SEC51" HREF="tl-manual_toc.html#TOC51">Index</A></H1>
+<H1><A NAME="SEC51" HREF="tl-manual_toc.html#TOC51">Required Symbols</A></H1>
+
+<P>
+<I>This chapter was generated by Rick Harris in 1997 to show which symbols from the Chestnut
+RTL are used when linking G2.  This can be used as a first approximation about what
+runtime library routines we will have to build.</I>
+
+
+
+<PRE>
+* means g2 only (not gsi)
+
+--- initialization ---
+initialization of lists, arrays, floats,
+  functions, bignums, packages, strings, 
+  and symbols
+initialization of variables
+
+--- memory allocation ---
+adjust-area-target-sizes
+allocate-memory-to-target
+area-memory-limit
+area-memory-used
+restore-frontier
+room
+
+--- other ---
+sleep *
+%pointer
+
+--- error system ---
+break
+cerror
+exit *
+
+--- control flow ---
+catch, throw
+block, return-from
+tagbody, go
+unwind-protect
+
+--- functions ---
+MAKE-FUNCTION *
+functionp *
+
+--- function calling and return ---
+optional, keyword, and rest arguments
+multiple values
+apply
+funcall
+mapcar *
+
+--- numbers ---
++ - * /
+&#60; &#60;= = &#62;= /=
+1- 1+
+max
+min
+truncate
+mod
+rem
+minusp
+plusp
+zerop
+ceiling
+fceiling
+fround
+integer-length
+abs
+random
+round
+ffloor
+floor
+ftruncate
+atan *
+cos *
+expt *
+log *
+sin *
+sqrt *
+
+--- integers ---
+ash
+evenp *
+oddp *
+isqrt *
+logand
+logandc2
+logbitp
+logior
+lognot
+logtest
+logxor
+
+--- floats ---
+float
+scale-float *
+
+--- number conversions ---
+cdouble-to-double
+clong-to-bignum
+integer-to-long
+
+--- time ---
+encode-universal-time *
+get-universal-time *
+
+--- streams ---
+extend-string-output-stream *
+get-output-stream-string *
+make-broadcast-stream
+make-string-output-stream *
+
+--- hashing ---
+sxhash *
+
+--- pathnames ---
+directory-namestring *
+merge-pathnames *
+pathname *
+pathname-directory *
+pathname-name *
+pathname-type *
+pathname-version *
+make-pathname *
+
+--- filesystem ---
+directory *
+open *
+close *
+file-write-date
+probe-file *
+
+--- input ---
+read *
+read-line *
+read-from-string *
+
+--- output ---
+force-output *
+format *
+princ *
+print *
+terpri *
+write-char *
+write-string *
+
+--- eval ---
+eval-run *
+macroexpand *
+
+--- symbols ---
+gensym
+make-symbol
+symbol-value, setf
+symbol-function, setf
+set
+boundp
+fboundp
+fmakunbound
+symbol-package
+symbol-name
+
+--- packages ---
+export
+find-package
+find-symbol
+import
+intern
+make-package
+package-name *
+package-use-list *
+
+--- plists ---
+do-remf
+get, setf
+getf,setf
+remprop
+
+--- arrays ---
+aref, setf
+array-dimension
+array-element-type *
+array-total-size
+make-array
+vector *
+
+--- lists ---
+cons
+fifth
+copy-list *
+copy-tree *
+append
+nconc
+assoc *
+last
+list
+list-length
+list*
+make-list
+ncons
+nth
+nthcdr
+nreconc *
+member
+set-difference *
+set-exclusive-or *
+union
+assoc
+nsubst *
+
+--- sequences ---
+elt *
+length
+concatenate *
+copy-seq *
+delete *
+nreverse
+reverse
+subseq *
+adjoin
+count *
+delete *
+fill *
+find *
+position
+rassoc *
+remove-if *
+remove *
+replace *
+search *
+sort *
+substitute *
+
+--- strings ---
+SI-istring
+SI-string-base
+string
+string-append
+make-string
+nstring-downcase *
+nstring-upcase
+string-downcase
+string-eq
+string-equal
+string-greaterp *
+string-lessp *
+string-lt *
+string-not-equal *
+string-not-greaterp *
+string-not-lessp *
+string-upcase *
+
+--- characters ---
+digit-char
+digit-char-p
+
+--- equality ---
+eq
+eql
+equal
+
+--- types ---
+type-of *
+
+</PRE>
+
+
+
+<H1><A NAME="SEC52" HREF="tl-manual_toc.html#TOC52">Index</A></H1>
 
 <P>
 Jump to:
@@ -1982,7 +2245,7 @@ Jump to:
 
 
 <P><HR><P>
-This document was generated on 12 October 1999 using
+This document was generated on 13 October 1999 using
 <A HREF="http://wwwinfo.cern.ch/dis/texi2html/">texi2html</A>&nbsp;1.56k.
 </BODY>
 </HTML>

@@ -13,29 +13,18 @@ File: tl-manual.info,  Node: Memory,  Next: Original-Introduction,  Prev: Origin
 Memory Architecture
 *******************
 
-   Use pointers to a one word (4 byte) header structure as the basic
-mechanism.  The type should be an 8-bit unsigned byte value.  The upper
-3 bytes of the header word should be used for type specific data.  For
-vectors this should be the length, giving us a simple vector with one
-word of overhead (all previous Lisp implementations we've used, except
-the Lispm, had two or more words of header).  All Lisp objects should
-be aligned on 4 byte addresses.  There is an argument that they should
-be aligned on 8 byte addresses.  There are two advantages to 8 byte
-alignment.  One is that it would enable us to reliably store immediate
-double floats and pointers into the same array.  The second is that it
-would can give us an immediate type tag for conses that is itself the
-offset to the cdr of a cons.  The argument for 4 byte alignment is that
-all current C compilers we use align structures on 4 byte addresses,
-but some won't align them on 8 byte addresses, even if they contain
-doubles.  The other argument for 4 byte alignment is that we would not
-need to occasionally skip forward 4 bytes when allocating from heap in
-order to find the next 8 byte aligned address.  For now, the 4 byte
-alignment wins.
+   ThinLisp uses pointers to a one word (4 byte) header structure as
+the basic mechanism.  The type element of the structure is an 8-bit
+unsigned byte value.  The upper 3 bytes of the header word should be
+used for type specific data.  For vectors this should be the length,
+giving us a simple vector with one word of overhead (all previous Lisp
+implementations we've used, except the Lispm, had two or more words of
+header).  All Lisp objects should be aligned on 4 byte addresses. (1)
 
    The exceptions to the pointer to a type tag rule are the following
 types, which have immediate type tags.  These types are fixnums,
-conses, and managed-floats.  If all pointers are 4 byte aligned, then
-the lower 2 bits of all pointers are always zeros.  This gives us 3
+conses, and characters.  If all pointers are 4 byte aligned, then the
+lower 2 bits of all pointers are always zeros.  This gives us 3
 non-zero immediate type tags.  The following are the immediate type tag
 assignments:
 
@@ -54,12 +43,12 @@ assignments:
    The arguments for a 30 bit fixnum instead of a 31 is that it makes
 for fast fixnum additions and subtractions without risking overflow.
 31 bit fixnums require a sequence point between operations to avoid the
-potential for overflow.
+potential for overflow.  (2)
 
    Characters could be either immediate or remote, though there is some
 performance benefit to characters being immediate.  We could have a
-preallocated array of remote character objects, and allocate a Lisp
-character is arefing into this array.  For now we are going with
+preallocated array of remote character objects, and allocating a Lisp
+character is then arefing into this array.  For now we are going with
 immediate characters, especially since we are thinking hard about
 UNICODE characters, which require 16 bits and so make a pre-allocated
 array become somewhat too large.
@@ -72,17 +61,14 @@ the type values.
 a null test, a mask and an integer equality test, a character byte
 fetch, and another integer equality test.
 
-   In C, the type for object should be an unsigned integer type 32 bits
-long.  There are several advantages to this.  All architectures
-(including the Alpha OSF when using a linker option) can have pointer
-values be represented in 32 bits, but for some platforms (the Alpha
-OSF) pointer types can consume something other that 4 bytes, 8 for all
-pointers on the Alpha OSF.  By forcing all objects to consume 4 bytes,
-we can get interesting packing in structures and vectors on all
-platforms.  [The following comment applies only to 8 byte alignment: For
-example, we could put immediate floats into odd-indexed simple vector
-locations, and those floats would consume 2 elements.  For structures
-and frames, this could provide significant savings.  -jra 8/30/95]
+   In C, the implemetation type for object should be an unsigned
+integer type 32 bits long.  There are several advantages to this.  All
+architectures (including the Alpha OSF (3) when using a linker option)
+can have pointer values be represented in 32 bits, but for some
+platforms (the Alpha OSF) pointer types can consume something other
+than 4 bytes, i.e. 8 for all pointers on the Alpha OSF.  By forcing all
+objects to consume 4 bytes, we can get interesting packing in
+structures and vectors on all platforms.  (4)
 
    The type for managed float should have an immediate type tag so that
 we may have the smallest possible representation for floats, since so
@@ -98,14 +84,14 @@ structures that use an immediate type tag.
    The type tags for heap allocated data structures have no special
 issues, except that these values should not collide with any immediate
 type tags (i.e. be greater than 3), and be able to quickly determine if
-a data structure is reclaimed (i.e. use bit 7 as a flag).
+a data structure is reclaimed (i.e. use bit 7 as a flag). (5)
 
    So the type tag table is as follows:
 
      Tag Value							Reclaimed Tag
      Dec     Hex	Lisp Type		C Type & Conv		Dec    Hex
      -------------	---------		-------------		-------------
-     0	00	immed pointer		(Header *)Obj
+     0	00	immed pointer (or nil)	(Header *)Obj
      1	01	immed fixnum		((sint32)Obj)>>2
      2	02	cons			(Obj *)(Obj-2)
      3	03	immed character		(unsigned char)(Obj>>2)
@@ -119,8 +105,13 @@ a data structure is reclaimed (i.e. use bit 7 as a flag).
      11	0B	symbol			(Sym *)Obj	 	139	8B
      12	0C	compiled-function	(Func *)Obj	 	140	8C
      13	0D	package			(Package *)Obj	 	141	8D
+     14      0E      unbound                 (Hdr *)Obj
+     15      0F      string-stream           (String_strm *)Obj
+     16      10      file-stream		(File_strm *)Obj
 
-   Each of the data structures are described below.
+   The table above can be verified with the implementation by calling
+`(tli::print-type-tags)'.  Each of the data structures are described
+below.
 
 Simple-vectors
 ==============
@@ -138,8 +129,8 @@ maximum length of 16 Meg.
        Obj[1]:body;
      } Sv
 
-   In C references to array are guaranteed to not be bounds clicked.
-this means that this one type can be used to all elements of
+   In C, references to array are guaranteed to not be bounds clicked.
+this means that this one type can be used to access all elements of
 arbitrarily sized simple vectors.  Constant vectors can be made by
 having a type of simple-vector local to the C file containing the
 constant so that we can use an initialized structure.  For example, a
@@ -381,8 +372,42 @@ for structure and frame extensions I would like to make.  The Harbison
 and Steele manual suggests that this zero length double array technique
 will ensure alignment, but this has not yet been tested.
 
+   ---------- Footnotes ----------
+
+   (1) There is an argument that they should be aligned on 8 byte
+addresses.  There are two advantages to 8 byte alignment.  One is that
+it would enable us to reliably store immediate double floats and
+pointers into the same array.  The second is that it would can give us
+an immediate type tag for conses that is itself the offset to the cdr
+of a cons.  The argument for 4 byte alignment is that all current C
+compilers we use align structures on 4 byte addresses, but some won't
+align them on 8 byte addresses, even if they contain doubles.  The
+other argument for 4 byte alignment is that we would not need to
+occasionally skip forward 4 bytes when allocating from heap in order to
+find the next 8 byte aligned address.  For now, the 4 byte alignment
+wins.
+
+   (2) Kim Barrett recently made a convincing argument for an immediate
+type tag of zero for fixnums.  With this approach there is no bit
+fiddling needed for fixnum numeric operations.  I had originally
+dismissed this approach since it would require pointer arithmatic to be
+done to fetch the type tag of an object.  However, since most
+processors have a single instruction that can fetch from an address
+plus offset, this becomes a moot point.  For now, the existing scheme
+carries the day due to inertia.
+
+   (3) The Alpha OSF has since been renamed DEC UNIX.
+
+   (4) The following comment applies only to 8 byte alignment: For
+example, we could put immediate floats into odd-indexed simple vector
+locations, and those floats would consume 2 elements.  For structures
+and frames, this could provide significant savings.  -jra 8/30/95
+
+   (5) This latter idea of having a "reclaimed flag" has never been
+implemented.  -jallard 10/12/99
+
 
-File: tl-manual.info,  Node: Original-Introduction,  Next: Index,  Prev: Memory,  Up: Top
+File: tl-manual.info,  Node: Original-Introduction,  Next: Required-Symbols,  Prev: Memory,  Up: Top
 
 Original Introduction
 *********************
@@ -437,7 +462,273 @@ single value.
    (1) Rest arguments have since been added.  -jallard 10/9/99.
 
 
-File: tl-manual.info,  Node: Index,  Prev: Original-Introduction,  Up: Top
+File: tl-manual.info,  Node: Required-Symbols,  Next: Index,  Prev: Original-Introduction,  Up: Top
+
+Required Symbols
+****************
+
+   This chapter was generated by Rick Harris in 1997 to show which
+symbols from the Chestnut RTL are used when linking G2.  This can be
+used as a first approximation about what runtime library routines we
+will have to build.
+
+     * means g2 only (not gsi)
+     
+     --- initialization ---
+     initialization of lists, arrays, floats,
+       functions, bignums, packages, strings,
+       and symbols
+     initialization of variables
+     
+     --- memory allocation ---
+     adjust-area-target-sizes
+     allocate-memory-to-target
+     area-memory-limit
+     area-memory-used
+     restore-frontier
+     room
+     
+     --- other ---
+     sleep *
+     %pointer
+     
+     --- error system ---
+     break
+     cerror
+     exit *
+     
+     --- control flow ---
+     catch, throw
+     block, return-from
+     tagbody, go
+     unwind-protect
+     
+     --- functions ---
+     MAKE-FUNCTION *
+     functionp *
+     
+     --- function calling and return ---
+     optional, keyword, and rest arguments
+     multiple values
+     apply
+     funcall
+     mapcar *
+     
+     --- numbers ---
+     + - * /
+     < <= = >= /=
+     1- 1+
+     max
+     min
+     truncate
+     mod
+     rem
+     minusp
+     plusp
+     zerop
+     ceiling
+     fceiling
+     fround
+     integer-length
+     abs
+     random
+     round
+     ffloor
+     floor
+     ftruncate
+     atan *
+     cos *
+     expt *
+     log *
+     sin *
+     sqrt *
+     
+     --- integers ---
+     ash
+     evenp *
+     oddp *
+     isqrt *
+     logand
+     logandc2
+     logbitp
+     logior
+     lognot
+     logtest
+     logxor
+     
+     --- floats ---
+     float
+     scale-float *
+     
+     --- number conversions ---
+     cdouble-to-double
+     clong-to-bignum
+     integer-to-long
+     
+     --- time ---
+     encode-universal-time *
+     get-universal-time *
+     
+     --- streams ---
+     extend-string-output-stream *
+     get-output-stream-string *
+     make-broadcast-stream
+     make-string-output-stream *
+     
+     --- hashing ---
+     sxhash *
+     
+     --- pathnames ---
+     directory-namestring *
+     merge-pathnames *
+     pathname *
+     pathname-directory *
+     pathname-name *
+     pathname-type *
+     pathname-version *
+     make-pathname *
+     
+     --- filesystem ---
+     directory *
+     open *
+     close *
+     file-write-date
+     probe-file *
+     
+     --- input ---
+     read *
+     read-line *
+     read-from-string *
+     
+     --- output ---
+     force-output *
+     format *
+     princ *
+     print *
+     terpri *
+     write-char *
+     write-string *
+     
+     --- eval ---
+     eval-run *
+     macroexpand *
+     
+     --- symbols ---
+     gensym
+     make-symbol
+     symbol-value, setf
+     symbol-function, setf
+     set
+     boundp
+     fboundp
+     fmakunbound
+     symbol-package
+     symbol-name
+     
+     --- packages ---
+     export
+     find-package
+     find-symbol
+     import
+     intern
+     make-package
+     package-name *
+     package-use-list *
+     
+     --- plists ---
+     do-remf
+     get, setf
+     getf,setf
+     remprop
+     
+     --- arrays ---
+     aref, setf
+     array-dimension
+     array-element-type *
+     array-total-size
+     make-array
+     vector *
+     
+     --- lists ---
+     cons
+     fifth
+     copy-list *
+     copy-tree *
+     append
+     nconc
+     assoc *
+     last
+     list
+     list-length
+     list*
+     make-list
+     ncons
+     nth
+     nthcdr
+     nreconc *
+     member
+     set-difference *
+     set-exclusive-or *
+     union
+     assoc
+     nsubst *
+     
+     --- sequences ---
+     elt *
+     length
+     concatenate *
+     copy-seq *
+     delete *
+     nreverse
+     reverse
+     subseq *
+     adjoin
+     count *
+     delete *
+     fill *
+     find *
+     position
+     rassoc *
+     remove-if *
+     remove *
+     replace *
+     search *
+     sort *
+     substitute *
+     
+     --- strings ---
+     SI-istring
+     SI-string-base
+     string
+     string-append
+     make-string
+     nstring-downcase *
+     nstring-upcase
+     string-downcase
+     string-eq
+     string-equal
+     string-greaterp *
+     string-lessp *
+     string-lt *
+     string-not-equal *
+     string-not-greaterp *
+     string-not-lessp *
+     string-upcase *
+     
+     --- characters ---
+     digit-char
+     digit-char-p
+     
+     --- equality ---
+     eq
+     eql
+     equal
+     
+     --- types ---
+     type-of *
+
+
+File: tl-manual.info,  Node: Index,  Prev: Required-Symbols,  Up: Top
 
 Index
 *****
