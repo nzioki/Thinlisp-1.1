@@ -970,6 +970,9 @@
   (lcl:full-gc)
   #+allegro
   (excl:gc t)
+  ;; Unreleased versions of CMUCL have an incremental garbage collector.  When
+  ;; that is released, then the arguments :full t should be added to the
+  ;; following call.  -jallard 2/22/01
   #+cmu
-  (ext:gc :full t)
+  (ext:gc)
   nil)

@@ -50,8 +50,8 @@
     (cond ((eq elt name)
 	   (return singleton-default))
 	  ((and (consp elt) (eq (car elt) name))
-	   (return (cdr elt))))
-        finally (return default)))
+	   (return (cadr elt))))
+        finally (return default))) 
 
 
 
@@ -118,19 +118,22 @@
   (reclaimer nil)
   (reader nil)
   (dev-reader nil)
+  (setter nil)
   (c-accessor nil)
-  (c-type nil))
+  (c-type nil)
+  (copier nil))
 
 (defun construct-struct-slot (slot-description &optional conc-name overridden-slot)
   (let ((new-slot
 	 (destructuring-bind (name &optional init 
 				   &key (type t) (read-only nil)
-				   (reclaimer nil))
+				   (reclaimer nil) 
+				   (copier nil))
 			     slot-description
 	   (make-struct-slot :name name 
 			     :initial-form init :type type 
 			     :original-type type :read-only read-only
-			     :reclaimer reclaimer))))
+			     :reclaimer reclaimer :copier copier))))
     (cond (overridden-slot
 	   (setf (struct-slot-original-type new-slot)
 	     (struct-slot-original-type overridden-slot))
@@ -140,7 +143,9 @@
 	   (setf (struct-slot-reader new-slot)
 	     (struct-slot-reader overridden-slot))
 	   (setf (struct-slot-dev-reader new-slot)
-	     (struct-slot-dev-reader overridden-slot)))
+	     (struct-slot-dev-reader overridden-slot))
+	   (setf (struct-slot-setter new-slot)
+	     (struct-slot-setter overridden-slot)))
 	  (t
 	   (let ((reader 
 		  (if conc-name
@@ -149,7 +154,9 @@
 		    (struct-slot-name new-slot))))
 	     (setf (struct-slot-reader new-slot) reader)
 	     (setf (struct-slot-dev-reader new-slot)
-	       (intern (format nil "TL-DEV-~a" reader))))))
+	       (intern (format nil "TL-DEV-~a" reader)))
+	     (setf (struct-slot-setter new-slot)
+		   (intern (format nil "SETF-~a" reader))))))
     new-slot))
 
 
@@ -346,10 +353,20 @@
 		nil))
 	 (type (get-defstruct-option options :type nil))
 	 (reclaimer (get-defstruct-option options :reclaimer nil))
+	 (reclaimer-slot-name (if reclaimer
+				  (intern (format nil "~a-RECYCLE-CHAIN" name))
+				nil))
+	 (pool (if reclaimer
+		   (intern (format nil "~a-POOL" name) *tli-package*)
+		 nil))
 	 (local-slot-descriptions 
-	  (loop for desc in (if doc (cdr doc-and-slots) doc-and-slots)
-		for slot-name = (if (symbolp desc) desc (car desc))
-		collect (if (symbolp desc) (list slot-name) desc)))
+	  (append
+	   (loop for desc in (if doc (cdr doc-and-slots) doc-and-slots)
+		 for slot-name = (if (symbolp desc) desc (car desc))
+		 collect (if (symbolp desc) (list slot-name) desc))
+	   (if reclaimer-slot-name
+	       (list (list reclaimer-slot-name))
+	     nil)))
 	 (conc-name 
 	  (string (get-defstruct-option
 		   options :conc-name (format nil "~a-" name))))
@@ -379,6 +396,9 @@
 	 (constructors (collect-constructors name options slots)))
     `(tl:progn
       (tl:declaim (class-name ,name))
+      ,@(if pool
+	    `((tl:defvar ,pool nil))
+	  nil)
       ,@(if (not (eval-feature :translator))
 	    `((tl:eval-when (:compile-toplevel :load-toplevel :execute)
 	        (install-structure
@@ -394,7 +414,7 @@
       ,@(expand-readers-and-writers 
 	 name type named-option slots local-slot-descriptions)
       ,@(expand-constructors name type named-option slots 
-			     raw-constructor constructors)
+			     raw-constructor pool constructors)
       ,@(if predicate
 	    `((tl:declaim (tl:ftype (tl:function (t) t) ,predicate))
 	      (tl:define-compiler-macro ,predicate (x)
@@ -406,35 +426,69 @@
 		  nil))
 	  nil)
       ,@(if copier
-	    (expand-copier name copier type raw-constructor slots)
+	    (expand-copier name copier pool type raw-constructor slots)
+	  nil)
+      ,@(if reclaimer
+	    (expand-reclaimer name reclaimer pool type slots)
 	  nil)
       ',name)))
 
-(defun expand-copier (name copier type raw-constructor slots)
-  (let ((new-form 
-	 (cond ((null type)
-		`(malloc-class-instance ,name ,raw-constructor))
-	       ((tl-subtypep type 'list)
-		`(tl:copy-list old))
-	       (t
-		`(tl:make-array
-		  (tl:length old)
-		  :element-type 
-		  ',(element-type-of-vector-type type)))))
-	(element-copy-forms
-	 (cond ((null type)
+(defun expand-reclaimer (name reclaimer pool type slots)
+  (let ((recycled-chain-slot (car (last slots))))
+    `((tl:defun ,reclaimer (,name)
+	(tl:declare (tl:return-type tl:void)
+		    (tl:type ,(or type name) ,name))
+	,@(loop for slot in slots
+		for reader = (struct-slot-reader slot)
+		for reclaimer = (struct-slot-reclaimer slot)
+		when (and reclaimer reader (struct-slot-name slot))
+		collect `(,reclaimer (,reader ,name)))
+	(,(struct-slot-setter recycled-chain-slot) ,name ,pool)
+	(tl:setq ,pool ,name)
+	nil))))
+
+(defun expand-copier (name copier pool type raw-constructor slots)
+  (let* ((malloc-form
+	  (cond ((null type)
+		 `(malloc-class-instance ,name ,raw-constructor))
+		((tl-subtypep type 'list)
+		 `(tl:copy-list old))
+		(t
+		 `(tl:make-array
+		   (tl:length old)
+		   :element-type 
+		   ',(element-type-of-vector-type type)))))
+	 (new-form
+	  (if pool
+	      (let* ((chain-slot (car (last slots)))
+		     (recycled (gensym)))
+		`(tl:let ((,recycled ,pool))
+		   (tl:cond (,recycled
+			     (tl:setq ,pool (,(struct-slot-reader chain-slot)
+					     ,recycled))
+			     (,(struct-slot-setter chain-slot) ,recycled nil)
+			     ,recycled)
+			    (t
+			     ,malloc-form))))
+	    malloc-form))
+	 (element-copy-forms
+	  (cond ((null type)
 		 (loop for slot in slots
-		     for reader = (struct-slot-reader slot)
-		     when (and (struct-slot-name slot) reader)
-		     collect `(tl:setf (,reader new) (,reader old))))
+		       for reader = (struct-slot-reader slot)
+		       for setter = (struct-slot-setter slot)
+		       for copier = (struct-slot-copier slot)
+		       when (and (struct-slot-name slot) reader)
+		       collect (if copier
+				   `(,setter new (,copier (,reader old)))
+				 `(,setter new (,reader old)))))
 		((tl-subtypep type 'list)
 		 nil)
 		((tl-subtypep type 'simple-vector)
 		 `((tl:replace-simple-vectors new old)))
 		(t 
 		 `((tl:dotimes (index (tl:length old))
-		     (tl:setf (tl:aref new index)
-		       (tl:aref old index))))))))
+	             (tl:setf (tl:aref new index)
+			      (tl:aref old index))))))))
     `((tl:define-compiler-macro ,copier (x)
 	`(tl:let* ((old ,x)
 		   (new ,',new-form))
@@ -454,9 +508,7 @@
       for slot-name = (struct-slot-name slot)
       for slot-reader = (struct-slot-reader slot)
       for slot-type = (struct-slot-type slot)
-      for setter = (if (not (struct-slot-read-only slot))
-		       (intern (format nil "SETF-~a" slot-reader))
-		     nil)
+      for setter = (struct-slot-setter slot)
       for struct-var = name
       for new-value-var = 'tl::new-value
       nconc `((tl:declaim (tl:functional ,slot-reader))
@@ -472,22 +524,26 @@
 	      ;; Since the reader and setter functions will only be called when
 	      ;; the compiler macro cannot be expanded, i.e. when there is a
 	      ;; funcalled invocation, declare the argument and return types to
-	      ;; be T to simplify funcall's argument handling job.
+	      ;; be T to simplify funcall's argument handling job.  If the type
+	      ;; is double-float, then this will entail consing up a new one.
+	      ;; Declare this an "either" consing area to stop the compiler from
+	      ;; complaining.
 	      (tl:defun ,slot-reader (,struct-var)
 		(tl:declare (tl:return-type t)
+			    (tl:consing-area tl:either)
 			    (tl:type t ,struct-var))
 		(,slot-reader ,struct-var))
-	      ,@(if setter
-		    `((tl:defsetf ,slot-reader ,setter)
-		      (tl:define-compiler-macro ,setter (,struct-var 
-							 ,new-value-var)
-			`(set-slot ,,struct-var ,',slot-name ,',name obj
-				   ,',slot-type nil ,,new-value-var))
-		      (tl:defun ,setter (,struct-var ,new-value-var)
+	      ,@(if (not (struct-slot-read-only slot))
+		    `((tl:defsetf ,slot-reader ,setter)))
+	      (tl:define-compiler-macro ,setter (,struct-var 
+						 ,new-value-var)
+	        `(set-slot ,,struct-var ,',slot-name ,',name obj
+			   ,',slot-type nil ,,new-value-var))
+	      (tl:defun ,setter (,struct-var ,new-value-var)
 			(tl:declare (tl:return-type t)
 				    (tl:type t ,struct-var ,new-value-var))
-			(,setter ,struct-var ,new-value-var)))
-		  nil))))
+	        (,setter ,struct-var ,new-value-var)
+		,new-value-var))))
 
 (defun collect-constructors (name options slots) 
   (loop with collected = nil
@@ -542,7 +598,7 @@
   '(tl:&optional tl:&rest tl:&aux tl:&key tl:&allow-other-keys))
 
 (defun expand-constructors (name type named slots 
-			    raw-constructor constructors)
+			    raw-constructor pool constructors)
   (loop with slot-count = (+ (length slots) (if named 1 0))
       for (constructor args) in constructors
       when constructor
@@ -570,6 +626,17 @@
 				       collect (car arg)))
 	    with body = nil
 	    with struct-var = (gensym)
+	    with struct-from-pool = (gensym)
+	    with malloc-form = (cond ((null type) 
+				      `(malloc-class-instance ,name ,raw-constructor))
+				     ((tl-subtypep type 'list)
+				      `(tl:make-list ,slot-count))
+				     (t
+				      `(tl:make-array 
+					,slot-count 
+					:element-type 
+					',(element-type-of-vector-type
+					   type))))
 	    for slot-index from (if named 1 0)
 	    for slot in slots
 	    for slot-name = (struct-slot-name slot)
@@ -606,17 +673,23 @@
 			      ,arg-name))
 		    (tl:consing-area tl:either))
 		   (tl:let* (,@aux-vars
+			     ,@(if pool
+				   `((,struct-from-pool ,pool))
+				 nil)
 			     (,struct-var 
-			      ,(cond ((null type) 
-				      `(malloc-class-instance ,name ,raw-constructor))
-				     ((tl-subtypep type 'list)
-				      `(tl:make-list ,slot-count))
-				     (t
-				      `(tl:make-array 
-					,slot-count 
-					:element-type 
-					',(element-type-of-vector-type
-					   type))))))
+			      ,(if pool 
+				   `(tl:cond (,struct-from-pool
+					      (tl:setq ,pool 
+						       (,(struct-slot-reader
+							  (cons-car (last slots)))
+							,struct-from-pool))
+					      (,(struct-slot-setter
+						 (cons-car (last slots)))
+					       ,struct-from-pool nil)
+					      ,struct-from-pool)
+					     (t
+					      ,malloc-form))
+				   malloc-form)))
 		     (tl:declare (tl:type ,(or type name) ,struct-var))
 		     ,@(if type
 			   (if (tl-subtypep type 'list)
@@ -647,6 +720,7 @@
 ;;; defined C types when defstructs were defined.
 
 (defun compute-c-type-for-class (class)
+  (declare (special *global-c-namespace*))
   (let ((info (class-info class))
 	(struct nil)
 	(align 4)
