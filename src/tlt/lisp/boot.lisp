@@ -129,9 +129,9 @@
 	 (if safe
 	     (safest-compilations)
 	   (fastest-compilations))
-	 (loop while recompile
-	       with delete-from-preventer = from
+	 (loop with delete-from-preventer = from
 	       for module in tlt-modules 
+	       while recompile
 	       do
 	   (when (and delete-from-preventer
 		      (string= (symbol-name delete-from-preventer) 
@@ -178,7 +178,8 @@
     #+allegro                  "fasl"
     #+cmu                      "x86f"
     #+mcl                      "pfsl"
-    #-(or lucid aclpc allegro cmu mcl) "bin")
+    #+clisp                    "fas"
+    #-(or lucid aclpc allegro cmu mcl clisp) "bin")
 
 
 
@@ -250,7 +251,9 @@
 			    :type lisp-file-type)))
 	 (bin-file 
 	  (finalize-pathname (make-pathname
-			      :directory '(:relative "tlt" "dev")
+			      :directory 
+			      #-clisp '(:relative "tlt" "dev")
+			      #+clisp '(:relative "tlt" "lisp")
 			      :name file-name
 			      :type binary-file-type)))
 	 (relative-bin-file 
@@ -261,9 +264,13 @@
 			      :type binary-file-type))
 	  #-lucid
 	  bin-file)
-	 (lisp-date (file-write-date lisp-file))
-	 (bin-date? (file-write-date bin-file))
+	 (lisp-date (and (probe-file lisp-file)
+			 (file-write-date lisp-file)))
+	 (bin-date? (and (probe-file bin-file)
+			 (file-write-date bin-file)))
 	 (load-date? (get module :tlt-load-date)))
+    #+clisp
+    (declare (ignore relative-bin-file))
     (when (null lisp-date)
       (warn "Module ~a does not have a corresponding lisp file ~a."
 	    module lisp-file))
@@ -278,7 +285,7 @@
 		   (<= bin-date? exports-file-write-date)))
       (format t "Compiling   ~40a    [~3d/~3d] ~%" lisp-file count total)
       (force-output)
-      (compile-file lisp-file :output-file relative-bin-file)
+      (compile-file lisp-file #-clisp :output-file #-clisp relative-bin-file)
       (setq bin-date? (file-write-date bin-file)))
     (when (or (null load-date?)
 	      (/= load-date? bin-date?))
@@ -490,9 +497,12 @@
   (excl:chdir *default-pathname-defaults*)
   #+cmu
   (unix:unix-chdir *default-pathname-defaults*)
+  #+clisp
+  (cd *default-pathname-defaults*)
 
   *default-pathname-defaults*)
 
+#-clisp
 (defun default-directory ()
   #+lucid
   (lcl::pwd)
@@ -507,6 +517,7 @@
   *default-pathname-defaults*
   )
 
+#-clisp
 (defun cd (string-or-pathname)
   (change-default-directory string-or-pathname))
 
@@ -559,20 +570,15 @@
 ;;; translator is found in the TL (ThinLisp) package.  All symbols
 ;;; exported from these packages are found in the module EXPORTS.
 
-(unless (find-package "TLI")
-  (make-package "TLI"     :use '("LISP")))
+(defun make-package-if-necessary (name use-list)
+  (unless (find-package name)
+    (make-package name :use use-list)))
 
-(unless (find-package "TLT")
-  (make-package "TLT"     :use nil))
-
-(unless (find-package "TL")
-  (make-package "TL"      :use nil))
-
-(unless (find-package "AB-LISP")
-  (make-package "AB-LISP" :use '("LISP")))
-
-(unless (find-package "TL-USER")
-  (make-package "TL-USER" :use '("TL")))
+(make-package-if-necessary "TLI"     '("LISP"))
+(make-package-if-necessary "TLT"     nil)
+(make-package-if-necessary "TL"      nil)
+(make-package-if-necessary "AB-LISP" '("LISP"))
+(make-package-if-necessary "TL-USER" '("TL"))
 
 (unless (fboundp (intern "COMPILE-TLT" (find-package "TLI")))
   (setf (symbol-function (intern "COMPILE-TLT" (find-package "TLI")))

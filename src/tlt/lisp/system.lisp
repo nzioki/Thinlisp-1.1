@@ -612,7 +612,8 @@
 	for module-count from 1
 	for module in modules
 	for binary-file = (system-lisp-binary-file system module)
-	for write-date = (file-write-date binary-file)
+	for write-date = (and (probe-file binary-file)
+			      (file-write-date binary-file))
 	for loaded-date? = (loaded-system-lisp-binary-write-date system module)
 	do
     (unless (eql loaded-date? write-date)
@@ -729,8 +730,10 @@
 	   (relative-binary-file
 	     (system-lisp-relative-binary-file system module))
 	   (binary-file (system-lisp-binary-file system module))
-	   (lisp-write-date (file-write-date lisp-file))
-	   (binary-write-date? (file-write-date binary-file))
+	   (lisp-write-date (and (probe-file lisp-file)
+				 (file-write-date lisp-file)))
+	   (binary-write-date? (and (probe-file binary-file)
+				    (file-write-date binary-file)))
 	   (loaded-date? (loaded-system-lisp-binary-write-date system module))
 	   (*current-system-name* (system-name system))
 	   (*current-module-name* module))

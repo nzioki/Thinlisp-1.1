@@ -147,7 +147,8 @@
 		 for module in module-list
 		 for module-number from 1
 		 for lisp-file = (system-lisp-file system module)
-		 for lisp-write-date = (file-write-date lisp-file)
+		 for lisp-write-date = (and (probe-file lisp-file)
+					    (file-write-date lisp-file))
 		 do
 	     (when (or (null (probe-file (system-c-file system module)))
 		       (null (probe-file (system-h-file system module)))
@@ -165,7 +166,7 @@
       (setq *features* (delete :no-macros *features*)))))
 
 (defun generated-file-out-of-date-p (file source-write-date)
-  (let ((write-date? (file-write-date file)))
+  (let ((write-date? (and (probe-file file) (file-write-date file))))
     (or (null write-date?)
 	(<= write-date? source-write-date)
 	(and user::exports-file-write-date
