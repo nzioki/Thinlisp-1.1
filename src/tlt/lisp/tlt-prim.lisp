@@ -2028,12 +2028,12 @@
       ;; that it signals an error when given a package object instead of just
       ;; returning it.  This macroexpansion will work around that bug.
       ;; -jallard, 5/1/97
-      (let ((arg (gensym)))
-	`(let ((,arg ,string-or-symbol-or-package))
-	   (if (typep ,arg 'package)
-	       ,arg
-	       (lisp:find-package ,arg))))))
+    `(find-package-safely ,string-or-symbol-or-package)))
 
+(defun find-package-safely (arg)
+  (if (typep arg 'package)
+      arg
+    (lisp:find-package arg)))
 
 
 (def-c-translation make-new-package (name use-list)
