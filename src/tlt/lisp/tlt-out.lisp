@@ -138,17 +138,32 @@
 ;;; called.  This leaves enough doubt for the compiler to be quiet.  -jallard
 ;;; 5/28/99
 
+;;; The macro derror is used in places were we want to invoke error, but
+;;; we want the following code to remain alive when compiling in lisp
+;;; because that code is alive in C and we want the lisp compiler's opinion
+;;; on it.  There are two tricks in this macro, one is to guard the call
+;;; to error so the CMU lisp compiler can't decern that it is always
+;;; called, and the other is to return a datum of unknown type so that
+;;; the compiler will proceed to investigate all alternatives down stream
+;;; from this call. - ben 6/2/99
+
 (defvar fake-out-cmu-dead-code-analyzer t)
+
+(defmacro derror (&rest args)
+  `(progn
+     (when fake-out-cmu-dead-code-analyzer
+       (error ,@args))
+     fake-out-cmu-dead-code-analyzer))
 
 (def-c-translation gli-simple-error (string)
   ((lisp-specs :ftype ((string) void))
-   `(if fake-out-cmu-dead-code-analyzer
-	(error "~a" ,string)
-      nil))
+   `(derror "~A" ,string))
   ((trans-specs :c-type (((pointer unsigned-char)) void))
    (make-c-function-call-expr
      (make-c-name-expr "error")
      (list (make-c-cast-expr '(pointer char) string)))))
+
+
 
 
 

@@ -1492,7 +1492,7 @@
 
 (def-c-translation make-empty-symbol ()
   ((lisp-specs :ftype (() symbol))
-   `(error "There is no development time expansion for make-empty-symbol."))
+   `(derror "There is no development time expansion for make-empty-symbol."))
   ((trans-specs :c-type (() obj))
    (make-c-function-call-expr
      (make-c-name-expr "alloc_symbol")
@@ -1514,7 +1514,7 @@
 
 (def-c-translation set-symbol-type-tag (symbol)
   ((lisp-specs :ftype ((symbol) fixnum))
-   `(error "No development translation for set-symbol-type-tag of ~s."
+   `(derror "No development translation for set-symbol-type-tag of ~s."
 	   ,symbol))
   ((trans-specs :c-type ((obj) sint32))
    (make-c-infix-expr
@@ -1540,7 +1540,7 @@
 
 (def-c-translation set-symbol-local-value (symbol flag)
   ((lisp-specs :ftype ((symbol t) t))
-   `(error "Cant set-symbol-local-value of ~s to ~s in development."
+   `(derror "Cant set-symbol-local-value of ~s to ~s in development."
 	   ,symbol ,flag))
   ((trans-specs :c-type ((obj boolean) boolean))
    (make-c-infix-expr
@@ -1567,7 +1567,7 @@
 
 (def-c-translation set-symbol-external (symbol flag)
   ((lisp-specs :ftype ((symbol t) t))
-   `(error "Can't set-symbol-external of ~s to ~s in development."
+   `(derror "Can't set-symbol-external of ~s to ~s in development."
 	   ,symbol ,flag))
   ((trans-specs :c-type ((obj boolean) boolean))
    (make-c-infix-expr
@@ -1612,7 +1612,7 @@
 
 (def-c-translation set-symbol-imported (symbol flag)
   ((lisp-specs :ftype ((symbol t) t))
-   `(error "Can't set-symbol-imported of ~s to ~s." ,symbol ,flag))
+   `(derror "Can't set-symbol-imported of ~s to ~s." ,symbol ,flag))
   ((trans-specs :c-type ((obj boolean) boolean))
    (make-c-infix-expr 
      (make-c-indirect-selection-expr
@@ -1663,7 +1663,7 @@
 
 (def-c-translation set-symbol-name (symbol string)
   ((lisp-specs :ftype ((t t) t))
-   `(error "Can't actually set the symbol name in development: ~s ~s"
+   `(derror "Can't actually set the symbol name in development: ~s ~s"
 	   ,symbol ,string))
   ((trans-specs :c-type ((obj obj) obj))
    (make-c-infix-expr
@@ -1794,7 +1794,7 @@
 
 (def-c-translation set-symbol-package (symbol package-or-nil)
   ((lisp-specs :ftype ((symbol t) t))
-   `(error "There is no development implementation of set-symbol-package: ~
+   `(derror "There is no development implementation of set-symbol-package: ~
             args = ~s, ~s"
 	   ,symbol ,package-or-nil))
   ((trans-specs :c-type ((obj obj) obj))
@@ -1854,7 +1854,7 @@
 
 (def-c-translation set-symbol-left-branch (symbol new-value)
   ((lisp-specs :ftype ((symbol t) t))
-   `(error "Can't set-symbol-left-branch of ~s to ~s in development."
+   `(derror "Can't set-symbol-left-branch of ~s to ~s in development."
 	   ,symbol ,new-value))
   ((trans-specs :c-type ((obj obj) obj))
    (make-c-infix-expr
@@ -1878,7 +1878,7 @@
 
 (def-c-translation set-symbol-right-branch (symbol new-value)
   ((lisp-specs :ftype ((symbol t) t))
-   `(error "Can't set-symbol-right-branch of ~s to ~s in development."
+   `(derror "Can't set-symbol-right-branch of ~s to ~s in development."
 	   ,symbol ,new-value))
   ((trans-specs :c-type ((obj obj) obj))
    (make-c-infix-expr
@@ -1891,7 +1891,7 @@
 
 (def-c-translation not-unbound-value-p (value)
   ((lisp-specs :ftype ((t) t))
-   `(error "Not-unbound-value-p has no development implementation: ~s"
+   `(derror "Not-unbound-value-p has no development implementation: ~s"
 	   ,value))
   ((trans-specs :c-type ((obj) boolean))
    (make-c-infix-expr
@@ -1903,7 +1903,7 @@
 
 (def-c-translation the-unbound-value ()
   ((lisp-specs :ftype (() t))
-   `(error "The-unbound-value cannot be returned in development Lisp."))
+   `(derror "The-unbound-value cannot be returned in development Lisp."))
   ((trans-specs :c-type (() obj))
    (c-unbound-value-expr)))
 
@@ -1940,7 +1940,7 @@
 
 (def-c-translation compiled-function-arg-count (compiled-function)
   ((lisp-specs :ftype ((compiled-function) fixnum))
-   `(error "No Lisp env implementation of (compiled-function-arg-count ~s)"
+   `(derror "No Lisp env implementation of (compiled-function-arg-count ~s)"
 	   ,compiled-function))
   ((trans-specs :c-type ((obj) sint32))
    (make-c-cast-expr
@@ -1951,7 +1951,7 @@
 (def-c-translation compiled-function-optional-arguments (compiled-function)
   ((lisp-specs :ftype ((compiled-function) fixnum))
    `(progn
-      (error "No Lisp env implementation of (compiled-function-optional-arguments ~s)"
+      (derror "No Lisp env implementation of (compiled-function-optional-arguments ~s)"
 	     ,compiled-function)
       0))
   ((trans-specs :c-type ((obj) sint32))
@@ -1963,21 +1963,21 @@
 (def-c-translation compiled-function-sets-values-count (compiled-function)
   ((lisp-specs :ftype ((compiled-function) fixnum))
    `(progn
-      (error "No Lisp env implementation of (compiled-function-optional-arguments ~s)"
-	     ,compiled-function)
-      0))
+      (derror "No Lisp env implementation of (compiled-function-optional-arguments ~s)"
+	     ,compiled-function)))
   ((trans-specs :c-type ((obj) sint32))
    (make-c-cast-expr
      'sint32 (make-c-indirect-selection-expr
 	       (make-c-cast-expr '(pointer func) compiled-function)
 	       "sets_values_count"))))
 
+(defvar variable-of-unknown-value nil)
+
 (def-c-translation compiled-function-default-arguments (compiled-function)
   ((lisp-specs :ftype ((compiled-function) t))
    `(progn
-      (error "No Lisp env implementation of (compiled-function-default-arguments ~s)"
-	     ,compiled-function)
-      0))
+      (derror "No Lisp env implementation of (compiled-function-default-arguments ~s)"
+	     ,compiled-function)))
   ((trans-specs :c-type ((obj) obj))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer func) compiled-function)
@@ -1991,7 +1991,7 @@
    `(kernel:%function-name ,compiled-function)
    #-(or lucid cmu)
    `(progn
-      (error "No Lisp env implementation of (compiled-function-name ~s)"
+      (derror "No Lisp env implementation of (compiled-function-name ~s)"
 	     ,compiled-function)
       :dummy-name))
   ((trans-specs :c-type ((obj) obj))
@@ -2074,7 +2074,7 @@
 
 (def-c-translation package-root-symbol (package)
   ((lisp-specs :ftype ((package) t))
-   `(error "Package-root-symbol has no development implementation: ~s" ,package))
+   `(derror "Package-root-symbol has no development implementation: ~s" ,package))
   ((trans-specs :c-type ((obj) obj))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer pkg) package)
@@ -2084,7 +2084,7 @@
 
 (def-c-translation set-package-root-symbol (package symbol)
   ((lisp-specs :ftype ((package t) t))
-   `(error "Set-package-root-symbol has no development implementation: ~s to ~s"
+   `(derror "Set-package-root-symbol has no development implementation: ~s to ~s"
 	   ,package ,symbol))
   ((c-type :c-type ((obj obj) obj))
    (make-c-infix-expr
@@ -2500,7 +2500,7 @@
 
 (def-c-translation malloc-block-into-region (region-number byte-count silent)
   ((lisp-specs :ftype ((fixnum fixnum fixnum) void))
-   `(error "No Lisp type expansion for (malloc_block_into_region ~a ~a)"
+   `(derror "No Lisp type expansion for (malloc_block_into_region ~a ~a)"
 	   ,region-number ,byte-count ,silent))
   ((trans-specs :c-type ((sint32 sint32 sint32) void))
    (make-c-function-call-expr
@@ -2509,7 +2509,7 @@
 
 (def-c-translation internal-region-bytes-size (region-number)
   ((lisp-specs :ftype ((fixnum) fixnum))
-   `(error "No Lisp type expansion for (region-bytes-size ~a)"
+   `(derror "No Lisp type expansion for (region-bytes-size ~a)"
 	   ,region-number))
   ((trans-specs :c-type ((sint32) sint32))
    (make-c-function-call-expr
@@ -2517,7 +2517,7 @@
 
 (def-c-translation internal-region-bytes-used (region-number)
   ((lisp-specs :ftype ((fixnum) fixnum))
-   `(error "No Lisp type expansion for (region-bytes-used ~a)"
+   `(derror "No Lisp type expansion for (region-bytes-used ~a)"
 	   ,region-number))
   ((trans-specs :c-type ((sint32) sint32))
    (make-c-function-call-expr
@@ -2525,7 +2525,7 @@
 
 (def-c-translation internal-region-bytes-available (region-number)
   ((lisp-specs :ftype ((fixnum) fixnum))
-   `(error "No Lisp type expansion for (region-bytes-available ~a)"
+   `(derror "No Lisp type expansion for (region-bytes-available ~a)"
 	   ,region-number))
   ((trans-specs :c-type ((sint32) sint32))
    (make-c-function-call-expr
