@@ -330,3 +330,24 @@
 		   c-types-implementing-lisp-type-alist)
 	     (setf (get ',type-name 'c-type-tag) ,type-tag?)))
      ',type-name))
+
+
+
+
+;;; The function `print-type-tags' prints out a list of all of the type tags in
+;;; use in TL, with their associated Lisp types and implementing C types.
+
+(defun print-type-tags ()
+  (loop for (lisp-type . c-type) in c-types-implementing-lisp-type-alist
+	collect (list (lisp-type-tag lisp-type) lisp-type c-type) 
+	into type-triplets
+	finally
+	(setq type-triplets 
+	      (sort (append '((0 null null) (1 fixnum sint32)
+			      (2 cons cons) (3 character unsigned-char))
+			    type-triplets)
+		    #'<
+		    :key #'car))
+	(loop for (tag l c) in type-triplets
+	      do (format t "~2d ~30s ~30s~%" tag l c))))
+

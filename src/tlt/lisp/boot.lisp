@@ -78,6 +78,7 @@
     defvar
     regions
     setf
+    bit-pack
     ; clos
     ; defstruct
     backquote

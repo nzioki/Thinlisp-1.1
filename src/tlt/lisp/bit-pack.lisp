@@ -1,10 +1,10 @@
-(in-package "L-SYSTEM")
+(in-package "TLI")
 
 ;;; Module: Bit-pack
 
 ;;; Copyright (c) 1999 The ThinLisp Group
-;;; Copyright, Artificial Creatures, Inc., 1998
-;;; Copyright, IS Robotics, Inc., 1998
+;;; Copyright (c) 1998 Artificial Creatures, Inc.
+;;; Copyright (c) 1998 IS Robotics, Inc.
 
 ;;; This file is part of ThinLisp.
 
@@ -18,71 +18,27 @@
 
 ;;; For additional information see <http://www.thinlisp.org/>
 
-;;; Author: ?
+;;; Author: David Sotkowitz
 
-;;;; Type Info for the L implementation
+;;;; Type Info for ThinLisp CLOS.
 
 ;;;
 ;;; This is the Bit-Packed Encoding Algorithm from:
 ;;;   A. Krall, J. Vitek, and R.N. Horspool. Efficienyt Type Inclusion Tests. 
-;;;   Proceedings of the Object-Oriented Programming Languages, Systems, and Applications, 
-;;;   OOPSALA '97, Atlanta, October 1997.
+;;;   Proceedings of the Object-Oriented Programming Languages, Systems, and
+;;;   Applications, OOPSALA '97, Atlanta, October 1997.
 ;;; A postscript version of the paper can be found at:
 ;;;   http://www.complang.tuwien.ac.at/andi/typecheck/
 ;;;
 
-;;; Its value should be something like (integer-length most-positive-fixnum), but using
-;;; that directly won't work because the L compiler does not yet know anything
-;;; about integer-length, so won't constant-fold that form.  On the host side it might 
-;;; not even be a constant, since the value of most-positive-fixnum (and so its length)
-;;; is potentially target-dependent.
-(defconstant bpe-word-size 30)
+;;; Its value should be something like (integer-length most-positive-fixnum).
 
-#+L
-(defun adjoin (item list) (if (member item list) list (cons item list)))
-;; (deflcompmacro adjoin (item list)
-;; `(progn (if (member ,item ,list) ,list (cons ,item ,list))))
+(defconstant bpe-word-size (integer-length most-positive-fixnum))
 
-#+L
-(defun copy-list (list)
-  (macrolet 
-    ((rplacd (list item) `(progn (when (consp ,list) (setf (cdr ,list) ,item)) ,list)))     
-  (when list
-    (let ((result (cons (car list) nil) ))
-      (do ((x (cdr list) (cdr x))
-           (piece result
-                   (cdr (rplacd piece (cons (car x) nil)))))
-          ((atom x) (when x (rplacd piece x)) result))))))
 
-#+L
-(defun union (list1 list2)
-  (let ((new-list (copy-list list1)))
-    (dolist (item list2 new-list) (setf new-list (adjoin item new-list)))))
-
-;;; brute force sorting
-#+L
-(defun stable-sort (list func)
-  (when list
-    (if func
-      (let ((remain (cdr list))
-            (newlist list))
-        (setf (cdr list) nil)
-        (do ((current-cons-1 remain remain)) ((null remain) newlist)
-          (let ((previous-cons nil))
-            (do ((current-cons-2 newlist (cdr current-cons-2))) (nil)
-              (when (or (null current-cons-2)
-                        (funcall func (car current-cons-1) (car current-cons-2)))
-                (setf remain (cdr remain))
-                (setf (cdr current-cons-1) current-cons-2)
-                (if previous-cons
-                  (setf (cdr previous-cons) current-cons-1)
-                  (setf newlist current-cons-1))
-                (return))
-              (setf previous-cons current-cons-2)))))
-      list)))
-                
 
 ;;; The following should be labels within type-level when and if L has them:
+
 (defun cardinality-of-ancestors (cardinality inner-type)
   (mapcar #'(lambda (x) 
               (when x
@@ -91,43 +47,56 @@
           (type-bpe-info-parents inner-type))
   cardinality)
 
-;;;
-;;; The level of a type is the maximum cardinality of its ancestors. The
-;;; point is that a descendent will always have a greater type-level than
-;;; one of its ancestors.
-;;; The exact values are irrelevant, they only need to be monotonically increasing as 
-;;; you traverse down the inheritance hierarchy. This is just a helper for reverse-level-order and
-;;; level-order immediately below.
-;;;
-;;; could use class-precedence list
-;;;
+
+
+
+;;; The level of a type is the maximum cardinality of its ancestors. The point
+;;; is that a descendent will always have a greater type-level than one of its
+;;; ancestors.
+
+;;; The exact values are irrelevant, they only need to be monotonically
+;;; increasing as you traverse down the inheritance hierarchy. This is just a
+;;; helper for reverse-level-order and level-order immediately below.
+
+;; could use class-precedence list
+
 (defun type-level (typ)
   (cardinality-of-ancestors 0 typ))
 
-;;;
+
+
+
 ;;; Generates an ordered list, higher type level (largest # of ancestors) first
-;;;
-;; (defcompmacros reverse-level-order(types)
-;;  `(stable-sort (copy-list ,types) #'(lambda (x y) (>= (type-level x) (type-level y)))))
+
 (defun reverse-level-order (types)
   (stable-sort (copy-list types) #'(lambda (x y) (>= (type-level x) (type-level y)))))
 
-;;;
+
+
+
 ;;; Generates an ordered list, lower type level (least # of ancestors) first
-;;;
-;; (defcompmacros level-order (types)
-;;   `(stable-sort (copy-list ,types) #'(lambda (x y) (<= (type-level x) (type-level y)))))
+
 (defun level-order (types)
   (stable-sort (copy-list types) #'(lambda (x y) (<= (type-level x) (type-level y)))))
 
-;;; The following should be labels within calculate-sets-of-join-and-spine-types when and if L has them:
+
+
+
+;;; The following should be labels within calculate-sets-of-join-and-spine-types
+;;; when and if L has them:
+
 (defun descendents-not-multi-p (typ)
   (dolist (x (type-bpe-info-children typ) 't)
     (when (and (not (null x))
                (or (> (length (type-bpe-info-parents x)) 1) (not (descendents-not-multi-p x))))
       (return nil))))
 
-;;; The following should be labels within calculate-sets-of-join-and-spine-types when and if L has them:
+
+
+
+;;; The following should be labels within calculate-sets-of-join-and-spine-types
+;;; when and if L has them:
+
 (defun collect-parents (child-type result-list)
   (dolist (parent-type (type-bpe-info-parents child-type) result-list)
     (unless (or (null parent-type) 
@@ -136,38 +105,46 @@
             (collect-parents parent-type 
                              (cons parent-type result-list))))))
 
+
+
+
 ;;; The following should all be flets within assign-buckets when and if L has them:
 
-;;;
 ;;; A join type is a type with multiple parents which has only single subtyping descendents.
 ;;; A spine type is any ancestor of a join type
-;;;
+
 (defun calculate-sets-of-join-and-spine-types (set-of-types)
   (let ((set-of-join-types nil)
         ;; A spine type is any ancestor of a join type
         (set-of-spine-types))
     ;;; multi-p is 't if the cardinality of the type's set of its parents is > 1.
     (macrolet ((multi-p (typ) `(> (length (type-bpe-info-parents ,typ)) 1)))
-      (mapc #'(lambda (x) (when (and (multi-p x) (descendents-not-multi-p x))
-                            (setf set-of-spine-types (collect-parents x set-of-spine-types))
-                            (push x set-of-join-types)))
-            set-of-types))
+      (dolist (x set-of-types)
+        (when (and (multi-p x) (descendents-not-multi-p x))
+	  (setf set-of-spine-types (collect-parents x set-of-spine-types))
+	  (push x set-of-join-types))))
     (values set-of-join-types set-of-spine-types)))
 
-;;;
-;;; A plain type is a member of the set-of-types which is neither a join type nor
-;;; a spine type
-;;;
-(defun calculate-set-of-plain-types (set-of-types set-of-join-types set-of-spine-types)
+
+
+
+;;; A plain type is a member of the set-of-types which is neither a join type
+;;; nor a spine type
+
+(defun calculate-set-of-plain-types (set-of-types set-of-join-types 
+						  set-of-spine-types)
   (let ((result-set nil))
-    (mapcar #'(lambda (x)
-                (unless (or (member x set-of-join-types  :test #'eq)
-                            (member x set-of-spine-types :test #'eq))
-                  (push x result-set)))
-            set-of-types)
+    (dolist (x set-of-types)
+      (unless (or (memqp x set-of-join-types)
+		  (memqp x set-of-spine-types))
+	(push x result-set)))
     result-set))
 
+
+
+
 ;;; The following should be a labels within assign-buckets when and if L has them:
+
 (defun set-descendents-buckets-used (types)
   (let (children)
     (dolist (x types)
@@ -179,11 +156,12 @@
       (set-descendents-buckets-used children))))
 
 
-;;;
+
+
 ;;; Given a set of types, allocate and assign buckets for them. No two types in the same
 ;;; bucket may have common descendents, thus type identifiers need only be unique within
 ;;; a bucket.
-;;;
+
 (defun assign-buckets (set-of-types &optional (verbose nil))
   ;;
   ;; Assumption: all types have their parents and children previously calculated.
@@ -195,10 +173,9 @@
   ;;    x.joins := { }
   ;;    x.used  := { }
   ;;
-  (mapcar #'(lambda (x) 
-              (setf (type-bpe-info-joins x) nil) 
-              (setf (type-bpe-info-buckets-used x) nil))
-          set-of-types)
+  (dolist (x set-of-types)
+    (setf (type-bpe-info-joins x) nil) 
+    (setf (type-bpe-info-buckets-used x) nil))
   
   (multiple-value-bind (set-of-join-types set-of-spine-types)
                        (calculate-sets-of-join-and-spine-types set-of-types)
@@ -213,12 +190,10 @@
       ;;    foreach (y in the set parents(x)) 
       ;;       y.joins := y.joins U {x}
       ;;
-      (mapcar #'(lambda(x) 
-                  (mapcar 
-                   #'(lambda (y) 
-                       (when y (setf (type-bpe-info-joins y) (adjoin x (type-bpe-info-joins y)))))
-                   (type-bpe-info-parents x)))
-              set-of-join-types)
+      (dolist (x set-of-join-types)
+        (dolist (y (type-bpe-info-parents x))
+	  (when y
+	    (setf (type-bpe-info-joins y) (adjoin x (type-bpe-info-joins y))))))
       
       ;; foreach (x in the set reverse-level-order( spine(T) ))
       ;;    found := false
@@ -235,51 +210,51 @@
       ;;	      b.joins := x.joins
       ;;    foreach (y in the set parents(x))
       ;;	      y.joins := y.joins U x.joins
-      ;;
-      (mapcar 
-       #'(lambda(x) 
-           (let ((found nil))
-             (macrolet ((add-type-description-to-bucket (entry bucket)
-                          `(progn 
-                             (setf (bucket-elements ,bucket) 
-                                   (adjoin ,entry (bucket-elements ,bucket)))
-                             (setf (bucket-joins ,bucket)
-                                   (union (type-bpe-info-joins ,entry) (bucket-joins ,bucket)))
-                             (setf (type-bpe-info-buckets-used ,entry) 
-                                   (adjoin ,bucket (type-bpe-info-buckets-used ,entry)))))
-                        (intersect-p (list1 list2)
-                          `(dolist (item ,list1 nil)
-                             (when (member item ,list2)
-                               (return 't)))))
-               (dolist (b buckets)
-                 ;; When bucket is not full, and no 2 spine types have no join
-                 ;; type in common,the spine type may be added to the bucket.
-                 (when (and (< (length (bucket-elements b)) 255) 
-                            (not (intersect-p (type-bpe-info-joins x) (bucket-joins b))))
-                   (setf found 't)
-                   (add-type-description-to-bucket x b)
-                   (return)))
-               (unless found
-                 (let ((b (make-bucket)))
-                   (push b buckets)
-                   (add-type-description-to-bucket x b))))
-             ;; After assigning a bucket to a type, the join sets of the parents are
-             ;; updated with the join sets of the current type.
-             (dolist (y (type-bpe-info-parents x))
-               (setf (type-bpe-info-joins y)
-                     (union (type-bpe-info-joins y) (type-bpe-info-joins x))))))
        
-       ;; Bucket assignment starts with spine types since other types depend
-       ;; on them. Spine types are visited in reverse topological order since the
-       ;; lower types are less likely to conflict with one another. The reverse
-       ;; order also allows us to build join sets while assigning buckets.
-       (reverse-level-order set-of-spine-types))
+      ;; Bucket assignment starts with spine types since other types depend on
+      ;; them. Spine types are visited in reverse topological order since the
+      ;; lower types are less likely to conflict with one another. The reverse
+      ;; order also allows us to build join sets while assigning buckets.
+      
+      (dolist (x (reverse-level-order set-of-spine-types))
+        (let ((found nil))
+	  (macrolet ((add-type-description-to-bucket (entry bucket)
+		       `(progn 
+			  (setf (bucket-elements ,bucket) 
+				(adjoin ,entry (bucket-elements ,bucket)))
+			  (setf (bucket-joins ,bucket)
+				(union (type-bpe-info-joins ,entry) (bucket-joins ,bucket)))
+			  (setf (type-bpe-info-buckets-used ,entry) 
+				(adjoin ,bucket (type-bpe-info-buckets-used ,entry)))))
+		     (intersect-p (list1 list2)
+		       `(dolist (item ,list1 nil)
+			  (when (member item ,list2)
+			    (return 't)))))
+            (dolist (b buckets)
+	      ;; When bucket is not full, and no 2 spine types have no join
+	      ;; type in common,the spine type may be added to the bucket.
+	      (when (and (< (length (bucket-elements b)) 255) 
+			 (not (intersect-p (type-bpe-info-joins x) (bucket-joins b))))
+		(setf found 't)
+		(add-type-description-to-bucket x b)
+		(return)))
+	    (unless found
+	      (let ((b (make-bucket)))
+		(push b buckets)
+		(add-type-description-to-bucket x b))))
+	  ;; After assigning a bucket to a type, the join sets of the parents are
+	  ;; updated with the join sets of the current type.
+	  (dolist (y (type-bpe-info-parents x))
+	    (setf (type-bpe-info-joins y)
+		  (union (type-bpe-info-joins y) (type-bpe-info-joins x))))))
+
       
       (when verbose
         (format t "~%assign-buckets: Done assigning buckets to splines"))
       
       ;; For each type compute set of buckets already used by its ancestors
       ;; Pass in the subset of the set-of-spine-types which have no parents
+
       (let ((set-of-root-spine-types nil))
         (dolist (x set-of-spine-types)
           (unless (type-bpe-info-parents x)
@@ -306,32 +281,33 @@
       ;;	 x.used := x.used U {b}
       ;;      foreach (y in the set children(x))
       ;;         y.used := y.used U x.used
-      (mapcar
-       #'(lambda(x)
-           (let ((found nil))
-             ;; If the bucket is not full and is not already used by any of a
-             ;; type's ancestors, the bucket may be used for the type.
-             (dolist (b buckets)
-               (when (and (< (length (bucket-elements b)) 255) 
-                          (null (member b (type-bpe-info-buckets-used x) :test #'eq)))
-                 (setf found 't)
-                 (setf (bucket-elements b) (adjoin x (bucket-elements b)))
-                 (setf (type-bpe-info-buckets-used x) 
-                       (adjoin b (type-bpe-info-buckets-used x)))
-                 (return)))
-             (unless found
-               (let ((b (make-bucket)))
-                 (push b buckets)
-                 (setf (bucket-elements b) (adjoin x (bucket-elements b)))
-                 (setf (type-bpe-info-buckets-used x) 
-                       (adjoin b (type-bpe-info-buckets-used x)))))
-             (dolist (y (type-bpe-info-children x))
-               (setf (type-bpe-info-buckets-used y) 
-                     (union (type-bpe-info-buckets-used y)
-                            (type-bpe-info-buckets-used x))))))
-       ;; Visit in level-order to ensure that buckets are assigned
-       ;; to parents before children.
-       (level-order (union set-of-plain-types set-of-join-types)))
+
+      ;; Visit in level-order to ensure that buckets are assigned
+      ;; to parents before children.
+
+      (dolist (x (level-order (union set-of-plain-types set-of-join-types)))
+        (let ((found nil))
+	  ;; If the bucket is not full and is not already used by any of a
+	  ;; type's ancestors, the bucket may be used for the type.
+	  (dolist (b buckets)
+	    (when (and (< (length (bucket-elements b)) 255) 
+		       (null (member b (type-bpe-info-buckets-used x) :test #'eq)))
+	      (setf found 't)
+	      (setf (bucket-elements b) (adjoin x (bucket-elements b)))
+	      (setf (type-bpe-info-buckets-used x) 
+		    (adjoin b (type-bpe-info-buckets-used x)))
+	      (return)))
+	  (unless found
+	    (let ((b (make-bucket)))
+	      (push b buckets)
+	      (setf (bucket-elements b) (adjoin x (bucket-elements b)))
+	      (setf (type-bpe-info-buckets-used x) 
+		    (adjoin b (type-bpe-info-buckets-used x)))))
+	  (dolist (y (type-bpe-info-children x))
+	    (setf (type-bpe-info-buckets-used y) 
+		  (union (type-bpe-info-buckets-used y)
+			 (type-bpe-info-buckets-used x))))))
+
       (when verbose
         (format t "~%Exiting assign-buckets"))
       buckets)))

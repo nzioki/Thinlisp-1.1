@@ -32,7 +32,7 @@
 
 ;;; This module implements a subset of CLOS.  In particular, this implementation
 ;;; assumes that all classes that will be defined have already been defined, and
-;;; therefore it take optimizations that would be incorrect if further
+;;; therefore it makes optimizations that would be incorrect if further
 ;;; subclasses could be defined.
 
 ;;; There are some cases where this will not be appropriate.  In particular, if
