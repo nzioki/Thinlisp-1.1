@@ -88,7 +88,7 @@
 
 ;;; Define convenience forms for all systems (add your own to this list).
 
-(def-system-convenience-forms tl lecho)
+(def-system-convenience-forms lecho)
 
 ;;; Translate your system (modify to compile or translate your system).
 
