@@ -2,7 +2,7 @@
 
 ;;;; Module BOOT
 
-;;; Copyright (c) 1999 The ThinLisp Group
+;;; Copyright (c) 1999-2001 The ThinLisp Group
 ;;; All rights reserved.
 
 ;;; This file is part of ThinLisp.
