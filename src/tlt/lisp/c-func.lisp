@@ -72,10 +72,11 @@
   ;; Comment of which Lisp function it came from, if any.
   (when (c-func-lisp-func-spec? c-func)
     (emit-string-to-c-file
-      (format nil "/* Translated from ~a~a = ~a */"
-	      (first (c-func-lisp-func-spec? c-func))
-	      (or (second (c-func-lisp-func-spec? c-func)) "()")
-	      (third (c-func-lisp-func-spec? c-func)))
+     (let ((*print-pretty* nil))
+       (format nil "/* Translated from ~a~a = ~a */"
+	       (first (c-func-lisp-func-spec? c-func))
+	       (or (second (c-func-lisp-func-spec? c-func)) "()")
+	       (third (c-func-lisp-func-spec? c-func))))
       c-file)
     (emit-newline-to-c-file c-file)
     (emit-newline-to-c-file c-file))
