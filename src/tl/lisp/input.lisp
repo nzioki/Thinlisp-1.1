@@ -152,8 +152,6 @@
   (1- (expt 2 14)))
 
 
-(defvar always-true t)
-
 (defun read-line-from-file-stream (&optional (file-stream *standard-input*)
 					     (eof-error-p t)
 					     eof-value)
@@ -188,7 +186,6 @@
 	     (setf (fill-pointer (the string *input-string-buffer*))
 		   strlen-value)
 	     (values *input-string-buffer* missing-new-line?))))))
-
 
 
 (defun read-line-from-string-stream (&optional (string-stream *standard-input*)
