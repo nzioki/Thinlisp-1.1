@@ -39,25 +39,27 @@
 ;;; variable MAKE_MODE set to UNIX.
 
 (defparameter makefile-element-alist
-    '((cc          . "gcc -o")
-      (cc-flags    . "-O2 -ansi -pedantic -W -Wall -fomit-frame-pointer -c")
-      (debug-flags . "-ggdb3 -ansi -pedantic -W -Wall -c")
-      (wild        . "%")
-      (stem        . "$*")
-      (target      . "$@")
-      (first-dep   . "$<")
+    '((cc           . "gcc -o")
+      (opt-flags    . "-O2 -fomit-frame-pointer")
+      (debug-flags  . "-ggdb3")
+      (thread-flags . "-DPTHREAD")
+      (cc-flags     . "-pipe -ansi -pedantic -W -Wall -c")
+      (wild         . "%")
+      (stem         . "$*")
+      (target       . "$@")
+      (first-dep    . "$<")
       
-      (archive     . "ar rsc")
-      (link        . "gcc -o")
-      (link-flags  . "-O2")
-      (debug-link  . "-g")
-      (system-libs . "")
+      (archive      . "ar rsc")
+      (link         . "gcc -o")
+      (opt-link     . "-O2")
+      (debug-link   . "-g")
+      (system-libs  . "")
 
-      (lib-prefix  . "lib")
-      (lib-postfix . ".a")
-      (exe-prefix  . "")
-      (exe-postfix . ".exe")
-      (obj-postfix . ".o")
+      (lib-prefix   . "lib")
+      (lib-postfix  . ".a")
+      (exe-prefix   . "")
+      (exe-postfix  . ".exe")
+      (obj-postfix  . ".o")
       ))
 
 
@@ -85,16 +87,11 @@
      (exe-postfix . "")
      (system-libs . "-lm"))
 
-    (("linux-pthreads" "linux")
-     (cc-flags    . "-D_REENTRANT -DPTHREAD -O2 -ansi -pedantic -W -Wall -fomit-frame-pointer -c")
-     (debug-flags . "-D_REENTRANT -DPTHREAD -ggdb3 -ansi -pedantic -W -Wall -c"))
-
     (("freebsd" "linux"))
 
     (("config")
      (cc          . "@CC@")
-     (cc-flags    . "@CFLAGS@ -ansi -pedantic -W -Wall -fomit-frame-pointer -c")
-     (debug-flags . "@CFLAGS@ -ggdb3 -ansi -pedantic -W -Wall -c")
+     (cc-flags    . "@CFLAGS@ -pipe -ansi -pedantic -W -Wall -c")
      )
 
     ))
@@ -151,19 +148,24 @@
     (with-open-file (output temp-path :direction :output :if-exists :supersede)
       (format output "#~%# ~a ~a Makefile~%#~%# Copyright (c) ~a The ThinLisp Group~%~%"
 	      (system-name system) (string-capitalize port-name) current-year)
-      (format output "CC=~a~%" (makeup 'cc))
+      (format output "CC = ~a~%" (makeup 'cc))
+      (format output "~%CFLAGS =~%")
+      (format output "~%ifdef THREAD~%")
+      (format output "CFLAGS += ~a~%" (makeup 'thread-flags))
+      (format output "endif~%")
       (format output "~%ifdef OPT~%")
-      (format output "CFLAGS=~a~%" (makeup 'cc-flags))
+      (format output "CFLAGS += ~a~%" (makeup 'opt-flags))
       (format output "else~%")
-      (format output "CFLAGS=~a~%" (makeup 'debug-flags))
-      (format output "endif~2%")
+      (format output "CFLAGS += ~a~%" (makeup 'debug-flags))
+      (format output "endif~%")
+      (format output "~%CFLAGS += ~a~2%" (makeup 'cc-flags))
       (cond ((system-is-library-p system)
-	     (format output "ARCHIVE=~a~%" (makeup 'archive)))
+	     (format output "ARCHIVE = ~a~%" (makeup 'archive)))
 	    (t
-	     (format output "LINK=~a~%" (makeup 'link))
+	     (format output "LINK = ~a~%" (makeup 'link))
 	     (format output "~%ifdef OPT~%")
-	     (format output "LINKFLAGS=~a~%" (makeup 'link-flags))
-	     (format output "LIBS=")
+	     (format output "LINKFLAGS = ~a~%" (makeup 'opt-link))
+	     (format output "LIBS =")
 	     (loop for subsystem in (butlast (system-all-used-systems system)) do
 	       (tlt-write-char #\space output)
 	       (relative-path-to-directory
@@ -171,8 +173,8 @@
 		output)
 	       (format output "lib~(~a~).a" subsystem))	    
 	     (format output "~%else~%")
-	     (format output "LINKFLAGS=~a~%" (makeup 'debug-link))
-	     (format output "LIBS=")
+	     (format output "LINKFLAGS = ~a~%" (makeup 'debug-link))
+	     (format output "LIBS =")
 	     (loop for subsystem in (butlast (system-all-used-systems system)) do
 	       (tlt-write-char #\space output)
 	       (relative-path-to-directory
@@ -180,8 +182,8 @@
 		output)
 	       (format output "lib~(~a~).a" subsystem))
 	     (format output "~%endif~2%")
-	     (format output "SYSLIBS=~a~%" (makeup 'system-libs))))
-      (tlt-write-string "OBJECTS=" output)
+	     (format output "SYSLIBS = ~a~%" (makeup 'system-libs))))
+      (tlt-write-string "OBJECTS = " output)
       (loop for file-count = 1 then (1+ file-count)
 	  for file-name in (system-extra-c-files system) do
 	(when (= (mod file-count files-per-line) 0)

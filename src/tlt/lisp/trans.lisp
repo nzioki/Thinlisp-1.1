@@ -617,6 +617,7 @@
 	    nil 'void init-function-c-identifier (list init-func-name nil 'void)
 	    nil nil nil (make-c-compound-statement nil nil nil nil)
 	    init-func-namespace (or *system-top-level-c-file* c-file)))
+    (setf (c-file-top-level-function-name c-file) init-func-name)
     (setf (c-file-top-level-compound-statement c-file)
 	  (make-c-compound-statement nil nil nil nil))
     (setf (c-file-top-level-symbols-compound-statement c-file)
@@ -627,6 +628,7 @@
 	    (list symbols-func-name nil 'void)
 	    nil nil nil (c-file-top-level-symbols-compound-statement c-file)
 	    symbols-func-namespace (or *system-top-level-c-file* c-file)))
+    (setf (c-file-top-level-symbols-function-name c-file) symbols-func-name)
     (setf (c-file-top-level-c-file? c-file)
 	  *system-top-level-c-file*)))
 
