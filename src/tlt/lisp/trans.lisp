@@ -561,6 +561,7 @@
 	 (tlt-final-pathname (system-trans-data-file system module)))
     (setf (c-file-temporary-pathname c-file) c-temporary-pathname)
     (setf (c-file-final-pathname c-file) c-final-pathname)
+    (ensure-directories-exist c-temporary-pathname :verbose nil)
     (setf (c-file-c-stream c-file)
 	  (open c-temporary-pathname :direction :output :if-exists :supersede))
     (unless debugging-translate
