@@ -37,10 +37,11 @@
 
 (defun gl-user::main (args)
   (when (and args (string= (car args) "--help"))
-    (format t "Usage: lecho [arg] ...~%  all arguments will be echoed back to stdout with a space between each")
+    (format t "Usage: lecho [arg] ...~%  all arguments will be echoed to stdout~%")
     (return-from gl-user::main -1))
-  (loop for arg-cons on args do
+  (loop for arg-cons on (cdr args) do
     (when (not (eq arg-cons args))
-      (write-char " "))
-    (write-string (cons-car arg)))
+      (write-char #\space))
+    (write-string (car arg-cons)))
+  (terpri)
   0)
