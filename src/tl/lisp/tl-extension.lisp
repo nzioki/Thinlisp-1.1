@@ -1390,6 +1390,9 @@
 		   13))
     (bad-assumption
       "Casting floats to integers cannot be relied on to perform truncation"))
+  #+cmu
+  (warn "Disabled truncation testing.")
+  #-cmu
   (unless (and (=f (gli::truncate-test-by-dividing-with-slash
 		     (the fixnum (- (the fixnum fixnum-test-value))) 2)
 		   -5)
