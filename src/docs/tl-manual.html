@@ -1,13 +1,13 @@
 <HTML>
 <HEAD>
-<!-- Created by texi2html 1.56k from tl-manual.texinfo on 4 January 2000 -->
+<!-- Created by texi2html 1.56k from tl-manual.texinfo on 4 March 2001 -->
 
 <TITLE>ThinLisp Manual</TITLE>
 </HEAD>
 <BODY>
 <H1>ThinLisp Manual</H1>
 <H2>Version 0.6</H2>
-<H2>4 January 2000</H2>
+<H2>4 March 2001</H2>
 <ADDRESS>The ThinLisp Group:</ADDRESS>
 <ADDRESS>Jim Allard</ADDRESS>
 <ADDRESS>Ben Hyde</ADDRESS>
@@ -206,7 +206,7 @@ had a significant business in maintenance services for traditional
 compressor-based chillers, but it lacked trained personnel to go after this new
 and lucrative service market.  A corporate research lab made a Lisp-based
 implementation of a run-time environment for Mentor that ran on a ruggedized
-Grid laptop computers.  While the system was useful, it ran sluggishly and the
+Grid laptop computer.  While the system was useful, it ran sluggishly and the
 Lisp-based implementation left little room on the laptop for the system to grow
 and improve.  A technology transfer project was begun which resulted in a
 software engineer within the service division rewriting the application in C,
@@ -221,10 +221,10 @@ at Homeywell which was intended to be used in process control plants.  It was
 implemented on a Symbolics 3640 which was deployed to a paper mill in
 Pennsylvania.  Though care had been taken to tailor memory use such that a
 generational garbage collector would efficiently reclaim the vast majority of
-discarded memory, every 6 weeks or so a hemisphere flip would occur, during
-which the system could not maintain adequate real-time performance for several
-hours.  After the third time that this happened, the plant crew turned off the
-system and never restarted it again.
+discarded memory, every 6 weeks or so a hemisphere flip would occur (i.e. a big
+garbage collection), during which the system could not maintain adequate
+real-time performance for several hours.  After the third time that this
+happened, the plant crew turned off the system and never restarted it again.
 
 
 <P>
@@ -260,17 +260,13 @@ industry by IIC.
 
 
 
-<H2><A NAME="SEC7" HREF="tl-manual_toc.html#TOC7">Mathematician's Languages vs. Engineer's Languages</A></H2>
+<H2><A NAME="SEC7" HREF="tl-manual_toc.html#TOC7">Scientists, Mathematicians, and Engineers (oh my!)</A></H2>
 
 <P>
 From the beginning Lisp was a mathematician's language.  To understand what I
 mean by Lisp this, I must explain one view of the differences between the goals
 of scientists, mathematicians, and engineers.  <A NAME="DOCF2" HREF="tl-manual_foot.html#FOOT2">(2)</A>
 
-
-
-
-<H3><A NAME="SEC8" HREF="tl-manual_toc.html#TOC8">Scientists, Mathematicians, and Engineers (oh my!)</A></H3>
 
 <P>
 The goal of scientists is to learn truths about the world around them, using
@@ -314,7 +310,7 @@ themselves through two very different approaches to language design.
 
 
 
-<H3><A NAME="SEC9" HREF="tl-manual_toc.html#TOC9">Denotational and Operational Semantics</A></H3>
+<H2><A NAME="SEC8" HREF="tl-manual_toc.html#TOC8">Denotational and Operational Semantics</A></H2>
 
 <P>
 The mathematician espouses <EM>denotational semantics</EM>, where the behavior of
@@ -376,13 +372,14 @@ default choice for people building big systems.
 
 
 <P>
-Lisp and other languages (such as Smalltalk, Eiffel, and recently Java) were are
-exemplars of the mathematical style, emphasizing denotational semantics.  The
-operations in these languages were defined with semantics that are deep (or fat
-if you prefer), focusing not on what an operation <EM>did</EM> but on what it
-<EM>meant</EM>.  Of course there had to be implementations of these operations,
-but the actual machine instructions carried out were allowed (even expected) to
-vary widely depending on the manner and situation in which it was used.
+Lisp and other languages (such as CLU, Smalltalk, Eiffel, and recently Java)
+were are exemplars of the mathematical style, emphasizing denotational
+semantics.  The operations in these languages were defined with semantics that
+are deep (or fat if you prefer), focusing not on what an operation <EM>did</EM>
+but on what it <EM>meant</EM>.  Of course there had to be implementations of these
+operations, but the actual machine instructions carried out were allowed (even
+expected) to vary widely depending on the manner and situation in which it was
+used.
 
 
 <P>
@@ -396,7 +393,7 @@ machine.  One sees too much exposed, and the other sees too much being hidden.
 
 
 
-<H3><A NAME="SEC10" HREF="tl-manual_toc.html#TOC10">Just GOTO, or Really GOTO</A></H3>
+<H2><A NAME="SEC9" HREF="tl-manual_toc.html#TOC9">Just GOTO, or GOTO When You're Ready</A></H2>
 
 <P>
 An example of how this difference in design perspective plays out can be found
@@ -472,7 +469,7 @@ that the execution of clean-up code cannot be enforced.
 
 
 
-<H2><A NAME="SEC11" HREF="tl-manual_toc.html#TOC11">ThinLisp's Compromise</A></H2>
+<H2><A NAME="SEC10" HREF="tl-manual_toc.html#TOC10">ThinLisp's Compromise</A></H2>
 
 <P>
 While C++ and Java can be viewed as attempts to move C more towards a
@@ -517,7 +514,7 @@ non-local exits.
 
 
 
-<H1><A NAME="SEC12" HREF="tl-manual_toc.html#TOC12">Original Design Notes</A></H1>
+<H1><A NAME="SEC11" HREF="tl-manual_toc.html#TOC11">Original Design Notes</A></H1>
 
 <P>
 <I>The following were the original design notes about what should be built into
@@ -526,7 +523,7 @@ GL, which became ThinLisp.  -jallard 10/12/99</I>
 
 
 
-<H2><A NAME="SEC13" HREF="tl-manual_toc.html#TOC13">Def-System</A></H2>
+<H2><A NAME="SEC12" HREF="tl-manual_toc.html#TOC12">Def-System</A></H2>
 
 <P>
 In order to get the flexibility that we want with this development environment,
@@ -561,7 +558,7 @@ gensym-c-function form.
 
 
 
-<H2><A NAME="SEC14" HREF="tl-manual_toc.html#TOC14">Overview of Translations</A></H2>
+<H2><A NAME="SEC13" HREF="tl-manual_toc.html#TOC13">Overview of Translations</A></H2>
 
 <P>
 There are four different modes in which GL (Gensym Lisp, oops, er, Language)
@@ -636,7 +633,7 @@ recompile arguments.
 
 
 
-<H2><A NAME="SEC15" HREF="tl-manual_toc.html#TOC15">Compilation Passes</A></H2>
+<H2><A NAME="SEC14" HREF="tl-manual_toc.html#TOC14">Compilation Passes</A></H2>
 
 <P>
 The development compilation pass can be detected by the :development switch in
@@ -657,7 +654,7 @@ translator type-safety checks.
 
 
 
-<H2><A NAME="SEC16" HREF="tl-manual_toc.html#TOC16">Pre-Process Compilation Pass</A></H2>
+<H2><A NAME="SEC15" HREF="tl-manual_toc.html#TOC15">Pre-Process Compilation Pass</A></H2>
 
 <P>
 The pre-process pass is used to gather information about the following:
@@ -690,7 +687,7 @@ during subsequent pre-processing in which the source Lisp file has not changed.
 
 
 
-<H2><A NAME="SEC17" HREF="tl-manual_toc.html#TOC17">Translation Compilation Pass</A></H2>
+<H2><A NAME="SEC16" HREF="tl-manual_toc.html#TOC16">Translation Compilation Pass</A></H2>
 
 <P>
 The translate pass is finally used to read source Lisp files and translate
@@ -719,7 +716,7 @@ and automatically determine when retranslates must be performed.
 
 
 
-<H2><A NAME="SEC18" HREF="tl-manual_toc.html#TOC18">Packages</A></H2>
+<H2><A NAME="SEC17" HREF="tl-manual_toc.html#TOC17">Packages</A></H2>
 
 <P>
 Packages should be designed as follows.  The AB package should now use the GL
@@ -747,7 +744,7 @@ be used at this time.
 
 
 
-<H2><A NAME="SEC19" HREF="tl-manual_toc.html#TOC19">Stacks</A></H2>
+<H2><A NAME="SEC18" HREF="tl-manual_toc.html#TOC18">Stacks</A></H2>
 
 <P>
 A global Obj_stack and Obj_stack_top will be maintained for holding shadowed
@@ -766,7 +763,7 @@ binding scopes are exited, and execute unwind-protect cleanup forms.
 
 
 
-<H2><A NAME="SEC20" HREF="tl-manual_toc.html#TOC20">Global Variable Binding</A></H2>
+<H2><A NAME="SEC19" HREF="tl-manual_toc.html#TOC19">Global Variable Binding</A></H2>
 
 <P>
 Bindings of global variables will be handled as follows.  The current value of
@@ -785,7 +782,7 @@ the stack.
 
 
 
-<H2><A NAME="SEC21" HREF="tl-manual_toc.html#TOC21">Unwind-Protect Scopes</A></H2>
+<H2><A NAME="SEC20" HREF="tl-manual_toc.html#TOC20">Unwind-Protect Scopes</A></H2>
 
 <P>
 On entry to an unwind protect scope, a call to setjmp is made with a jmp_buf
@@ -803,7 +800,7 @@ scope around the unwind-protect must be declared volatile in the translation.
 
 
 
-<H2><A NAME="SEC22" HREF="tl-manual_toc.html#TOC22">Catch and Throw</A></H2>
+<H2><A NAME="SEC21" HREF="tl-manual_toc.html#TOC21">Catch and Throw</A></H2>
 
 <P>
 On entry to a catch form, a setjmp is performed with a jmp_buff environment.
@@ -817,7 +814,7 @@ declared volatile in the translation.
 
 
 
-<H2><A NAME="SEC23" HREF="tl-manual_toc.html#TOC23">Multiple Values</A></H2>
+<H2><A NAME="SEC22" HREF="tl-manual_toc.html#TOC22">Multiple Values</A></H2>
 
 <P>
 Within locations where the source and receiver of values are mutually visible,
@@ -845,7 +842,7 @@ multiple-values-buffer.
 
 
 
-<H2><A NAME="SEC24" HREF="tl-manual_toc.html#TOC24">Constants</A></H2>
+<H2><A NAME="SEC23" HREF="tl-manual_toc.html#TOC23">Constants</A></H2>
 
 <P>
 Constant values of type char, sint32, fixnum, and double will be translated
@@ -888,7 +885,7 @@ system.
 
 
 
-<H2><A NAME="SEC25" HREF="tl-manual_toc.html#TOC25">Streams</A></H2>
+<H2><A NAME="SEC24" HREF="tl-manual_toc.html#TOC24">Streams</A></H2>
 
 <P>
 I'm hoping that most support for Common Lisp streams can be avoided in the
@@ -899,7 +896,7 @@ print to standard output.
 
 
 
-<H2><A NAME="SEC26" HREF="tl-manual_toc.html#TOC26">Variables</A></H2>
+<H2><A NAME="SEC25" HREF="tl-manual_toc.html#TOC25">Variables</A></H2>
 
 <P>
 Global Lisp variables and parameters will generally be represented as C
@@ -913,7 +910,7 @@ the C variable will always be of type Obj.
 
 
 
-<H2><A NAME="SEC27" HREF="tl-manual_toc.html#TOC27">Functions</A></H2>
+<H2><A NAME="SEC26" HREF="tl-manual_toc.html#TOC26">Functions</A></H2>
 
 <P>
 Each Lisp function will be implemented as a C function.  The C function will
@@ -926,7 +923,7 @@ funcalling).
 
 
 
-<H2><A NAME="SEC28" HREF="tl-manual_toc.html#TOC28">Translator Data Structures</A></H2>
+<H2><A NAME="SEC27" HREF="tl-manual_toc.html#TOC27">Translator Data Structures</A></H2>
 
 <P>
 The following sections present designs for the data structures and functions
@@ -937,7 +934,7 @@ defstruct for all structures.
 
 
 
-<H2><A NAME="SEC29" HREF="tl-manual_toc.html#TOC29">C Name Spaces</A></H2>
+<H2><A NAME="SEC28" HREF="tl-manual_toc.html#TOC28">C Name Spaces</A></H2>
 
 <P>
 A part of translating is determining the C identifiers to be used to represent
@@ -1009,7 +1006,7 @@ characters in length, since that is the limit for the VAX linker.
 
 
 
-<H2><A NAME="SEC30" HREF="tl-manual_toc.html#TOC30">C File Structures</A></H2>
+<H2><A NAME="SEC29" HREF="tl-manual_toc.html#TOC29">C File Structures</A></H2>
 
 <P>
 During translation of a Lisp file to a C file, a C file structure will be held
@@ -1051,7 +1048,7 @@ will be flushed out to the line before any newlines are emitted to the file.
 
 
 
-<H2><A NAME="SEC31" HREF="tl-manual_toc.html#TOC31">C Type Declaration Structures</A></H2>
+<H2><A NAME="SEC30" HREF="tl-manual_toc.html#TOC30">C Type Declaration Structures</A></H2>
 
 <P>
 In some cases, new C typedef statements may need to be emitted within a C file.
@@ -1063,7 +1060,7 @@ used to represent them.
 
 
 
-<H2><A NAME="SEC32" HREF="tl-manual_toc.html#TOC32">C Variable Declaration Structures</A></H2>
+<H2><A NAME="SEC31" HREF="tl-manual_toc.html#TOC31">C Variable Declaration Structures</A></H2>
 
 <P>
 Variable declaration structures will be used to hold information about all C
@@ -1079,7 +1076,7 @@ this in the C variable declaration structure, but I'm not certain of that.
 
 
 
-<H2><A NAME="SEC33" HREF="tl-manual_toc.html#TOC33">C Function Structures</A></H2>
+<H2><A NAME="SEC32" HREF="tl-manual_toc.html#TOC32">C Function Structures</A></H2>
 
 <P>
 C functions will be represented during translations as structures that contain
@@ -1097,7 +1094,7 @@ unreadable.
 
 
 
-<H2><A NAME="SEC34" HREF="tl-manual_toc.html#TOC34">C Statement Structures</A></H2>
+<H2><A NAME="SEC33" HREF="tl-manual_toc.html#TOC33">C Statement Structures</A></H2>
 
 <P>
 For each kind of C statement, there will be a different C statement structure
@@ -1149,7 +1146,7 @@ compound-statements, but otherwise are never specifically called for.
 
 
 
-<H2><A NAME="SEC35" HREF="tl-manual_toc.html#TOC35">C Compound Statement Structures</A></H2>
+<H2><A NAME="SEC34" HREF="tl-manual_toc.html#TOC34">C Compound Statement Structures</A></H2>
 
 <P>
 C compound statements will be used to hold all emitted C statements, statement
@@ -1219,7 +1216,7 @@ expressions.
 
 
 
-<H2><A NAME="SEC36" HREF="tl-manual_toc.html#TOC36">C Expression Statement Structures</A></H2>
+<H2><A NAME="SEC35" HREF="tl-manual_toc.html#TOC35">C Expression Statement Structures</A></H2>
 
 <P>
 Expression statements will hold a c-expression structure.  Expression
@@ -1236,7 +1233,7 @@ assignment, increment, decrement, or function call expressions.
 
 
 
-<H2><A NAME="SEC37" HREF="tl-manual_toc.html#TOC37">C Label Statement Structures</A></H2>
+<H2><A NAME="SEC36" HREF="tl-manual_toc.html#TOC36">C Label Statement Structures</A></H2>
 
 <P>
 C labels for goto tags, switch case values, and switch default branch points
@@ -1251,7 +1248,7 @@ values and default tags at a level even with the opening switch statement.
 
 
 
-<H2><A NAME="SEC38" HREF="tl-manual_toc.html#TOC38">C Conditional Statement Structures</A></H2>
+<H2><A NAME="SEC37" HREF="tl-manual_toc.html#TOC37">C Conditional Statement Structures</A></H2>
 
 <P>
 This statement contains a list of alternating c-expressions and c-statements.
@@ -1287,7 +1284,7 @@ statements and wrapping them in a compound statement if any are found.
 
 
 
-<H2><A NAME="SEC39" HREF="tl-manual_toc.html#TOC39">C While Statement Structures</A></H2>
+<H2><A NAME="SEC38" HREF="tl-manual_toc.html#TOC38">C While Statement Structures</A></H2>
 
 <P>
 The c-while-statement will contain a c-expression and a c-statement.  It will
@@ -1298,7 +1295,7 @@ plus one.
 
 
 
-<H2><A NAME="SEC40" HREF="tl-manual_toc.html#TOC40">Emitting Indentation</A></H2>
+<H2><A NAME="SEC39" HREF="tl-manual_toc.html#TOC39">Emitting Indentation</A></H2>
 
 <P>
 The function emit-indentation-to-file takes a number of indentation levels to
@@ -1315,7 +1312,7 @@ indented to this level plus one or two more extra levels.
 
 
 
-<H2><A NAME="SEC41" HREF="tl-manual_toc.html#TOC41">Post-Macro Translation</A></H2>
+<H2><A NAME="SEC40" HREF="tl-manual_toc.html#TOC40">Post-Macro Translation</A></H2>
 
 <P>
 After macro-expansion is complete, the s-expressions of a function will consist
@@ -1332,7 +1329,7 @@ analysis, C type choosing for variables and structurized forms.
 
 
 
-<H2><A NAME="SEC42" HREF="tl-manual_toc.html#TOC42">Structurizing</A></H2>
+<H2><A NAME="SEC41" HREF="tl-manual_toc.html#TOC41">Structurizing</A></H2>
 
 <P>
 Once Lisp expressions have been fully macro-expanded into special forms and
@@ -1443,7 +1440,7 @@ property list for the defining symbol.
 
 
 
-<H2><A NAME="SEC43" HREF="tl-manual_toc.html#TOC43">Type Propagation</A></H2>
+<H2><A NAME="SEC42" HREF="tl-manual_toc.html#TOC42">Type Propagation</A></H2>
 
 <P>
 After structurizing has been completed on the body of the function, then the
@@ -1501,7 +1498,7 @@ argument to be type T, turning off all attempts to specialize that argument.
 
 
 
-<H1><A NAME="SEC44" HREF="tl-manual_toc.html#TOC44">Memory Architecture</A></H1>
+<H1><A NAME="SEC43" HREF="tl-manual_toc.html#TOC43">Memory Architecture</A></H1>
 
 <P>
 ThinLisp uses pointers to a one word (4 byte) header structure as the basic
@@ -1681,7 +1678,7 @@ The table above can be verified with the implementation by calling
 
 
 
-<H2><A NAME="SEC45" HREF="tl-manual_toc.html#TOC45">Simple-vectors</A></H2>
+<H2><A NAME="SEC44" HREF="tl-manual_toc.html#TOC44">Simple-vectors</A></H2>
 
 <P>
 Simple vectors are the most often used data structure, so we'd like to keep it
@@ -1741,7 +1738,7 @@ details.
 
 
 
-<H2><A NAME="SEC46" HREF="tl-manual_toc.html#TOC46">Strings</A></H2>
+<H2><A NAME="SEC45" HREF="tl-manual_toc.html#TOC45">Strings</A></H2>
 
 <P>
 In order to give fast performance for all strings, we will have fill pointers
@@ -1767,7 +1764,7 @@ typedef struct {
 
 
 
-<H2><A NAME="SEC47" HREF="tl-manual_toc.html#TOC47">Immediate integer and double arrays</A></H2>
+<H2><A NAME="SEC46" HREF="tl-manual_toc.html#TOC46">Immediate integer and double arrays</A></H2>
 
 <P>
 All of these types are implemented in the same way, with a 4 byte-aligned one
@@ -1779,7 +1776,7 @@ to fetch values and modify values.
 
 
 
-<H2><A NAME="SEC48" HREF="tl-manual_toc.html#TOC48">Symbol</A></H2>
+<H2><A NAME="SEC47" HREF="tl-manual_toc.html#TOC47">Symbol</A></H2>
 
 <P>
 There are several different optimizations that one can imagine for the slots of
@@ -1828,7 +1825,7 @@ size of the symbol-name.
 
 
 
-<H2><A NAME="SEC49" HREF="tl-manual_toc.html#TOC49">Compiled Functions</A></H2>
+<H2><A NAME="SEC48" HREF="tl-manual_toc.html#TOC48">Compiled Functions</A></H2>
 
 <P>
 Compiled functions will contain a pointer to the C function for this compiled
@@ -1863,7 +1860,7 @@ values, but these should never be given to the default funcall operations.
 
 
 
-<H2><A NAME="SEC50" HREF="tl-manual_toc.html#TOC50">Characters</A></H2>
+<H2><A NAME="SEC49" HREF="tl-manual_toc.html#TOC49">Characters</A></H2>
 
 <P>
 Since all immediate type tags are in use, we will use heap allocated 
@@ -1883,7 +1880,7 @@ typedef struct {
 
 
 
-<H2><A NAME="SEC51" HREF="tl-manual_toc.html#TOC51">Package</A></H2>
+<H2><A NAME="SEC50" HREF="tl-manual_toc.html#TOC50">Package</A></H2>
 
 <P>
 Packages are implemented as balanced binary trees.  They contain a list of used
@@ -1909,7 +1906,7 @@ typedef struct {
 
 
 
-<H2><A NAME="SEC52" HREF="tl-manual_toc.html#TOC52">Obsolete 8 Byte Alignments</A></H2>
+<H2><A NAME="SEC51" HREF="tl-manual_toc.html#TOC51">Obsolete 8 Byte Alignments</A></H2>
 
 <P>
 [The following section describes tagging for 8 byte alignments.  Keeping for
@@ -2007,7 +2004,7 @@ not yet been tested.
 
 
 
-<H1><A NAME="SEC53" HREF="tl-manual_toc.html#TOC53">Original Introduction</A></H1>
+<H1><A NAME="SEC52" HREF="tl-manual_toc.html#TOC52">Original Introduction</A></H1>
 
 <P>
 <EM>This introduction was written at the beginning of the effort to make a new
@@ -2061,7 +2058,7 @@ functions that return a single value.
 
 
 
-<H1><A NAME="SEC54" HREF="tl-manual_toc.html#TOC54">Required Symbols</A></H1>
+<H1><A NAME="SEC53" HREF="tl-manual_toc.html#TOC53">Required Symbols</A></H1>
 
 <P>
 <I>This chapter was generated by Rick Harris in 1997 to show which symbols from the Chestnut
@@ -2330,7 +2327,7 @@ type-of *
 
 
 
-<H1><A NAME="SEC55" HREF="tl-manual_toc.html#TOC55">Index</A></H1>
+<H1><A NAME="SEC54" HREF="tl-manual_toc.html#TOC54">Index</A></H1>
 
 <P>
 Jump to:
@@ -2343,7 +2340,7 @@ Jump to:
 
 
 <P><HR><P>
-This document was generated on 4 January 2000 using
+This document was generated on 4 March 2001 using
 <A HREF="http://wwwinfo.cern.ch/dis/texi2html/">texi2html</A>&nbsp;1.56k.
 </BODY>
 </HTML>

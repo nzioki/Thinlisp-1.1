@@ -1,4 +1,4 @@
-This is tl-manual.info, produced by Makeinfo version 3.12h from
+This is tl-manual.info, produced by makeinfo version 4.0 from
 tl-manual.texinfo.
 
    The manual and associated descriptions of ThinLisp, a Lisp-to-C
@@ -196,7 +196,7 @@ office buildings.  Honeywell had a significant business in maintenance
 services for traditional compressor-based chillers, but it lacked
 trained personnel to go after this new and lucrative service market.  A
 corporate research lab made a Lisp-based implementation of a run-time
-environment for Mentor that ran on a ruggedized Grid laptop computers.
+environment for Mentor that ran on a ruggedized Grid laptop computer.
 While the system was useful, it ran sluggishly and the Lisp-based
 implementation left little room on the laptop for the system to grow
 and improve.  A technology transfer project was begun which resulted in
@@ -211,10 +211,11 @@ control plants.  It was implemented on a Symbolics 3640 which was
 deployed to a paper mill in Pennsylvania.  Though care had been taken
 to tailor memory use such that a generational garbage collector would
 efficiently reclaim the vast majority of discarded memory, every 6
-weeks or so a hemisphere flip would occur, during which the system
-could not maintain adequate real-time performance for several hours.
-After the third time that this happened, the plant crew turned off the
-system and never restarted it again.
+weeks or so a hemisphere flip would occur (i.e. a big garbage
+collection), during which the system could not maintain adequate
+real-time performance for several hours.  After the third time that this
+happened, the plant crew turned off the system and never restarted it
+again.
 
    The G2 system is a real-time supervisory level control system built
 by Gensym Corporation.  It's source code was written in Lisp, and for
@@ -246,16 +247,13 @@ Lisp subset made for embedded processors, in this case a Motorola
 and are currently being marketed to the oil field services industry by
 IIC.
 
-Mathematician's Languages vs. Engineer's Languages
+Scientists, Mathematicians, and Engineers (oh my!)
 ==================================================
 
    From the beginning Lisp was a mathematician's language.  To
 understand what I mean by Lisp this, I must explain one view of the
 differences between the goals of scientists, mathematicians, and
 engineers.  (2)
-
-Scientists, Mathematicians, and Engineers (oh my!)
---------------------------------------------------
 
    The goal of scientists is to learn truths about the world around
 them, using observation, analysis, hypothesis, and experimentation to
@@ -294,7 +292,7 @@ engineer distinguish themselves through two very different approaches
 to language design.
 
 Denotational and Operational Semantics
---------------------------------------
+======================================
 
    The mathematician espouses _denotational semantics_, where the
 behavior of an operation is determined by what the operation _means_.
@@ -349,14 +347,14 @@ Pascal, Basic, and C are all examples of languages in this category,
 with C (and it's derivative, C++) now being the default choice for
 people building big systems.
 
-   Lisp and other languages (such as Smalltalk, Eiffel, and recently
-Java) were are exemplars of the mathematical style, emphasizing
-denotational semantics.  The operations in these languages were defined
-with semantics that are deep (or fat if you prefer), focusing not on
-what an operation _did_ but on what it _meant_.  Of course there had to
-be implementations of these operations, but the actual machine
-instructions carried out were allowed (even expected) to vary widely
-depending on the manner and situation in which it was used.
+   Lisp and other languages (such as CLU, Smalltalk, Eiffel, and
+recently Java) were are exemplars of the mathematical style,
+emphasizing denotational semantics.  The operations in these languages
+were defined with semantics that are deep (or fat if you prefer),
+focusing not on what an operation _did_ but on what it _meant_.  Of
+course there had to be implementations of these operations, but the
+actual machine instructions carried out were allowed (even expected) to
+vary widely depending on the manner and situation in which it was used.
 
    These philosophical differences lead to vastly different languages,
 with the consequences of each style evoking surprise, disbelief, or
@@ -366,8 +364,8 @@ of systems are exposed, and operational fans can't believe how
 disassociated operations are from the machine.  One sees too much
 exposed, and the other sees too much being hidden.
 
-Just GOTO, or Really GOTO
--------------------------
+Just GOTO, or GOTO When You're Ready
+====================================
 
    An example of how this difference in design perspective plays out
 can be found in the behavior of the `goto' statement in C and the `go'

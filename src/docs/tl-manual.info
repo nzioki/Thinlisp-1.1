@@ -1,4 +1,4 @@
-This is tl-manual.info, produced by Makeinfo version 3.12h from
+This is tl-manual.info, produced by makeinfo version 4.0 from
 tl-manual.texinfo.
 
    The manual and associated descriptions of ThinLisp, a Lisp-to-C
@@ -9,31 +9,31 @@ fat and slow.
 
 
 Indirect:
-tl-manual.info-1: 277
-tl-manual.info-2: 23508
-tl-manual.info-3: 70460
+tl-manual.info-1: 275
+tl-manual.info-2: 23462
+tl-manual.info-3: 70414
 
 Tag Table:
 (Indirect)
-Node: Top277
-Node: Acknowledgements731
-Node: Preface2235
-Node: Rant3566
-Ref: Rant-Footnote-121814
-Ref: Rant-Footnote-221935
-Ref: Rant-Footnote-322053
-Node: ThinLisp-Compromise22274
-Node: Original-Notes23508
-Node: Memory70460
-Ref: Memory-Footnote-188009
-Ref: Memory-Footnote-288770
-Ref: Memory-Footnote-389298
-Ref: Memory-Footnote-489353
-Ref: Memory-Footnote-589627
-Ref: Memory-Footnote-689736
-Node: Original-Introduction89837
-Ref: Original-Introduction-Footnote-192793
-Node: Required-Symbols92858
-Node: Index97342
+Node: Top275
+Node: Acknowledgements729
+Node: Preface2233
+Node: Rant3564
+Ref: Rant-Footnote-121768
+Ref: Rant-Footnote-221889
+Ref: Rant-Footnote-322007
+Node: ThinLisp-Compromise22228
+Node: Original-Notes23462
+Node: Memory70414
+Ref: Memory-Footnote-187963
+Ref: Memory-Footnote-288724
+Ref: Memory-Footnote-389252
+Ref: Memory-Footnote-489307
+Ref: Memory-Footnote-589581
+Ref: Memory-Footnote-689690
+Node: Original-Introduction89791
+Ref: Original-Introduction-Footnote-192747
+Node: Required-Symbols92812
+Node: Index97296
 
 End Tag Table

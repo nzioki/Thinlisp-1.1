@@ -215,7 +215,7 @@ had a significant business in maintenance services for traditional
 compressor-based chillers, but it lacked trained personnel to go after this new
 and lucrative service market.  A corporate research lab made a Lisp-based
 implementation of a run-time environment for Mentor that ran on a ruggedized
-Grid laptop computers.  While the system was useful, it ran sluggishly and the
+Grid laptop computer.  While the system was useful, it ran sluggishly and the
 Lisp-based implementation left little room on the laptop for the system to grow
 and improve.  A technology transfer project was begun which resulted in a
 software engineer within the service division rewriting the application in C,
@@ -228,10 +228,10 @@ at Homeywell which was intended to be used in process control plants.  It was
 implemented on a Symbolics 3640 which was deployed to a paper mill in
 Pennsylvania.  Though care had been taken to tailor memory use such that a
 generational garbage collector would efficiently reclaim the vast majority of
-discarded memory, every 6 weeks or so a hemisphere flip would occur, during
-which the system could not maintain adequate real-time performance for several
-hours.  After the third time that this happened, the plant crew turned off the
-system and never restarted it again.
+discarded memory, every 6 weeks or so a hemisphere flip would occur (i.e. a big
+garbage collection), during which the system could not maintain adequate
+real-time performance for several hours.  After the third time that this
+happened, the plant crew turned off the system and never restarted it again.
 
 The G2 system is a real-time supervisory level control system built by Gensym
 Corporation.  It's source code was written in Lisp, and for approximately 3
