@@ -32,10 +32,10 @@ Common Lisp implementation.
 The emitted C code has been tested in the past on 19 different platforms
 including Windows 95/98 and Windows NT for Intel and Alpha under both Cygnus and
 Visual C; UNIXes from Linux, FreeBSD, Sun, HP, IBM, SGI, Aviion, DEC UNIX, OSF,
-NEC, and Motorola; and VMS for VAX and Alpha.  Though it has been some time size
-those platforms have been checked, we believe that there has been little change
-to the underlying C structures used, and so the generated C code should remain
-extremely portable.
+NEC, and Motorola; and VMS for VAX and Alpha.  Though it has been some time
+since those platforms have been checked, we believe that there has been little
+change to the underlying C structures used, and so the generated C code should
+remain extremely portable.
 
 A previously used makefile generator system was not available for distribution
 with ThinLisp, and so a new minimalist makefile generator has been built.  The
@@ -49,4 +49,4 @@ Installation
 Please see the INSTALL file in this directory.
 
 --------
-$Id: README,v 1.1 1999/12/04 09:53:56 jallard Exp $
+$Id: README,v 1.2 2001/02/22 19:00:25 jallard Exp $
