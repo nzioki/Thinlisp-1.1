@@ -1,13 +1,13 @@
 <HTML>
 <HEAD>
-<!-- Created by texi2html 1.56k from tl-manual.texinfo on 31 October 1999 -->
+<!-- Created by texi2html 1.56k from tl-manual.texinfo on 14 November 1999 -->
 
 <TITLE>ThinLisp Manual</TITLE>
 </HEAD>
 <BODY>
 <H1>ThinLisp Manual</H1>
 <H2>Version 0.5</H2>
-<H2>31 October 1999</H2>
+<H2>14 November 1999</H2>
 <ADDRESS>The ThinLisp Group:</ADDRESS>
 <ADDRESS>Jim Allard</ADDRESS>
 <ADDRESS>Ben Hyde</ADDRESS>
@@ -263,17 +263,21 @@ industry by IIC.
 <H2><A NAME="SEC7" HREF="tl-manual_toc.html#TOC7">Mathematician's Languages vs. Engineer's Languages</A></H2>
 
 <P>
-From the beginning Lisp was a mathematician's language.  To understand what I mean
-by Lisp this, I must explain my view of the differences between the goals of
-scientists, mathematicians, and engineers.  <A NAME="DOCF2" HREF="tl-manual_foot.html#FOOT2">(2)</A>
+From the beginning Lisp was a mathematician's language.  To understand what I
+mean by Lisp this, I must explain one view of the differences between the goals
+of scientists, mathematicians, and engineers.  <A NAME="DOCF2" HREF="tl-manual_foot.html#FOOT2">(2)</A>
 
+
+
+
+<H3><A NAME="SEC8" HREF="tl-manual_toc.html#TOC8">Scientists, Mathematicians, and Engineers (oh my!)</A></H3>
 
 <P>
 The goal of scientists is to learn truths about the world around them, using
 observation, analysis, hypothesis, and experimentation to advance and buttress
 their claims of discovery.  Pure science aspires to being unconcerned with the
 utility or applicability of the information they seek.  The ultimate goal is to
-discover what <EM>is</EM>.
+discover and understand what <EM>is</EM>.
 
 
 <P>
@@ -293,12 +297,12 @@ With this rigorous technique in hand, the ultimate goal is to discover what is
 <P>
 On the other hand the goal of the engineer, in the abstract, is to bend the
 behavior of an uncooperative world to his will.  Whether it is the stereotypical
-train engineer, civil engineer, acoustic, electrical, mechanical, or software
-engineer, their work is to use the fruits of science and mathematics, exploiting
-practicality and expediency, to operate or design a physical entity so that it
-performs a specific task, usually with the motivation of the almighty dollar.
-Within the constraints of the physical world, the ultimate goal is to accomplish
-what is <EM>practical</EM>.
+engineer operating a train, or a civil, acoustic, electrical, mechanical,
+software, or other specialty of engineer, their work is to use what is known
+from science and mathematics, exploiting practicality and expediency, to operate
+or design a physical entity so that it performs a specific task, usually with
+the motivation of the almighty dollar.  Within the constraints of the physical
+world, the ultimate goal is to accomplish what is <EM>practical</EM>.
 
 
 <P>
@@ -308,10 +312,14 @@ computer language designers, the mathematician and engineer distinguish
 themselves through two very different approaches to language design.
 
 
+
+
+<H3><A NAME="SEC9" HREF="tl-manual_toc.html#TOC9">Denotational and Operational Semantics</A></H3>
+
 <P>
-The mathematician espouses denotational semantics, where the behavior of an
-operation is determined by what the operation <EM>means</EM>.  In this style, the
-goal is to make a complete, and unified system where each element of the
+The mathematician espouses <EM>denotational semantics</EM>, where the behavior of
+an operation is determined by what the operation <EM>means</EM>.  In this style,
+the goal is to make a complete, and unified system where each element of the
 language must be intricately coordinated with each other part, so that each
 element can retain its meaning when used in conjunction with any other part.
 The semantics of each operation are primary, and the consequences of the
@@ -325,14 +333,14 @@ environments.
 
 
 <P>
-The engineer espouses operational semantics, where what each operation means is
-determined by what it <EM>does</EM>.  In this style, the goal is to determine the
-elements of a toolbox and to specify the behavior of each, largely independently
-of any other operation in the language.  The definitions of operations stand
-alone and are designed specifically to minimize the interaction between
-operations.  The semantics of each operation are thin, but this allows the
-programmer to work confident of the performance and size of the program being
-generated.  Here one is seldom surprised by the behavior of a line of
+The engineer espouses <EM>operational semantics</EM>, where what each operation
+means is determined by what it <EM>does</EM>.  In this style, the goal is to
+determine the elements of a toolbox and to specify the behavior of each, largely
+independently of any other operation in the language.  The definitions of
+operations stand alone and are designed specifically to minimize the interaction
+between operations.  The semantics of each operation are thin, but this allows
+the programmer to work confident of the performance and size of the program
+being generated.  Here one is seldom surprised by the behavior of a line of
 code, and moderately experienced programmers can accurately predict the behavior
 down to enumerating the machine instructions that are likely to be executed.
 
@@ -341,9 +349,25 @@ down to enumerating the machine instructions that are likely to be executed.
 Most computer languages is use today are exemplars of the engineering style,
 defined with operational semantics in mind.  Building primarily from the
 operations that could be implemented on the computing devices that could be made
-at the time, and perhaps secondarily on the needs of a user base at hand,
-languages were designed to allow people to command computers to do things.
-Typically the operations in the language were semanticly thin (or shallow, if
+at the time, and secondarily on the specific computing needs of a user base at
+hand, languages were designed to allow people to command computers to do things.
+This quote from the preface to <CITE>K&#38;R C</CITE><A NAME="DOCF3" HREF="tl-manual_foot.html#FOOT3">(3)</A>, the original book describing C,
+explains this style well.
+
+
+
+<BLOCKQUOTE>
+<P>
+C is a general-purpose programming language which features economy of
+expresssion, modern control flow, and data structures, and a rich set of
+operators.  C is not a "very high level" language, nor a "big" one, and is not
+specialized to any particular area of application.  But its absence of
+restrictions and it generality make it more convenient and effective for many
+tasks than supposedly more powerful languages.
+</BLOCKQUOTE>
+
+<P>
+Typically the operations in these languages are semanticly thin (or shallow, if
 you prefer), to the extent that a programmer of medium experience could almost
 predict the number of machine instructions required to carry out any given
 command in the language.  Fortran, Pascal, Basic, and C are all examples of
@@ -352,14 +376,27 @@ default choice for people building big systems.
 
 
 <P>
-Lisp and other Languages (such as Smalltalk, Eiffel, and recently Java) were
-developed along along a different tack.  The operations in these languages were
-defined with semantics that are deep (or fat if you prefer).  Here the focus was
-not on what an operation <EM>did</EM> but on what it <EM>meant</EM>.  Of course
-there had to be implementations of these operations, but the actual machine
-instructions carried out were allowed (even expected) to vary widely depending
-on the manner and situation in which it was used.
+Lisp and other languages (such as Smalltalk, Eiffel, and recently Java) were are
+exemplars of the mathematical style, emphasizing denotational semantics.  The
+operations in these languages were defined with semantics that are deep (or fat
+if you prefer), focusing not on what an operation <EM>did</EM> but on what it
+<EM>meant</EM>.  Of course there had to be implementations of these operations,
+but the actual machine instructions carried out were allowed (even expected) to
+vary widely depending on the manner and situation in which it was used.
 
+
+<P>
+These philosophical differences lead to vastly different languages, with the
+consequences of each style evoking surprise, disbelief, or even indignant
+disgust in ardent followers of the opposing camp.  Denotational fans can't
+believe how much of the underlying limitations of systems are exposed, and
+operational fans can't believe how disassociated operations are from the
+machine.  One sees too much exposed, and the other sees too much being hidden.
+
+
+
+
+<H3><A NAME="SEC10" HREF="tl-manual_toc.html#TOC10">Just GOTO, or Really GOTO</A></H3>
 
 <P>
 An example of how this difference in design perspective plays out can be found
@@ -420,27 +457,40 @@ boundaries, requires that the <CODE>go</CODE> be able to exit the function it is
 and re-enter the outer function at the appropriate point.  In this case,
 entering the <CODE>tagbody</CODE> statement would require establishing a restart point
 similar to a <CODE>setjmp</CODE>, and the <CODE>go</CODE> would become something similar to
-a <CODE>longjmp</CODE>.
+a <CODE>longjmp</CODE>.  If the iteration contains an <CODE>unwind-protect</CODE>, then
+cleanup code will be executed after the <CODE>go</CODE> executes, but before the code
+at the <CODE>bad</CODE> statement.  If the <CODE>unwind-protect</CODE> clean-up forms
+contain a go to a further surrounding tagbody, then the code after the
+<CODE>bad</CODE> tag will never be executed.
 
 
 <P>
-This is the kind of performance "gotcha" that frustrates programmers who look at
-languages from an operational semantics point of view.  Attempting to allow the
-benefits of deep semantics while preventing performance surprises is the
-underlying goal for ThinLisp.
+In this example, operational prorammers are floored by how complicated a simple
+<CODE>goto</CODE> statement can become.  Denotational programmers are in disbelief
+that the execution of clean-up code cannot be enforced.
 
 
 
 
-<H2><A NAME="SEC8" HREF="tl-manual_toc.html#TOC8">ThinLisp's Compromise</A></H2>
+<H2><A NAME="SEC11" HREF="tl-manual_toc.html#TOC11">ThinLisp's Compromise</A></H2>
+
+<P>
+While C++ and Java can be viewed as attempts to move C more towards a
+denotational footing, Thinlisp is an attempt to move Common Lisp more towards an
+operational footing.  I've attempted to lessen the impact of Lisp's "gotchas"
+that frustrate programmers who look at languages from an operational semantics
+point of view.  Attempting to allow the benefits of deep denotational semantics
+while warning of performance and behavior surprises is the underlying goal for
+ThinLisp.
+
 
 <P>
 One of the goals of ThinLisp is to implement the deep semantics of Lisp, while
 offering compile time warnings whenever these semantics force behavior that
-deviates from expectations consistent with thin semantics.  If the programmer
-really intends to use the full, deep semantics, then a lexically apparent
-declaration can be used to suppress the warnings and accept the more expensive
-behavior required by the deep semantics.
+deviates from expectations consistent with operational (or "thin") semantics.
+If the programmer really intends to use the full, deep semantics, then a
+lexically apparent declaration can be used to suppress the warnings and accept
+the more expensive behavior required by the deep semantics.
 
 
 <P>
@@ -467,7 +517,7 @@ non-local exits.
 
 
 
-<H1><A NAME="SEC9" HREF="tl-manual_toc.html#TOC9">Original Design Notes</A></H1>
+<H1><A NAME="SEC12" HREF="tl-manual_toc.html#TOC12">Original Design Notes</A></H1>
 
 <P>
 <I>The following were the original design notes about what should be built into
@@ -476,7 +526,7 @@ GL, which became ThinLisp.  -jallard 10/12/99</I>
 
 
 
-<H2><A NAME="SEC10" HREF="tl-manual_toc.html#TOC10">Def-System</A></H2>
+<H2><A NAME="SEC13" HREF="tl-manual_toc.html#TOC13">Def-System</A></H2>
 
 <P>
 In order to get the flexibility that we want with this development environment,
@@ -511,7 +561,7 @@ gensym-c-function form.
 
 
 
-<H2><A NAME="SEC11" HREF="tl-manual_toc.html#TOC11">Overview of Translations</A></H2>
+<H2><A NAME="SEC14" HREF="tl-manual_toc.html#TOC14">Overview of Translations</A></H2>
 
 <P>
 There are four different modes in which GL (Gensym Lisp, oops, er, Language)
@@ -586,7 +636,7 @@ recompile arguments.
 
 
 
-<H2><A NAME="SEC12" HREF="tl-manual_toc.html#TOC12">Compilation Passes</A></H2>
+<H2><A NAME="SEC15" HREF="tl-manual_toc.html#TOC15">Compilation Passes</A></H2>
 
 <P>
 The development compilation pass can be detected by the :development switch in
@@ -607,7 +657,7 @@ translator type-safety checks.
 
 
 
-<H2><A NAME="SEC13" HREF="tl-manual_toc.html#TOC13">Pre-Process Compilation Pass</A></H2>
+<H2><A NAME="SEC16" HREF="tl-manual_toc.html#TOC16">Pre-Process Compilation Pass</A></H2>
 
 <P>
 The pre-process pass is used to gather information about the following:
@@ -640,7 +690,7 @@ during subsequent pre-processing in which the source Lisp file has not changed.
 
 
 
-<H2><A NAME="SEC14" HREF="tl-manual_toc.html#TOC14">Translation Compilation Pass</A></H2>
+<H2><A NAME="SEC17" HREF="tl-manual_toc.html#TOC17">Translation Compilation Pass</A></H2>
 
 <P>
 The translate pass is finally used to read source Lisp files and translate
@@ -669,7 +719,7 @@ and automatically determine when retranslates must be performed.
 
 
 
-<H2><A NAME="SEC15" HREF="tl-manual_toc.html#TOC15">Packages</A></H2>
+<H2><A NAME="SEC18" HREF="tl-manual_toc.html#TOC18">Packages</A></H2>
 
 <P>
 Packages should be designed as follows.  The AB package should now use the GL
@@ -697,7 +747,7 @@ be used at this time.
 
 
 
-<H2><A NAME="SEC16" HREF="tl-manual_toc.html#TOC16">Stacks</A></H2>
+<H2><A NAME="SEC19" HREF="tl-manual_toc.html#TOC19">Stacks</A></H2>
 
 <P>
 A global Obj_stack and Obj_stack_top will be maintained for holding shadowed
@@ -716,7 +766,7 @@ binding scopes are exited, and execute unwind-protect cleanup forms.
 
 
 
-<H2><A NAME="SEC17" HREF="tl-manual_toc.html#TOC17">Global Variable Binding</A></H2>
+<H2><A NAME="SEC20" HREF="tl-manual_toc.html#TOC20">Global Variable Binding</A></H2>
 
 <P>
 Bindings of global variables will be handled as follows.  The current value of
@@ -735,7 +785,7 @@ the stack.
 
 
 
-<H2><A NAME="SEC18" HREF="tl-manual_toc.html#TOC18">Unwind-Protect Scopes</A></H2>
+<H2><A NAME="SEC21" HREF="tl-manual_toc.html#TOC21">Unwind-Protect Scopes</A></H2>
 
 <P>
 On entry to an unwind protect scope, a call to setjmp is made with a jmp_buf
@@ -753,7 +803,7 @@ scope around the unwind-protect must be declared volatile in the translation.
 
 
 
-<H2><A NAME="SEC19" HREF="tl-manual_toc.html#TOC19">Catch and Throw</A></H2>
+<H2><A NAME="SEC22" HREF="tl-manual_toc.html#TOC22">Catch and Throw</A></H2>
 
 <P>
 On entry to a catch form, a setjmp is performed with a jmp_buff environment.
@@ -767,7 +817,7 @@ declared volatile in the translation.
 
 
 
-<H2><A NAME="SEC20" HREF="tl-manual_toc.html#TOC20">Multiple Values</A></H2>
+<H2><A NAME="SEC23" HREF="tl-manual_toc.html#TOC23">Multiple Values</A></H2>
 
 <P>
 Within locations where the source and receiver of values are mutually visible,
@@ -795,7 +845,7 @@ multiple-values-buffer.
 
 
 
-<H2><A NAME="SEC21" HREF="tl-manual_toc.html#TOC21">Constants</A></H2>
+<H2><A NAME="SEC24" HREF="tl-manual_toc.html#TOC24">Constants</A></H2>
 
 <P>
 Constant values of type char, sint32, fixnum, and double will be translated
@@ -838,7 +888,7 @@ system.
 
 
 
-<H2><A NAME="SEC22" HREF="tl-manual_toc.html#TOC22">Streams</A></H2>
+<H2><A NAME="SEC25" HREF="tl-manual_toc.html#TOC25">Streams</A></H2>
 
 <P>
 I'm hoping that most support for Common Lisp streams can be avoided in the
@@ -849,7 +899,7 @@ print to standard output.
 
 
 
-<H2><A NAME="SEC23" HREF="tl-manual_toc.html#TOC23">Variables</A></H2>
+<H2><A NAME="SEC26" HREF="tl-manual_toc.html#TOC26">Variables</A></H2>
 
 <P>
 Global Lisp variables and parameters will generally be represented as C
@@ -863,7 +913,7 @@ the C variable will always be of type Obj.
 
 
 
-<H2><A NAME="SEC24" HREF="tl-manual_toc.html#TOC24">Functions</A></H2>
+<H2><A NAME="SEC27" HREF="tl-manual_toc.html#TOC27">Functions</A></H2>
 
 <P>
 Each Lisp function will be implemented as a C function.  The C function will
@@ -876,7 +926,7 @@ funcalling).
 
 
 
-<H2><A NAME="SEC25" HREF="tl-manual_toc.html#TOC25">Translator Data Structures</A></H2>
+<H2><A NAME="SEC28" HREF="tl-manual_toc.html#TOC28">Translator Data Structures</A></H2>
 
 <P>
 The following sections present designs for the data structures and functions
@@ -887,7 +937,7 @@ defstruct for all structures.
 
 
 
-<H2><A NAME="SEC26" HREF="tl-manual_toc.html#TOC26">C Name Spaces</A></H2>
+<H2><A NAME="SEC29" HREF="tl-manual_toc.html#TOC29">C Name Spaces</A></H2>
 
 <P>
 A part of translating is determining the C identifiers to be used to represent
@@ -959,7 +1009,7 @@ characters in length, since that is the limit for the VAX linker.
 
 
 
-<H2><A NAME="SEC27" HREF="tl-manual_toc.html#TOC27">C File Structures</A></H2>
+<H2><A NAME="SEC30" HREF="tl-manual_toc.html#TOC30">C File Structures</A></H2>
 
 <P>
 During translation of a Lisp file to a C file, a C file structure will be held
@@ -1001,7 +1051,7 @@ will be flushed out to the line before any newlines are emitted to the file.
 
 
 
-<H2><A NAME="SEC28" HREF="tl-manual_toc.html#TOC28">C Type Declaration Structures</A></H2>
+<H2><A NAME="SEC31" HREF="tl-manual_toc.html#TOC31">C Type Declaration Structures</A></H2>
 
 <P>
 In some cases, new C typedef statements may need to be emitted within a C file.
@@ -1013,7 +1063,7 @@ used to represent them.
 
 
 
-<H2><A NAME="SEC29" HREF="tl-manual_toc.html#TOC29">C Variable Declaration Structures</A></H2>
+<H2><A NAME="SEC32" HREF="tl-manual_toc.html#TOC32">C Variable Declaration Structures</A></H2>
 
 <P>
 Variable declaration structures will be used to hold information about all C
@@ -1029,7 +1079,7 @@ this in the C variable declaration structure, but I'm not certain of that.
 
 
 
-<H2><A NAME="SEC30" HREF="tl-manual_toc.html#TOC30">C Function Structures</A></H2>
+<H2><A NAME="SEC33" HREF="tl-manual_toc.html#TOC33">C Function Structures</A></H2>
 
 <P>
 C functions will be represented during translations as structures that contain
@@ -1047,7 +1097,7 @@ unreadable.
 
 
 
-<H2><A NAME="SEC31" HREF="tl-manual_toc.html#TOC31">C Statement Structures</A></H2>
+<H2><A NAME="SEC34" HREF="tl-manual_toc.html#TOC34">C Statement Structures</A></H2>
 
 <P>
 For each kind of C statement, there will be a different C statement structure
@@ -1099,7 +1149,7 @@ compound-statements, but otherwise are never specifically called for.
 
 
 
-<H2><A NAME="SEC32" HREF="tl-manual_toc.html#TOC32">C Compound Statement Structures</A></H2>
+<H2><A NAME="SEC35" HREF="tl-manual_toc.html#TOC35">C Compound Statement Structures</A></H2>
 
 <P>
 C compound statements will be used to hold all emitted C statements, statement
@@ -1169,7 +1219,7 @@ expressions.
 
 
 
-<H2><A NAME="SEC33" HREF="tl-manual_toc.html#TOC33">C Expression Statement Structures</A></H2>
+<H2><A NAME="SEC36" HREF="tl-manual_toc.html#TOC36">C Expression Statement Structures</A></H2>
 
 <P>
 Expression statements will hold a c-expression structure.  Expression
@@ -1186,7 +1236,7 @@ assignment, increment, decrement, or function call expressions.
 
 
 
-<H2><A NAME="SEC34" HREF="tl-manual_toc.html#TOC34">C Label Statement Structures</A></H2>
+<H2><A NAME="SEC37" HREF="tl-manual_toc.html#TOC37">C Label Statement Structures</A></H2>
 
 <P>
 C labels for goto tags, switch case values, and switch default branch points
@@ -1201,7 +1251,7 @@ values and default tags at a level even with the opening switch statement.
 
 
 
-<H2><A NAME="SEC35" HREF="tl-manual_toc.html#TOC35">C Conditional Statement Structures</A></H2>
+<H2><A NAME="SEC38" HREF="tl-manual_toc.html#TOC38">C Conditional Statement Structures</A></H2>
 
 <P>
 This statement contains a list of alternating c-expressions and c-statements.
@@ -1237,7 +1287,7 @@ statements and wrapping them in a compound statement if any are found.
 
 
 
-<H2><A NAME="SEC36" HREF="tl-manual_toc.html#TOC36">C While Statement Structures</A></H2>
+<H2><A NAME="SEC39" HREF="tl-manual_toc.html#TOC39">C While Statement Structures</A></H2>
 
 <P>
 The c-while-statement will contain a c-expression and a c-statement.  It will
@@ -1248,7 +1298,7 @@ plus one.
 
 
 
-<H2><A NAME="SEC37" HREF="tl-manual_toc.html#TOC37">Emitting Indentation</A></H2>
+<H2><A NAME="SEC40" HREF="tl-manual_toc.html#TOC40">Emitting Indentation</A></H2>
 
 <P>
 The function emit-indentation-to-file takes a number of indentation levels to
@@ -1265,7 +1315,7 @@ indented to this level plus one or two more extra levels.
 
 
 
-<H2><A NAME="SEC38" HREF="tl-manual_toc.html#TOC38">Post-Macro Translation</A></H2>
+<H2><A NAME="SEC41" HREF="tl-manual_toc.html#TOC41">Post-Macro Translation</A></H2>
 
 <P>
 After macro-expansion is complete, the s-expressions of a function will consist
@@ -1282,7 +1332,7 @@ analysis, C type choosing for variables and structurized forms.
 
 
 
-<H2><A NAME="SEC39" HREF="tl-manual_toc.html#TOC39">Structurizing</A></H2>
+<H2><A NAME="SEC42" HREF="tl-manual_toc.html#TOC42">Structurizing</A></H2>
 
 <P>
 Once Lisp expressions have been fully macro-expanded into special forms and
@@ -1393,7 +1443,7 @@ property list for the defining symbol.
 
 
 
-<H2><A NAME="SEC40" HREF="tl-manual_toc.html#TOC40">Type Propagation</A></H2>
+<H2><A NAME="SEC43" HREF="tl-manual_toc.html#TOC43">Type Propagation</A></H2>
 
 <P>
 After structurizing has been completed on the body of the function, then the
@@ -1451,7 +1501,7 @@ argument to be type T, turning off all attempts to specialize that argument.
 
 
 
-<H1><A NAME="SEC41" HREF="tl-manual_toc.html#TOC41">Memory Architecture</A></H1>
+<H1><A NAME="SEC44" HREF="tl-manual_toc.html#TOC44">Memory Architecture</A></H1>
 
 <P>
 ThinLisp uses pointers to a one word (4 byte) header structure as the basic
@@ -1460,7 +1510,7 @@ The upper 3 bytes of the header word should be used for type specific data.  For
 vectors this should be the length, giving us a simple vector with one word of
 overhead (all previous Lisp implementations we've used, except the Lispm, had
 two or more words of header).  All Lisp objects should be aligned on 4 byte
-addresses. <A NAME="DOCF3" HREF="tl-manual_foot.html#FOOT3">(3)</A>
+addresses. <A NAME="DOCF4" HREF="tl-manual_foot.html#FOOT4">(4)</A>
 
 
 <P>
@@ -1495,7 +1545,7 @@ A determination of type can be made from a hex value of the pointer.
 The arguments for a 30 bit fixnum instead of a 31 is that it makes for fast
 fixnum additions and subtractions without risking overflow.  31 bit fixnums
 require a sequence point between operations to avoid the potential for overflow.
-<A NAME="DOCF4" HREF="tl-manual_foot.html#FOOT4">(4)</A>
+<A NAME="DOCF5" HREF="tl-manual_foot.html#FOOT5">(5)</A>
 
 
 <P>
@@ -1560,12 +1610,12 @@ sint32 type_tag (Obj object) {
 <P>
 In C, the implemetation type for object should be an unsigned integer type 32
 bits long.  There are several advantages to this.  All architectures (including
-the Alpha OSF <A NAME="DOCF5" HREF="tl-manual_foot.html#FOOT5">(5)</A> when
+the Alpha OSF <A NAME="DOCF6" HREF="tl-manual_foot.html#FOOT6">(6)</A> when
 using a linker option) can have pointer values be represented in 32 bits, but
 for some platforms (the Alpha OSF) pointer types can consume something other
 than 4 bytes, i.e. 8 for all pointers on the Alpha OSF.  By forcing all objects
 to consume 4 bytes, we can get interesting packing in structures and vectors on
-all platforms.  <A NAME="DOCF6" HREF="tl-manual_foot.html#FOOT6">(6)</A>
+all platforms.  <A NAME="DOCF7" HREF="tl-manual_foot.html#FOOT7">(7)</A>
 
 
 <P>
@@ -1585,14 +1635,14 @@ The type for structures is the type value stored in the 8 bit type tag location
 of standard headers.  Structures also have an additional type value that is
 stored in the remainder 24 bits of the initial header word which further
 differentiates between structure types.  The same is true for class instances.
-<A NAME="DOCF7" HREF="tl-manual_foot.html#FOOT7">(7)</A>
+<A NAME="DOCF8" HREF="tl-manual_foot.html#FOOT8">(8)</A>
 
 
 <P>
 The type tags for heap allocated data structures have no special issues, except
 that these values should not collide with any immediate type tags (i.e. be
 greater than 3), and be able to quickly determine if a data structure is
-reclaimed (i.e. use bit 7 as a flag). <A NAME="DOCF8" HREF="tl-manual_foot.html#FOOT8">(8)</A>
+reclaimed (i.e. use bit 7 as a flag). <A NAME="DOCF9" HREF="tl-manual_foot.html#FOOT9">(9)</A>
 
 
 <P>
@@ -1631,7 +1681,7 @@ The table above can be verified with the implementation by calling
 
 
 
-<H2><A NAME="SEC42" HREF="tl-manual_toc.html#TOC42">Simple-vectors</A></H2>
+<H2><A NAME="SEC45" HREF="tl-manual_toc.html#TOC45">Simple-vectors</A></H2>
 
 <P>
 Simple vectors are the most often used data structure, so we'd like to keep it
@@ -1691,7 +1741,7 @@ details.
 
 
 
-<H2><A NAME="SEC43" HREF="tl-manual_toc.html#TOC43">Strings</A></H2>
+<H2><A NAME="SEC46" HREF="tl-manual_toc.html#TOC46">Strings</A></H2>
 
 <P>
 In order to give fast performance for all strings, we will have fill pointers
@@ -1717,7 +1767,7 @@ typedef struct {
 
 
 
-<H2><A NAME="SEC44" HREF="tl-manual_toc.html#TOC44">Immediate integer and double arrays</A></H2>
+<H2><A NAME="SEC47" HREF="tl-manual_toc.html#TOC47">Immediate integer and double arrays</A></H2>
 
 <P>
 All of these types are implemented in the same way, with a 4 byte-aligned one
@@ -1729,7 +1779,7 @@ to fetch values and modify values.
 
 
 
-<H2><A NAME="SEC45" HREF="tl-manual_toc.html#TOC45">Symbol</A></H2>
+<H2><A NAME="SEC48" HREF="tl-manual_toc.html#TOC48">Symbol</A></H2>
 
 <P>
 There are several different optimizations that one can imagine for the slots of
@@ -1778,7 +1828,7 @@ size of the symbol-name.
 
 
 
-<H2><A NAME="SEC46" HREF="tl-manual_toc.html#TOC46">Compiled Functions</A></H2>
+<H2><A NAME="SEC49" HREF="tl-manual_toc.html#TOC49">Compiled Functions</A></H2>
 
 <P>
 Compiled functions will contain a pointer to the C function for this compiled
@@ -1813,7 +1863,7 @@ values, but these should never be given to the default funcall operations.
 
 
 
-<H2><A NAME="SEC47" HREF="tl-manual_toc.html#TOC47">Characters</A></H2>
+<H2><A NAME="SEC50" HREF="tl-manual_toc.html#TOC50">Characters</A></H2>
 
 <P>
 Since all immediate type tags are in use, we will use heap allocated 
@@ -1833,7 +1883,7 @@ typedef struct {
 
 
 
-<H2><A NAME="SEC48" HREF="tl-manual_toc.html#TOC48">Package</A></H2>
+<H2><A NAME="SEC51" HREF="tl-manual_toc.html#TOC51">Package</A></H2>
 
 <P>
 Packages are implemented as balanced binary trees.  They contain a list of used
@@ -1859,7 +1909,7 @@ typedef struct {
 
 
 
-<H2><A NAME="SEC49" HREF="tl-manual_toc.html#TOC49">Obsolete 8 Byte Alignments</A></H2>
+<H2><A NAME="SEC52" HREF="tl-manual_toc.html#TOC52">Obsolete 8 Byte Alignments</A></H2>
 
 <P>
 [The following section describes tagging for 8 byte alignments.  Keeping for
@@ -1957,7 +2007,7 @@ not yet been tested.
 
 
 
-<H1><A NAME="SEC50" HREF="tl-manual_toc.html#TOC50">Original Introduction</A></H1>
+<H1><A NAME="SEC53" HREF="tl-manual_toc.html#TOC53">Original Introduction</A></H1>
 
 <P>
 <EM>This introduction was written at the beginning of the effort to make a new
@@ -1991,7 +2041,7 @@ in the translator implement data structure allocation and manipulation, the
 defining of constants, parameters, variables, macros, and functions.  The system
 will not contain many of the features normally present in a full Common Lisp
 implementation, most notably no garbage collector, lexical closures, rest
-arguments, condition system, bignums, complex numbers, or CLOS.  <A NAME="DOCF9" HREF="tl-manual_foot.html#FOOT9">(9)</A>  The built-in types will be
+arguments, condition system, bignums, complex numbers, or CLOS.  <A NAME="DOCF10" HREF="tl-manual_foot.html#FOOT10">(10)</A>  The built-in types will be
 limited to packages, symbols, conses, fixnums, doubles, simple-vectors, simple-
 arrays of unsigned-byte 1, 8, and 16 bits, simple-arrays of doubles, and
 fill-pointered non-adjustable strings.  Notable complex features that will be
@@ -2011,7 +2061,7 @@ functions that return a single value.
 
 
 
-<H1><A NAME="SEC51" HREF="tl-manual_toc.html#TOC51">Required Symbols</A></H1>
+<H1><A NAME="SEC54" HREF="tl-manual_toc.html#TOC54">Required Symbols</A></H1>
 
 <P>
 <I>This chapter was generated by Rick Harris in 1997 to show which symbols from the Chestnut
@@ -2280,7 +2330,7 @@ type-of *
 
 
 
-<H1><A NAME="SEC52" HREF="tl-manual_toc.html#TOC52">Index</A></H1>
+<H1><A NAME="SEC55" HREF="tl-manual_toc.html#TOC55">Index</A></H1>
 
 <P>
 Jump to:
@@ -2293,7 +2343,7 @@ Jump to:
 
 
 <P><HR><P>
-This document was generated on 31 October 1999 using
+This document was generated on 14 November 1999 using
 <A HREF="http://wwwinfo.cern.ch/dis/texi2html/">texi2html</A>&nbsp;1.56k.
 </BODY>
 </HTML>

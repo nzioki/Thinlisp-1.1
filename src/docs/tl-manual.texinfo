@@ -371,7 +371,7 @@ believe how much of the underlying limitations of systems are exposed, and
 operational fans can't believe how disassociated operations are from the
 machine.  One sees too much exposed, and the other sees too much being hidden.
 
-@subsecion GOTO, or not to GOTO
+@subsection Just GOTO, or Really GOTO
 
 An example of how this difference in design perspective plays out can be found
 in the behavior of the @code{goto} statement in C and the @code{go} special

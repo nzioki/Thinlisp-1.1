@@ -10,8 +10,8 @@ fat and slow.
 
 Indirect:
 tl-manual.info-1: 277
-tl-manual.info-2: 21193
-tl-manual.info-3: 68145
+tl-manual.info-2: 23507
+tl-manual.info-3: 70459
 
 Tag Table:
 (Indirect)
@@ -19,11 +19,11 @@ Node: Top277
 Node: Acknowledgements731
 Node: Preface2235
 Node: Rant3565
-Node: ThinLisp-Compromise20459
-Node: Original-Notes21193
-Node: Memory68145
-Node: Original-Introduction87522
-Node: Required-Symbols90543
-Node: Index95027
+Node: ThinLisp-Compromise22273
+Node: Original-Notes23507
+Node: Memory70459
+Node: Original-Introduction89836
+Node: Required-Symbols92857
+Node: Index97341
 
 End Tag Table
