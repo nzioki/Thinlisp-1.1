@@ -1,6 +1,6 @@
 ;;;; Module tl/c/tl-util.c
 
-;;; Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+;;; Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
 
 ;;; Translation data for tl/lisp/tl-util.lisp.
 ;;; The following is the value of the trans-data-tlt-version parameter.
@@ -49,6 +49,7 @@
     (TL::NON-LIST-REMOVE-ERROR . "non_list_remove_error")
     (TL::NSUBST-EQL-IDENT . "nsubst_eql_ident")
     (TL::NSUBST-EQL-IDENT-AUX . "nsubst_eql_ident_aux")
+    (TL:PAIRLIS . "pairlis")
     (TL::QUICK-SORT-LIST . "quick_sort_list")
     (TL:REALLOC-REGION-UP-TO-LIMIT . "realloc_region_up_to_limit")
     (TL:REGION-BYTES-AVAILABLE . "region_bytes_available")

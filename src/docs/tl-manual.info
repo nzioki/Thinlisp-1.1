@@ -1,4 +1,4 @@
-This is tl-manual.info, produced by Makeinfo version 3.12f from
+This is tl-manual.info, produced by Makeinfo version 3.12h from
 tl-manual.texinfo.
 
    The manual and associated descriptions of ThinLisp, a Lisp-to-C
@@ -19,10 +19,20 @@ Node: Top277
 Node: Acknowledgements731
 Node: Preface2235
 Node: Rant3566
+Ref: Rant-Footnote-121814
+Ref: Rant-Footnote-221935
+Ref: Rant-Footnote-322053
 Node: ThinLisp-Compromise22274
 Node: Original-Notes23508
 Node: Memory70460
+Ref: Memory-Footnote-188009
+Ref: Memory-Footnote-288770
+Ref: Memory-Footnote-389298
+Ref: Memory-Footnote-489353
+Ref: Memory-Footnote-589627
+Ref: Memory-Footnote-689736
 Node: Original-Introduction89837
+Ref: Original-Introduction-Footnote-192793
 Node: Required-Symbols92858
 Node: Index97342
 

@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/tl-util.c
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/tl-util.lisp.
  *    by ThinLisp http://www.thinlisp.org
@@ -13,15 +13,32 @@
 #include "tl-util.h"
 
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[5];
-} Str_5;
-
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
+
+/* Translated from PAIRLIS(LIST LIST &OPTIONAL LIST) = LIST */
+
+Obj pairlis (Obj new_keys, Obj new_data, Obj alist)
+{
+  Obj key, tl_loop_list_, data, tl_loop_list__1;
+
+  key = (Obj)NULL;
+  tl_loop_list_ = new_keys;
+  data = (Obj)NULL;
+  tl_loop_list__1 = new_data;
+  while (tl_loop_list_!=NULL) {
+    key = CAR(tl_loop_list_);
+    tl_loop_list_ = CDR(tl_loop_list_);
+    if (tl_loop_list__1==NULL) 
+      goto end_loop;
+    data = CAR(tl_loop_list__1);
+    tl_loop_list__1 = CDR(tl_loop_list__1);
+    alist = alloc_cons(alloc_cons(key,data,-1),alist,-1);
+  }
+
+ end_loop:
+  return alist;
+}
 
 /* Translated from COMPUTE-NEW-PLIST(T T T) = T */
 
@@ -129,13 +146,6 @@ double *fill_array_double_float (double *sequence, double elt_1)
     (sequence[index]) = elt_1;
   return sequence;
 }
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[45];
-} Str_45;
 
 static const Str_45 str_const_1
   = { 7, 42, 42, "Unrecognized sequence-type of ~s for fill." };
@@ -287,13 +297,6 @@ Obj flet_search_predicate_in_search_test_0 (Obj x, Obj y)
   return eql(x,y);
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[41];
-} Str_41;
-
 static const Str_41 str_const_2
   = { 7, 38, 38, "FLET-SEARCH-PREDICATE-IN-SEARCH-TEST-0" };
 
@@ -441,13 +444,6 @@ Obj generic_position (Obj item, Obj sequence, sint32 start, Obj end, Obj test_fu
     return (Obj)NULL;
   }
 }
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[49];
-} Str_49;
 
 static const Str_49 str_const_3
   = { 7, 48, 48, "REMOVE only handles lists, not this sequence: ~s" };
@@ -940,13 +936,6 @@ Obj copy_optimized_constant (Obj arg)
   return temp_1;
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[89];
-} Str_89;
-
 static const Str_89 str_const_6
   = { 7, 88, 88, "Bad memory region name ~s.  Expected :dynamic, :static, or ~@\n               :temporary." };
 
@@ -1085,13 +1074,6 @@ sint32 sxhash_cons_tree (Obj cons_tree)
   return hash;
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[9];
-} Str_9;
-
 static const Str_9 str_const_7
   = { 7, 7, 7, "KEYWORD" };
 
@@ -1100,13 +1082,6 @@ static const Str_9 str_const_8
 
 static const Str_9 str_const_9
   = { 7, 6, 6, "STATIC" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[13];
-} Str_13;
 
 static const Str_13 str_const_10
   = { 7, 9, 9, "TEMPORARY" };

@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/apply.c
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/apply.lisp.
  *    by ThinLisp http://www.thinlisp.org
@@ -13,32 +13,11 @@
 #include "apply.h"
 
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[5];
-} Str_5;
-
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[45];
-} Str_45;
-
 static const Str_45 str_const_1
   = { 7, 43, 43, "NIL given as the function argument to apply" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[49];
-} Str_49;
 
 static const Str_49 str_const_2
   = { 7, 45, 45, "Cannot apply ~s, it does not name a function." };
@@ -48,13 +27,6 @@ static const Str_45 str_const_3
 
 static const Str_45 str_const_4
   = { 7, 41, 41, "Argument count mismatch in APPLY ~s on ~s" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[57];
-} Str_57;
 
 static const Str_57 str_const_5
   = { 7, 56, 56, "Calling APPLY on ~a with ~a args, it can only handle ~a." };

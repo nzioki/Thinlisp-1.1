@@ -2,13 +2,62 @@
  *
  * Module:      tl/c/tl-util.h
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/tl-util.lisp.
  *    by ThinLisp http://www.thinlisp.org
  *
  */
 
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[5];
+} Str_5;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[45];
+} Str_45;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[41];
+} Str_41;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[49];
+} Str_49;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[89];
+} Str_89;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[9];
+} Str_9;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[13];
+} Str_13;
 
 extern Sym tl_tl_util_symbols[3];
 

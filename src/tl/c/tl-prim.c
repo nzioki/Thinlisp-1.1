@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/tl-prim.c
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/tl-prim.lisp.
  *    by ThinLisp http://www.thinlisp.org
@@ -12,13 +12,6 @@
 #include "tl.h"
 #include "tl-prim.h"
 
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[5];
-} Str_5;
 
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
@@ -1110,13 +1103,6 @@ Obj last (Obj list)
     return (Obj)NULL;
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[45];
-} Str_45;
-
 static const Str_45 str_const_1
   = { 7, 42, 42, "REVERSE argument was not a string or list." };
 
@@ -1148,7 +1134,7 @@ Obj reverse_list (Obj list)
     current_cons = list;
     reversed_list = (Obj)NULL;
     while (current_cons!=NULL) {
-      reversed_list = alloc_cons(CAR(current_cons),reversed_list,0);
+      reversed_list = alloc_cons(CAR(current_cons),reversed_list,-1);
       current_cons = CDR(current_cons);
     }
 
@@ -1168,7 +1154,7 @@ unsigned char *reverse_string (unsigned char *string)
   sint32 index, reverse_index;
 
   length_1 = (sint32)(StrHDR(string)->fill_length);
-  g = (((Str *)alloc_string(length_1,0,7))->body);
+  g = (((Str *)alloc_string(length_1,-1,7))->body);
   memset((void *)(g+0),'\000',(sint32)(StrHDR(g)->fill_length));
   (void)g;
   new_string = g;
@@ -1205,13 +1191,6 @@ Obj nreverse (Obj list)
     return (Obj)NULL;
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[9];
-} Str_9;
-
 static const Str_9 str_const_2
   = { 7, 7, 7, "KEYWORD" };
 
@@ -1223,13 +1202,6 @@ static const Str_5 str_const_4
 
 static const Str_5 str_const_5
   = { 7, 3, 3, "NOT" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[13];
-} Str_13;
 
 static const Str_13 str_const_6
   = { 7, 9, 9, "&OPTIONAL" };
@@ -1248,13 +1220,6 @@ static const Str_9 str_const_10
 
 static const Str_9 str_const_11
   = { 7, 6, 6, "&WHOLE" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[21];
-} Str_21;
 
 static const Str_21 str_const_12
   = { 7, 17, 17, "&ALLOW-OTHER-KEYS" };

@@ -2,13 +2,83 @@
  *
  * Module:      tl/c/packages.h
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/packages.lisp.
  *    by ThinLisp http://www.thinlisp.org
  *
  */
 
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[5];
+} Str_5;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[65];
+} Str_65;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[37];
+} Str_37;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[41];
+} Str_41;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[101];
+} Str_101;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[113];
+} Str_113;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[105];
+} Str_105;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[57];
+} Str_57;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[9];
+} Str_9;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[13];
+} Str_13;
 
 extern Sym tl_packages_symbols[3];
 

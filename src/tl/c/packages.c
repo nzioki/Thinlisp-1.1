@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/packages.c
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/packages.lisp.
  *    by ThinLisp http://www.thinlisp.org
@@ -12,13 +12,6 @@
 #include "tl.h"
 #include "packages.h"
 
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[5];
-} Str_5;
 
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
@@ -69,13 +62,6 @@ Obj init_symbol_into_package (Obj symbol, Obj string, sint32 string_hash,
     insert_symbol_into_package(symbol,package);
   return symbol;
 }
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[65];
-} Str_65;
 
 static const Str_65 str_const_1
   = { 7, 62, 62, "Can\'t insert ~a in ~a, a symbol with that name already exists." };
@@ -191,13 +177,6 @@ Obj list_all_packages (void)
 static const Str_5 str_const_2
   = { 7, 3, 3, "NIL" };
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[37];
-} Str_37;
-
 static const Str_37 str_const_3
   = { 7, 35, 35, "FIND-PACKAGE given bad argument ~a." };
 
@@ -236,13 +215,6 @@ Obj find_package_1 (Obj string_or_symbol_or_package)
   }
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[41];
-} Str_41;
-
 static const Str_41 str_const_4
   = { 7, 39, 39, "No package with name ~a could be found." };
 
@@ -260,13 +232,6 @@ Obj find_package_or_error_1 (Obj name)
         name);
   return if_result_temp;
 }
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[101];
-} Str_101;
 
 static const Str_101 str_const_5
   = { 7, 98, 98, "Use list for ~a differs from compile-time list: ~@\n                   compile-time = ~s, new = ~s." };
@@ -437,13 +402,6 @@ Obj intern_string_in_package (unsigned char *string, sint32 hash_number,
   }
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[113];
-} Str_113;
-
 static const Str_113 str_const_6
   = { 7, 110, 110, "The symbol ~a cannot be imported into ~a, a symbol with ~\n                    that name is already accessible." };
 
@@ -510,22 +468,8 @@ Obj import (Obj symbol_or_symbol_list, Obj package_arg)
   return temp_1;
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[105];
-} Str_105;
-
 static const Str_105 str_const_7
   = { 7, 103, 103, "The symbol ~a cannot be exported from ~a, it is not ~\n                    accessible from that package." };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[57];
-} Str_57;
 
 static const Str_57 str_const_8
   = { 7, 56, 56, "Bad second value ~a from find-symbol received by export." };
@@ -600,13 +544,6 @@ Obj export (Obj symbol_or_symbol_list, Obj package_arg)
 }
 
 Obj Skeyword_packageS = (Obj)(&Unbound);
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[9];
-} Str_9;
 
 static const Str_9 str_const_9
   = { 7, 7, 7, "KEYWORD" };
@@ -868,13 +805,6 @@ void write_symbol (Obj symbol, Obj case_1, Obj streamP)
     return;
   }
 }
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[13];
-} Str_13;
 
 static const Str_13 str_const_14
   = { 7, 9, 9, "INHERITED" };

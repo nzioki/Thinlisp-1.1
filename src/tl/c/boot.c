@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/boot.c
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/boot.lisp.
  *    by ThinLisp http://www.thinlisp.org
@@ -12,13 +12,6 @@
 #include "tl.h"
 #include "boot.h"
 
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[5];
-} Str_5;
 
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
@@ -55,35 +48,14 @@ static Obj cons_const[36]
 #endif
   ;
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[9];
-} Str_9;
-
 static const Str_9 str_const_1
   = { 7, 7, 7, "TL-USER" };
 
 static const Str_9 str_const_2
   = { 7, 7, 7, "KEYWORD" };
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[17];
-} Str_17;
-
 static const Str_17 str_const_3
   = { 7, 16, 16, "SYSTEM-NICKNAMES" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[21];
-} Str_21;
 
 static const Str_21 str_const_4
   = { 7, 19, 19, "SYSTEM-USED-SYSTEMS" };
@@ -114,13 +86,6 @@ static const Str_9 str_const_12
 
 static const Str_9 str_const_13
   = { 7, 5, 5, "INPUT" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[13];
-} Str_13;
 
 static const Str_13 str_const_14
   = { 7, 9, 9, "TL-BASICS" };

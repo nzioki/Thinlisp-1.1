@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/tl-basics.c
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/tl-basics.lisp.
  *    by ThinLisp http://www.thinlisp.org
@@ -13,22 +13,8 @@
 #include "tl-basics.h"
 
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[5];
-} Str_5;
-
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[41];
-} Str_41;
 
 static const Str_41 str_const_1
   = { 7, 39, 39, "Non-sequence object ~a given to length." };
@@ -413,13 +399,6 @@ Obj nth (sint32 n, Obj list)
   return (Obj)NULL;
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[45];
-} Str_45;
-
 static const Str_45 str_const_2
   = { 7, 42, 42, "ENDP requires a list argument, received ~s" };
 
@@ -431,13 +410,6 @@ void endp_error_function (Obj arg)
       arg);
   return;
 }
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[49];
-} Str_49;
 
 static const Str_49 str_const_3
   = { 7, 45, 45, "Non-array object ~a given to array-dimension." };
@@ -465,13 +437,6 @@ sint32 generic_array_dimension (Obj array)
     return 0;
   }
 }
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[33];
-} Str_33;
 
 static const Str_33 str_const_4
   = { 7, 32, 32, "~a does not have a fill-pointer." };
@@ -539,13 +504,6 @@ Obj array_has_fill_pointer_p (Obj vector)
     return (Obj)NULL;
   }
 }
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[53];
-} Str_53;
 
 static const Str_53 str_const_6
   = { 7, 50, 50, "STRING given ~s, which was not a string or symbol." };
@@ -737,13 +695,6 @@ Obj nreconc (Obj list1, Obj list2)
   }
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[57];
-} Str_57;
-
 static const Str_57 str_const_8
   = { 7, 53, 53, "Write-string-into-string overflow while appending ~s." };
 
@@ -804,13 +755,6 @@ unsigned char *lisp_implementation_version (void)
 {
   return ((Str *)(&str_const_10))->body;        /* "0.6" */
 }
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[9];
-} Str_9;
 
 static const Str_9 str_const_11
   = { 7, 8, 8, "ThinLisp" };

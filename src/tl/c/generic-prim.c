@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/generic-prim.c
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/generic-prim.lisp.
  *    by ThinLisp http://www.thinlisp.org
@@ -13,22 +13,8 @@
 #include "generic-prim.h"
 
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[5];
-} Str_5;
-
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[41];
-} Str_41;
 
 static const Str_41 str_const_1
   = { 7, 39, 39, "Unrecognized array-type of ~s for AREF." };
@@ -55,13 +41,6 @@ Obj generic_aref (Obj array, sint32 index)
         array);
   }
 }
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[45];
-} Str_45;
 
 static const Str_45 str_const_2
   = { 7, 43, 43, "Unrecognized array-type of ~s for SET-AREF." };
@@ -124,13 +103,6 @@ Obj generic_elt (Obj sequence, sint32 index)
         sequence);
   }
 }
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[49];
-} Str_49;
 
 static const Str_49 str_const_4
   = { 7, 45, 45, "Unrecognized sequence type of ~s for SET-ELT." };

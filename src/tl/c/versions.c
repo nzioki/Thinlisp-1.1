@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/versions.c
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/versions.lisp.
  *    by ThinLisp http://www.thinlisp.org
@@ -13,24 +13,10 @@
 #include "versions.h"
 
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[5];
-} Str_5;
-
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
 
 Obj tl_user_package = (Obj)(&Unbound);
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[9];
-} Str_9;
 
 static const Str_9 str_const_1
   = { 7, 7, 7, "TL-USER" };
@@ -256,13 +242,6 @@ Obj linux386_code = BOXFIX(29);
 
 Obj g2_operating_system = (Obj)(&Unbound);
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[45];
-} Str_45;
-
 static const Str_45 str_const_3
   = { 7, 43, 43, "Unknown platform code ~a, assuming UNIX o/s" };
 
@@ -270,22 +249,8 @@ Obj g2_machine_type = (Obj)(&Unbound);
 
 Obj machine_model_var = (Obj)(&Unbound);
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[21];
-} Str_21;
-
 static const Str_21 str_const_4
   = { 7, 20, 20, " Data General AViiON" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[17];
-} Str_17;
 
 static const Str_17 str_const_5
   = { 7, 15, 15, " Motorola 88000" };
@@ -298,13 +263,6 @@ static const Str_21 str_const_7
 
 static const Str_9 str_const_8
   = { 7, 8, 8, " Sequent" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[13];
-} Str_13;
 
 static const Str_13 str_const_9
   = { 7, 11, 11, " DECstation" };
@@ -336,25 +294,11 @@ static const Str_9 str_const_17
 static const Str_9 str_const_18
   = { 7, 8, 8, " Vax VMS" };
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[25];
-} Str_25;
-
 static const Str_25 str_const_19
   = { 7, 22, 22, " DEC Alpha AXP/OpenVMS" };
 
 static const Str_21 str_const_20
   = { 7, 19, 19, " Sun 4/SPARCstation" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[29];
-} Str_29;
 
 static const Str_29 str_const_21
   = { 7, 27, 27, " Sun 4/SPARCstation Solaris" };

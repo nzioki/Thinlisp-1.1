@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/format.c
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/format.lisp.
  *    by ThinLisp http://www.thinlisp.org
@@ -13,22 +13,8 @@
 #include "format.h"
 
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[5];
-} Str_5;
-
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[9];
-} Str_9;
 
 static const Str_9 str_const_1
   = { 7, 7, 7, "newline" };
@@ -44,13 +30,6 @@ static const Str_5 str_const_4
 
 static const Str_5 str_const_5
   = { 7, 3, 3, "tab" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[13];
-} Str_13;
 
 static const Str_13 str_const_6
   = { 7, 9, 9, "backspace" };
@@ -697,35 +676,14 @@ static const Str_5 str_const_12
 static const Str_5 str_const_13
   = { 7, 2, 2, "#\\" };
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[17];
-} Str_17;
-
 static const Str_17 str_const_14
   = { 7, 13, 13, "Simple-Vector" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[25];
-} Str_25;
 
 static const Str_25 str_const_15
   = { 7, 22, 22, "Unsigned-Byte-8-Vector" };
 
 static const Str_25 str_const_16
   = { 7, 23, 23, "Unsigned-Byte-16-Vector" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[21];
-} Str_21;
 
 static const Str_21 str_const_17
   = { 7, 19, 19, "Double-Float-Vector" };
@@ -1175,22 +1133,8 @@ void write_fixnum_with_arglist (Obj stream, sint32 fixnum, Obj arglist,
 static const Str_5 str_const_27
   = { 7, 2, 2, "  " };
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[49];
-} Str_49;
-
 static const Str_49 str_const_28
   = { 7, 47, 47, "TL:FORMAT doesn\'t support nested ~{ iterations." };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[45];
-} Str_45;
 
 static const Str_45 str_const_29
   = { 7, 43, 43, "In FORMAT, a ~{ iteration had no closing ~}" };
@@ -1200,13 +1144,6 @@ static const Str_49 str_const_30
 
 static const Str_25 str_const_31
   = { 7, 24, 24, "In FORMAT, unmatched ~}." };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[29];
-} Str_29;
 
 static const Str_29 str_const_32
   = { 7, 26, 26, "Only : args to ~; allowed." };
@@ -1943,13 +1880,6 @@ Obj error_three_args (Obj control_string, Obj arg1, Obj arg2, Obj arg3)
   return (Obj)NULL;
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[65];
-} Str_65;
-
 static const Str_65 str_const_36
   = { 7, 64, 64, "This control string contained an ill-formed format directive: ~s" };
 
@@ -1986,13 +1916,6 @@ void bad_stream_error (Obj stream_arg)
   return;
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[33];
-} Str_33;
-
 static const Str_33 str_const_39
   = { 7, 29, 29, "~a  The control string was ~s" };
 
@@ -2008,13 +1931,6 @@ Obj format_error (Obj description, Obj control_string)
   return temp;
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[77];
-} Str_77;
-
 static const Str_77 str_const_40
   = { 7, 74, 74, "The extra value ~a ran off the end of a destructuring-bind-strict pattern." };
 
@@ -2026,13 +1942,6 @@ void not_null_destructuring_error_1 (Obj shoulda_been_nil)
       shoulda_been_nil);
   return;
 }
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[57];
-} Str_57;
 
 static const Str_57 str_const_41
   = { 7, 54, 54, "TL make-array does not support multiple-dimensions: ~a" };

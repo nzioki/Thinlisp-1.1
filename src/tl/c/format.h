@@ -2,13 +2,104 @@
  *
  * Module:      tl/c/format.h
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/format.lisp.
  *    by ThinLisp http://www.thinlisp.org
  *
  */
 
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[5];
+} Str_5;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[9];
+} Str_9;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[13];
+} Str_13;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[17];
+} Str_17;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[25];
+} Str_25;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[21];
+} Str_21;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[49];
+} Str_49;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[45];
+} Str_45;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[29];
+} Str_29;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[65];
+} Str_65;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[33];
+} Str_33;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[77];
+} Str_77;
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[57];
+} Str_57;
 
 extern Sym tl_format_symbols[4];
 

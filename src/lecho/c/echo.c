@@ -2,7 +2,7 @@
  *
  * Module:      lecho/c/echo.c
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of lecho/lisp/echo.lisp.
  *    by ThinLisp http://www.thinlisp.org
@@ -13,35 +13,14 @@
 #include "echo.h"
 
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[9];
-} Str_9;
-
 static const Str_9 str_const
   = { 7, 5, 5, "LECHO" };
 
 static const Str_9 str_const_1
   = { 7, 6, 6, "--help" };
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[69];
-} Str_69;
-
 static const Str_69 str_const_2
   = { 7, 66, 66, "Usage: lecho [arg] ...~%  all arguments will be echoed to stdout~%" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[5];
-} Str_5;
 
 static const Str_5 str_const_3
   = { 7, 2, 2, "-n" };
@@ -162,7 +141,7 @@ Obj uffda_p (Obj x)
 {
   sint32 temp;
 
-  return (TYPE_TAG(x,temp)==32) ? ((Obj)(&T)) : (Obj)NULL;
+  return (TYPE_TAG(x,temp)==33) ? ((Obj)(&T)) : (Obj)NULL;
 }
 
 /* Translated from COPY-UFFDA(UFFDA) = UFFDA */

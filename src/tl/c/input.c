@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/input.c
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/input.lisp.
  *    by ThinLisp http://www.thinlisp.org
@@ -13,22 +13,8 @@
 #include "input.h"
 
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[5];
-} Str_5;
-
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[45];
-} Str_45;
 
 static const Str_45 str_const_1
   = { 7, 42, 42, "Non-EOF error while reading from stream ~s" };
@@ -44,13 +30,6 @@ Obj analyze_file_stream_error (Obj file_stream, Obj eof_error_p, Obj eof_value)
         file_stream);
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[49];
-} Str_49;
-
 static const Str_49 str_const_2
   = { 7, 47, 47, "End of File  error while reading from stream ~s" };
 
@@ -64,13 +43,6 @@ Obj error_or_value (Obj stream, Obj eof_error_p, Obj eof_value)
   else 
     return eof_value;
 }
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[109];
-} Str_109;
 
 static const Str_109 str_const_3
   = { 7, 108, 108, "Stream ~s was neither a file-stream ~\n                              nor a string-stream in generic-read-char" };
@@ -110,13 +82,6 @@ Obj generic_read_char (Obj stream, Obj eof_error_p, Obj eof_value)
 Obj Sinput_string_bufferS = (Obj)(&Unbound);
 
 Obj Sinput_string_buffer_sizeS = (Obj)(&Unbound);
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[41];
-} Str_41;
 
 static const Str_41 str_const_4
   = { 7, 37, 37, "Input buffer overflow reading from ~s" };
@@ -287,13 +252,6 @@ Obj create_file (unsigned char *filename, Obj binaryP)
 static const Str_5 str_const_8
   = { 7, 2, 2, "rb" };
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[69];
-} Str_69;
-
 static const Str_69 str_const_9
   = { 7, 67, 67, "File named ~s could not be opened for input, perhaps does not exist" };
 
@@ -346,13 +304,6 @@ Obj open_for_binary_input (unsigned char *filename, Obj if_does_not_exist)
 static const Str_5 str_const_10
   = { 7, 1, 1, "r" };
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[53];
-} Str_53;
-
 static const Str_53 str_const_11
   = { 7, 52, 52, "Unrecognized value ~s for keyword :IF-DOES-NOT-EXIST" };
 
@@ -403,13 +354,6 @@ Obj open_for_text_input (unsigned char *filename, Obj if_does_not_exist)
         if_does_not_exist);
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[25];
-} Str_25;
-
 static const Str_25 str_const_12
   = { 7, 22, 22, "File ~s already exists" };
 
@@ -418,13 +362,6 @@ static const Str_5 str_const_13
 
 static const Str_5 str_const_14
   = { 7, 2, 2, "wb" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[125];
-} Str_125;
 
 static const Str_125 str_const_15
   = { 7, 121, 121, { 'W','h','i','l','e',' ','a','t','t','e','m','p','t',
@@ -729,13 +666,6 @@ Obj open_for_text_output (unsigned char *filename, Obj if_exists, Obj if_does_no
     return (Obj)NULL;
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[105];
-} Str_105;
-
 static const Str_105 str_const_20
   = { 7, 104, 104, "Stream ~s was neither a file-stream ~\n                              nor a string-stream in generic-close" };
 
@@ -783,13 +713,6 @@ Obj read_from_string_1 (Obj string, Obj eof_error_p, Obj eof_value, Obj start,
   return temp;
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[9];
-} Str_9;
-
 static const Str_9 str_const_21
   = { 7, 7, 7, "KEYWORD" };
 
@@ -798,13 +721,6 @@ static const Str_9 str_const_22
 
 static const Str_9 str_const_23
   = { 7, 6, 6, "CREATE" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[13];
-} Str_13;
 
 static const Str_13 str_const_24
   = { 7, 9, 9, "OVERWRITE" };

@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/tl-extension.c
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/tl-extension.lisp.
  *    by ThinLisp http://www.thinlisp.org
@@ -12,13 +12,6 @@
 #include "tl.h"
 #include "tl-extension.h"
 
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[5];
-} Str_5;
 
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
@@ -53,13 +46,6 @@ static const Str_5 str_const_1
   = { 7, 4, 4, "LISP" };
 
 Obj keyword_package_1 = (Obj)(&Unbound);
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[9];
-} Str_9;
 
 static const Str_9 str_const_2
   = { 7, 7, 7, "KEYWORD" };
@@ -165,13 +151,6 @@ Obj float_test_value = (Obj)(&Unbound);
 
 Obj fixnum_test_value = (Obj)(&Unbound);
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[125];
-} Str_125;
-
 static const Str_125 str_const_3
   = { 7, 124, 124, { 'T','h','e',' ','f','o','l','l','o','w','i','n','g',
       ' ','p','r','o','b','l','e','m',' ','h','a','s',' ','b','e','e','n',
@@ -182,22 +161,8 @@ static const Str_125 str_const_3
       't','i','m','e',' ','m','o','s','t','-','p','o','s','i','t','i','v',
       'e','-','f','i','x','n','u','m','.', '\000' } };
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[77];
-} Str_77;
-
 static const Str_77 str_const_4
   = { 7, 74, 74, "The following problem has been detected:  Right shift doesn\'t sign extend." };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[113];
-} Str_113;
 
 static const Str_113 str_const_5
   = { 7, 110, 110, "The following problem has been detected:  Casting floats to integers cannot be relied on to perform truncation" };

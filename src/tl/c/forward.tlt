@@ -1,6 +1,6 @@
 ;;;; Module tl/c/forward.c
 
-;;; Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+;;; Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
 
 ;;; Translation data for tl/lisp/forward.lisp.
 ;;; The following is the value of the trans-data-tlt-version parameter.

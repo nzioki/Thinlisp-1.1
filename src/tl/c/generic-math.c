@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/generic-math.c
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/generic-math.lisp.
  *    by ThinLisp http://www.thinlisp.org
@@ -13,22 +13,8 @@
 #include "generic-math.h"
 
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[5];
-} Str_5;
-
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[49];
-} Str_49;
 
 static const Str_49 str_const_1
   = { 7, 47, 47, "Non-number argument to ~a: arg1 = ~a, arg2 = ~a" };
@@ -42,13 +28,6 @@ void math_type_error (Obj op_string, Obj number1, Obj number2)
   return;
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[33];
-} Str_33;
-
 static const Str_33 str_const_2
   = { 7, 29, 29, "Non-number argument to ~a: ~a" };
 
@@ -60,13 +39,6 @@ void math_one_arg_type_error (Obj op_string, Obj number)
       op_string,number);
   return;
 }
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[61];
-} Str_61;
 
 static const Str_61 str_const_3
   = { 7, 59, 59, "Overflowed the range of integers in the following: ~a ~a ~a" };
@@ -395,13 +367,6 @@ Obj generic_divide (Obj number1, Obj number2)
   }
 }
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[77];
-} Str_77;
-
 static const Str_77 str_const_8
   = { 7, 73, 73, "Integer /, use floor or another truncating operator: arg1 = ~a, arg2 = ~a" };
 
@@ -500,13 +465,6 @@ sint32 fixnum_floor_first (sint32 fixnum, sint32 divisor_fixnum)
   else 
     return fixnum/divisor_fixnum;
 }
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[9];
-} Str_9;
 
 static const Str_9 str_const_9
   = { 7, 5, 5, "floor" };

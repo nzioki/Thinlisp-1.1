@@ -2,7 +2,7 @@
  *
  * Module:      lecho/c/boot.c
  *
- * Copyright (c) 1999 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of lecho/lisp/boot.lisp.
  *    by ThinLisp http://www.thinlisp.org
@@ -13,25 +13,11 @@
 #include "boot.h"
 
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[9];
-} Str_9;
-
 static const Str_9 str_const
   = { 7, 7, 7, "TL-USER" };
 
 static const Str_9 str_const_1
   = { 7, 5, 5, "LECHO" };
-
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[5];
-} Str_5;
 
 static const Str_5 str_const_2
   = { 7, 2, 2, "TL" };
