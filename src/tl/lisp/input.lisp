@@ -152,6 +152,8 @@
   (1- (expt 2 14)))
 
 
+(defvar always-true t)
+
 (defun read-line-from-file-stream (&optional (file-stream *standard-input*)
 					     (eof-error-p t)
 					     eof-value)
@@ -160,7 +162,7 @@
 			(the string *input-string-buffer*)
 			(the fixnum *input-string-buffer-size*)
 			file-stream)))
-    (declare (string fgets-result))
+    (declare (type (or null string) fgets-result))
     (cond ((gli::null-pointer? fgets-result)
 	   (values (analyze-file-stream-error file-stream
 					      eof-error-p
@@ -186,6 +188,7 @@
 	     (setf (fill-pointer (the string *input-string-buffer*))
 		   strlen-value)
 	     (values *input-string-buffer* missing-new-line?))))))
+
 
 
 (defun read-line-from-string-stream (&optional (string-stream *standard-input*)
