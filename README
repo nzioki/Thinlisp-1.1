@@ -11,6 +11,14 @@ of an underlying Common Lisp implementation such as Allegro, MCL, or CMU Lisp.
 The C code resulting from a translation can then be independently compiled to
 produce a small, efficient executable image.
 
+ThinLisp is not a typical Lisp implementation in that it does not implement a
+garbage collector or many of the other run-time development features of other
+Lisps.  ThinLisp is designed for producing high quality deliverable C libraries
+and executables from Lisp sources.  Originally designed for real-time control
+applications, ThinLisp stresses run-time performance at the expense of some
+development time conveniences.  This is exactly the opposite design philosophy
+from many Lisps, but that's what makes this one thin!
+
 ThinLisp is the current generation (4th) of a series of Lisp to C
 translators used to deploy a large Lisp system (1 million lines) built
 starting around 1990.
