@@ -38,13 +38,17 @@
 
 (defmacro declare-gl-special-forms (&rest special-form-names)
   `(progn
-     (gl:declaim (special-form ,@special-form-names))
-     ,@(loop for name in special-form-names
-	     for lisp-name = (intern (symbol-name name) *gli-package*)
-	     when (not (eq name lisp-name)) ; some symbols are imported into GL
-	       collect
-	       `(defmacro ,name (&whole form)
-		  (cons ',lisp-name (cons-cdr form))))))
+     (gl:declaim (special-form ,@(loop for arg in special-form-names
+				     collect (if (consp arg) (car arg) arg))))
+     ,@(loop for name-or-form in special-form-names
+	   for name = (if (consp name-or-form) (car name-or-form) name-or-form)
+	   for lisp-name = (intern (symbol-name name) *gli-package*)
+	   when (not (eq name lisp-name)) ; some symbols are imported into GL
+	   collect
+	     (if (consp name-or-form)
+		 (cons 'defmacro name-or-form)
+	       `(defmacro ,name (&rest forms)
+		  (cons ',lisp-name forms))))))
 
 (declare-gl-special-forms
   gl:block gl:catch gl:declare gl:go gl:if
