@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/format.c
  *
- * Copyright (c) 2001 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2002 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/format.lisp.
  *    by ThinLisp http://www.thinlisp.org

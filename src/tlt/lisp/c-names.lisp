@@ -165,8 +165,6 @@
       ("alloc_string_strm" function)
       ("alloc_file_strm" function)
       ("alloc_struct" function)
-      ("notify" function)
-      ("warn" function)
       ("error" function)
       ("type_cast_error" function)
       ("fatal_error" function)

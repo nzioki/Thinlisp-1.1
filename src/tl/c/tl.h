@@ -590,10 +590,6 @@ extern Obj alloc_file_strm(FILE *input, FILE* output, char *filename,
 extern Obj alloc_struct(sint32 bytes, sint32 align, sint32 region,
 			sint32 type_tag);
 
-extern void notify(char *message);
-
-extern void warn(char *message);
-
 extern void error(char *message);
 
 extern void type_cast_error(char *source_type, char *target_type);

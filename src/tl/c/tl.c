@@ -35,6 +35,9 @@
 #include <unistd.h>
 #include <time.h>
 
+static void notify_1(char *message);
+
+static void warn_1(char *message);
 
 Thread_state default_thread_state;
 
@@ -501,7 +504,7 @@ void malloc_block_into_region (sint32 region, sint32 byte_count, sint32 silent) 
 	      "swap space becomes available, the next attempt to obtain more memory\n");
       sprintf(strchr(msg,0),
 	      "will also fail, and this program will exit.\n");
-      warn(msg);
+      warn_1(msg);
     } else {
       sprintf(strchr(msg,0),
 	      "All emergency memory has already been used, this program must exit.\n");
@@ -523,7 +526,7 @@ void malloc_block_into_region (sint32 region, sint32 byte_count, sint32 silent) 
   if (silent == 0) {
     sprintf(msg,"Obtaining more memory (region %d at %ld)\n",
 	    (int)region, (long)(region_used[region]));
-    notify(msg);
+    notify_1(msg);
   }
 
   /* Insert the new block into the region, smallest blocks first. */
@@ -619,7 +622,7 @@ void bad_region_warning(sint32 region, char *type) {
 
   sprintf(message,"Allocating %s from region %d when %d was expected.",
 	  type, (int)CURRENT_REGION_NUMBER, (int)region);
-  warn(message);
+  warn_1(message);
 }
 
 Obj alloc_cons (Obj new_car, Obj new_cdr, sint32 region) {
@@ -1159,12 +1162,12 @@ static char *current_time_string(void) {
   return ctime(&now);
 }
 
-void notify (char *message) {
+static void notify_1 (char *message) {
   printf("%s%s\n", current_time_string(), message);
   return;
 }
 
-void warn (char *message) {
+static void warn_1 (char *message) {
   printf("%s**** WARNING ****\n%s\n", current_time_string(), message);
   return;
 }
