@@ -23,8 +23,68 @@
 
 
 
+;;;; Copyright Handling
 
+;;; The function unix-style-namestring is like namestring, but
+;;; it converts DOS style backslashs to unix style.  This keeps
+;;; the generated file text stable for source control.
 
+(defun unix-style-namestring (pathname)
+  (substitute #\/ #\\ (namestring pathname)))
+
+;; Where does this function belong?
+
+(defun generate-default-c-copyright-prolog (stream file-kind system-name module-name c-namestring lisp-namestring)
+  (declare (type (member :lisp-file :c-file) file-kind))
+  (declare (ignore system-name module-name))
+  (let ((unix-c-namestring (unix-style-namestring c-namestring))
+	(unix-lisp-namestring (unix-style-namestring lisp-namestring))
+	(organization "The Thinlisp Group")  ;; Ought to be in the system data.
+	 (current-year
+	   (sixth (multiple-value-list
+		      (decode-universal-time (get-universal-time))))))
+  (case file-kind
+    (:lisp-file
+       (format stream
+	  ";;;; Module ~a
+
+;;; Copyright (c) ~a ~a All Rights Reserved.
+
+;;; Translation data for ~a.
+"
+	  unix-c-namestring
+	  current-year
+	  organization
+	  unix-lisp-namestring))
+    (:c-file
+     (format stream
+	     "/***
+ *
+ * Module:      ~a
+ *
+ * Copyright (c) ~a ~a All Rights Reserved.
+ *
+ * Description: Translation of ~a.
+ *    by ThinLisp http://www.thinlisp.org
+ *
+ */~%~%"
+	     
+	     unix-c-namestring
+	     current-year
+	     organization
+	     unix-lisp-namestring)))))
+
+(defun emit-copyright (stream file-kind system module-name c-namestring lisp-namestring)
+  (let* ((system-name (system-name system))
+	 (copyright-generator
+	 (getf (system-properties system)
+	       :copyright-generator
+	       #'generate-default-c-copyright-prolog)))
+    (funcall copyright-generator
+	     stream file-kind system-name module-name
+	     c-namestring lisp-namestring)))
+  
+  
 ;;;; Translation Data Files
 
 
@@ -116,14 +176,6 @@
 
 
 
-;;; The function unix-style-namestring is like namestring, but
-;;; it converts DOS style backslashs to unix style.  This keeps
-;;; the generated file text stable for source control.
-
-(defun unix-style-namestring (pathname)
-  (substitute #\\ #\/ (namestring pathname)))
-
-;; Where does this function belong?
 
 
 
@@ -147,18 +199,17 @@
 	  (symbol-array-name (car (c-file-last-symbol-definition? c-file)))
 	  (compiled-function-array-name
 	    (car (c-file-last-compiled-function-definition? c-file))))
-      
-      (format stream
-	      ";;;; Module ~a~%~%;;; Copyright (c) ~a Gensym Corporation.  ~
-                     All rights reserved.~%~%;;; Translation data for ~a~%~%"
-	      (unix-style-namestring (system-trans-data-file system module))
-	      (sixth (multiple-value-list
-			 (decode-universal-time (get-universal-time))))
-	      (unix-style-namestring (system-lisp-file system module)))
+      (emit-copyright
+       stream
+       :lisp-file
+       system
+       module
+       (namestring (system-c-file system module))
+       (namestring (system-lisp-file system module)))
 
       (format stream
-	      " ;;; The following is the value of the trans-data-glt-version ~
-               parameter.~%~%~a~%~%"
+	      ";;; The following is the value of the trans-data-glt-version ~
+               parameter.~%~a~%~%"
 	      trans-data-glt-version)
 
       (write-line "(make-trans-data" stream)

@@ -520,24 +520,6 @@
 
 
 
-(defun generate-default-c-copyright-prolog (stream current-year system-name module-name c-namestring lisp-namestring)
-  (declare (ignore system-name module-name))
-  (format stream
-	  "/***
- *
- * Module:      ~a
- *
- * Copyright (c) ~a The ThinLisp Group  All Rights Reserved.
- *
- * Description: Translation of ~a.
- *
- */~%~%"
-	   
-	  (substitute #\/ #\\ c-namestring
-		      :test #'char=)
-	  current-year
-	  (substitute #\/ #\\ lisp-namestring
-		      :test #'char=)))
 
 ;;; The functions `init-newly-opened-c-file' and `close-c-file' are used by
 ;;; with-open-c-file to initialize and to clean up on exit.  To resolve forward
@@ -546,13 +528,6 @@
 (defun init-newly-opened-c-file (c-file)
   (let* ((system (c-file-system c-file))
 	 (module (c-file-module c-file))
-	 (current-year
-	   (sixth (multiple-value-list
-		      (decode-universal-time (get-universal-time)))))
-	 (copyright-generator
-	  (getf (system-properties system)
-		:copyright-generator
-		#'generate-default-c-copyright-prolog))
 	 (file-namespace (make-c-namespace *global-c-namespace*))
 	 (symbols-func-namespace (make-c-namespace file-namespace))
 	 (symbols-func-name
@@ -580,13 +555,13 @@
     (setf (c-file-c-stream c-file)
 	  (open c-temporary-pathname :direction :output :if-exists :supersede))
     (unless debugging-translate
-      (funcall copyright-generator
-	       (c-file-c-stream c-file)
-	       current-year
-	       (system-name system)
-	       module
-	       (namestring (system-c-file system module))
-	       (namestring (system-lisp-file system module))))
+      (emit-copyright
+       (c-file-c-stream c-file)
+       :c-file
+       system
+       module
+       (namestring (system-c-file system module))
+       (namestring (system-lisp-file system module))))
     ;; Emit includes for extra H files from all used systems, and then the H
     ;; file for this particular module.
     (loop for subsystem-name in (system-all-used-systems system)
@@ -605,12 +580,13 @@
 	   :temporary-pathname h-temporary-pathname
 	   :final-pathname h-final-pathname))
     (unless debugging-translate
-      (funcall #'generate-default-c-copyright-prolog (c-file-c-stream c-file)
-	       current-year
-	       (system-name system)
-	       module
-	       (namestring (system-c-file system module))
-	       (namestring (system-lisp-file system module))))
+      (emit-copyright
+       (c-file-c-stream (c-file-h-file c-file))
+       :c-file
+       system
+       module
+       (namestring h-final-pathname)
+       (namestring (system-lisp-file system module))))
     (setf (c-file-trans-data-final-pathname c-file)
 	  glt-final-pathname)
     (setf (c-file-trans-data-stream c-file) nil)
