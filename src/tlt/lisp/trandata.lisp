@@ -103,6 +103,16 @@
 
 
 
+;;; The function unix-style-namestring is like namestring, but
+;;; it converts DOS style backslashs to unix style.  This keeps
+;;; the generated file text stable for source control.
+
+(defun unix-style-namestring (pathname)
+  (substitute #\\ #\/ (namestring pathname)))
+
+;; Where does this function belong?
+
+
 
 ;;; The function `write-trans-data-file' is called when closing a C file that
 ;;; has just been translated.  It will write out a file that contains all the
@@ -128,10 +138,10 @@
       (format stream
 	      ";;;; Module ~a~%~%;;; Copyright (c) ~a Gensym Corporation.  ~
                      All rights reserved.~%~%;;; Translation data for ~a~%~%"
-	      (system-trans-data-file system module)
+	      (unix-style-namestring (system-trans-data-file system module))
 	      (sixth (multiple-value-list
 			 (decode-universal-time (get-universal-time))))
-	      (system-lisp-file system module))
+	      (unix-style-namestring (system-lisp-file system module)))
 
       (format stream
 	      " ;;; The following is the value of the trans-data-glt-version ~
