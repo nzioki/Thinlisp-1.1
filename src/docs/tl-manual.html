@@ -1,13 +1,13 @@
 <HTML>
 <HEAD>
-<!-- Created by texi2html 1.56k from tl-manual.texinfo on 9 May 2001 -->
+<!-- Created by texi2html 1.56k from tl-manual.texinfo on 12 October 2001 -->
 
 <TITLE>ThinLisp Rant and Notes</TITLE>
 </HEAD>
 <BODY>
 <H1>ThinLisp Manual</H1>
 <H2>Version 1.0</H2>
-<H2>9 May 2001</H2>
+<H2>12 October 2001</H2>
 <ADDRESS>The ThinLisp Group:</ADDRESS>
 <ADDRESS>Jim Allard</ADDRESS>
 <ADDRESS>Ben Hyde</ADDRESS>
@@ -165,7 +165,7 @@ In 1984 a group formed to attempt to unify as many of the best features of
 different Lisp dialects as possible into one central standard.  From this effort
 came the excellent books <CITE>Common Lisp, The Language</CITE> by Guy Steele and it's
 second edition, which incorporated many of the changes that would eventually be
-codified into ISO Common Lisp.  This is the dialect that dominates Lisp work
+codified into ANSI Common Lisp.  This is the dialect that dominates Lisp work
 today, at least in the U.S.
 
 
@@ -185,7 +185,7 @@ functionality that they were promising.
 <P>
 However, when it came to deploying these systems, things didn't turn out so
 smoothly.  Most software products of that era were coded in languages such as
-Fortran, Cobol, Pascal, C, and a assembly language.  It turned out that Software
+Fortran, Cobol, Pascal, C, and assembly language.  It turned out that Software
 developers who could breathe fire in Lisp were clumsy, inefficient, or flatly
 unwilling to port their systems to these traditional languages.
 
@@ -193,10 +193,13 @@ unwilling to port their systems to these traditional languages.
 <P>
 Customers were loathe to buy expensive, special purpose hardware for these
 applications while cheap, ever more powerful PC computers were rolling out.
-Stories of this sort are rife throughout the industry, but I'll speak to just
-the cases I personally was involved in.  While the presence of Lisp as the basis
-of these software systems cannot be fully blamed for their success or failure,
-in all cases it was a controversial and high-visibility part of the system.
+During this period the workstation class computer was also coming on, with
+initial excellent products coming from from Sun and Apollo.  Stories about the
+difficulties in rolling out applications are rife throughout the industry, but
+I'll speak to just the cases I personally was involved in.  While the presence
+of Lisp as the basis of these software systems cannot be fully blamed for their
+success or failure, in all cases it was a controversial and high-visibility part
+of the system.
 
 
 <P>
@@ -242,7 +245,8 @@ happened, the plant crew turned off the system and never restarted it again.
 <P>
 In this case, the system was gaining acceptance by the pilot users, but as a
 direct consequence of the performance problems caused by garbage collection this
-pilot project was closed out, and this particular approach was dropped.
+pilot project was closed out, and this particular deployment approach was
+dropped.  A different 
 
 
 <P>
@@ -327,7 +331,7 @@ scientists, mathematicians, and engineers.  <A NAME="DOCF2" HREF="tl-manual_foot
 <P>
 The goal of scientists is to learn truths about the world around them, using
 observation, analysis, hypothesis, and experimentation to advance and buttress
-their claims of discovery.  Pure science aspires to being unconcerned with the
+their claims of discovery.  Pure science aspires to be unconcerned with the
 utility or applicability of the information they seek.  The ultimate goal is to
 discover and understand what <EM>is</EM>.
 
@@ -336,7 +340,7 @@ discover and understand what <EM>is</EM>.
 Mathematicians aspire to an even higher goal -- understanding what truths there
 are or that there might be, regardless of or even entirely divorced from the
 limits of the physical world.  The studies of mathematicians are the stuff of
-pure thought and imagination, yet bound by the strictest of rules of proof.  To
+pure thought and imagination, yet bound by the strictest rules of proof.  To
 build robust castles in the air based on proofs combining into a single
 monolithic whole requires that all pieces must act perfectly in concert.
 Therefore the mathematician must constantly be vigilant against contradictions
@@ -372,15 +376,15 @@ themselves through two very different approaches to language design.
 <P>
 The mathematician espouses <EM>denotational semantics</EM>, where the behavior of
 an operation is determined by what the operation <EM>means</EM>.  In this style,
-the goal is to make a complete, and unified system where each element of the
-language must be intricately coordinated with each other part, so that each
-element can retain its meaning when used in conjunction with any other part.
-The semantics of each operation are primary, and the consequences of the
-definition of one operation can strongly affect the implementation of many other
-operations.  While the behaviors required of any individual operation may become
-complicated, the programmer using such a language can work confident that his
-code may be intermingled in complex ways with other's code without fear of each
-violating the other's assumptions about eventual program behavior.  When
+the goal is to make a complete unified system where each element of the language
+must be intricately coordinated with each other part, so that each element can
+retain its meaning when used in conjunction with any other part.  The semantics
+of each operation are primary, and the consequences of the definition of one
+operation can strongly affect the implementation of many other operations.
+While the behaviors required of any individual operation may become complicated,
+the programmer using such a language can work confident in the knowledge that
+his code may be intermingled in complex ways with other's code without fear of
+each violating the other's assumptions about eventual program behavior.  When
 finished, systems defined along these lines make powerful and elegant
 environments.
 
@@ -450,7 +454,7 @@ machine.  One sees too much exposed, and the other sees too much being hidden.
 
 
 
-<H2><A NAME="SEC9" HREF="tl-manual_toc.html#TOC9">Just GOTO, or GOTO When You're Ready</A></H2>
+<H2><A NAME="SEC9" HREF="tl-manual_toc.html#TOC9">GOTO Right Now, or GOTO When You're Ready</A></H2>
 
 <P>
 An example of how this difference in design perspective plays out can be found
@@ -589,9 +593,9 @@ both lexical and dynamic scopes that supply consing contexts.  At compile time
 any consing operation must have a <CODE>consing-area</CODE> declaration lexically
 surrounding its scope, or else a compile time warning is given.  The
 <CODE>consing-area</CODE> can either be <CODE>permanent</CODE> or <CODE>temporary</CODE>.
-<A NAME="DOCF5" HREF="tl-manual_foot.html#FOOT5">(5)</A>  A
-<CODE>permanent</CODE> area means consing proceeds as normal, with all create objects
-having dynamic extent.  However, whenever consing happens within a
+<A NAME="DOCF5" HREF="tl-manual_foot.html#FOOT5">(5)</A>
+A <CODE>permanent</CODE> area means consing proceeds as normal, with all created
+objects having dynamic extent.  However, whenever consing happens within a
 <CODE>temporary</CODE> scope, then the object's lifetime only has dynamic scope back
 to the exit point of the <CODE>temporary</CODE> <CODE>consing-area</CODE>.  The
 <CODE>consing-area</CODE> declaration is similar to the <CODE>dynamic-extent</CODE>
@@ -614,16 +618,20 @@ therefore want advice about code that could be hiding a performance gotcha.
 <P>
 Lastly, ThinLisp can issue compile-time warnings about non-local exits.  The
 <CODE>unwind-protect</CODE> form can guarantee that clean-up code is executed on exit
-from a scope, but it is a very expensive operation.  There are some macro forms
-where is it acceptible if an error exits a scope without a clean-up, but a
+from a scope, but it is a very expensive operation do to <CODE>setjmp</CODE> calls
+establish a reentry point into the function, and the need to declare variables
+<CODE>volitile</CODE> if they are modified within that scope.  There are some macro
+forms where is it acceptible if an error exits a scope without a clean-up, but a
 normal execution of the body form should not leave the scope with a
-<CODE>return-from</CODE> form.  ThinLisp provides a <CODE>require-local-exit</CODE>
-declaration that will cause compile time warnings if a scope is left
-prematurely.  The other kind of non-local exit that ThinLisp prevents is
-<CODE>goto</CODE> or <CODE>return-from</CODE> forms that exit a lexical closure and re-enter
-a surrounding function.  These patterns of code are tantamount to <CODE>catch</CODE>
-and <CODE>throw</CODE> forms, which are very expensive.  By declining to implement
-this form of non-local exit, we can prevent this kind of performance pratfall.
+<CODE>return-from</CODE> form.  In order to allow programmers to write macros that
+have clean-up code without resorting to an <CODE>unwind-protect</CODE> form, ThinLisp
+provides a <CODE>require-local-exit</CODE> declaration that will cause compile time
+warnings if a scope is left prematurely.  The other kind of non-local exit that
+ThinLisp prevents is <CODE>goto</CODE> or <CODE>return-from</CODE> forms that exit a lexical
+closure and re-enter a surrounding function.  These patterns of code are
+tantamount to <CODE>catch</CODE> and <CODE>throw</CODE> forms, which are very expensive.  By
+declining to implement this form of non-local exit, we can prevent this kind of
+performance pratfall.
 
 
 
@@ -2454,7 +2462,7 @@ Jump to:
 
 
 <P><HR><P>
-This document was generated on 9 May 2001 using
+This document was generated on 12 October 2001 using
 <A HREF="http://wwwinfo.cern.ch/dis/texi2html/">texi2html</A>&nbsp;1.56k.
 </BODY>
 </HTML>

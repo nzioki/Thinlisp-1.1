@@ -161,7 +161,7 @@ execution of clean-up code (i.e.  unwind-protect).
 features of different Lisp dialects as possible into one central
 standard.  From this effort came the excellent books `Common Lisp, The
 Language' by Guy Steele and it's second edition, which incorporated
-many of the changes that would eventually be codified into ISO Common
+many of the changes that would eventually be codified into ANSI Common
 Lisp.  This is the dialect that dominates Lisp work today, at least in
 the U.S.
 
@@ -178,18 +178,21 @@ beginnings of the functionality that they were promising.
 
    However, when it came to deploying these systems, things didn't turn
 out so smoothly.  Most software products of that era were coded in
-languages such as Fortran, Cobol, Pascal, C, and a assembly language.
-It turned out that Software developers who could breathe fire in Lisp
-were clumsy, inefficient, or flatly unwilling to port their systems to
-these traditional languages.
+languages such as Fortran, Cobol, Pascal, C, and assembly language.  It
+turned out that Software developers who could breathe fire in Lisp were
+clumsy, inefficient, or flatly unwilling to port their systems to these
+traditional languages.
 
    Customers were loathe to buy expensive, special purpose hardware for
 these applications while cheap, ever more powerful PC computers were
-rolling out.  Stories of this sort are rife throughout the industry,
-but I'll speak to just the cases I personally was involved in.  While
-the presence of Lisp as the basis of these software systems cannot be
-fully blamed for their success or failure, in all cases it was a
-controversial and high-visibility part of the system.
+rolling out.  During this period the workstation class computer was
+also coming on, with initial excellent products coming from from Sun
+and Apollo.  Stories about the difficulties in rolling out applications
+are rife throughout the industry, but I'll speak to just the cases I
+personally was involved in.  While the presence of Lisp as the basis of
+these software systems cannot be fully blamed for their success or
+failure, in all cases it was a controversial and high-visibility part
+of the system.
 
    The Mentor system for preventative maintenance was a success story.
 A group at Honeywell made a forward-chaining, rule-based system that
@@ -231,7 +234,7 @@ again.
    In this case, the system was gaining acceptance by the pilot users,
 but as a direct consequence of the performance problems caused by
 garbage collection this pilot project was closed out, and this
-particular approach was dropped.
+particular deployment approach was dropped.  A different
 
    The G2 system is a real-time supervisory level control system built
 by Gensym Corporation.  It's source code was written in Lisp, and for
@@ -306,15 +309,14 @@ engineers.  (2)
    The goal of scientists is to learn truths about the world around
 them, using observation, analysis, hypothesis, and experimentation to
 advance and buttress their claims of discovery.  Pure science aspires
-to being unconcerned with the utility or applicability of the
-information they seek.  The ultimate goal is to discover and understand
-what _is_.
+to be unconcerned with the utility or applicability of the information
+they seek.  The ultimate goal is to discover and understand what _is_.
 
    Mathematicians aspire to an even higher goal -- understanding what
 truths there are or that there might be, regardless of or even entirely
 divorced from the limits of the physical world.  The studies of
 mathematicians are the stuff of pure thought and imagination, yet bound
-by the strictest of rules of proof.  To build robust castles in the air
+by the strictest rules of proof.  To build robust castles in the air
 based on proofs combining into a single monolithic whole requires that
 all pieces must act perfectly in concert.  Therefore the mathematician
 must constantly be vigilant against contradictions between the
@@ -344,18 +346,18 @@ Denotational and Operational Semantics
 
    The mathematician espouses _denotational semantics_, where the
 behavior of an operation is determined by what the operation _means_.
-In this style, the goal is to make a complete, and unified system where
-each element of the language must be intricately coordinated with each
-other part, so that each element can retain its meaning when used in
+In this style, the goal is to make a complete unified system where each
+element of the language must be intricately coordinated with each other
+part, so that each element can retain its meaning when used in
 conjunction with any other part.  The semantics of each operation are
 primary, and the consequences of the definition of one operation can
 strongly affect the implementation of many other operations.  While the
 behaviors required of any individual operation may become complicated,
-the programmer using such a language can work confident that his code
-may be intermingled in complex ways with other's code without fear of
-each violating the other's assumptions about eventual program behavior.
-When finished, systems defined along these lines make powerful and
-elegant environments.
+the programmer using such a language can work confident in the
+knowledge that his code may be intermingled in complex ways with
+other's code without fear of each violating the other's assumptions
+about eventual program behavior.  When finished, systems defined along
+these lines make powerful and elegant environments.
 
    The engineer espouses _operational semantics_, where what each
 operation means is determined by what it _does_.  In this style, the
@@ -412,8 +414,8 @@ of systems are exposed, and operational fans can't believe how
 disassociated operations are from the machine.  One sees too much
 exposed, and the other sees too much being hidden.
 
-Just GOTO, or GOTO When You're Ready
-====================================
+GOTO Right Now, or GOTO When You're Ready
+=========================================
 
    An example of how this difference in design perspective plays out
 can be found in the behavior of the `goto' statement in C and the `go'
@@ -545,8 +547,8 @@ both lexical and dynamic scopes that supply consing contexts.  At
 compile time any consing operation must have a `consing-area'
 declaration lexically surrounding its scope, or else a compile time
 warning is given.  The `consing-area' can either be `permanent' or
-`temporary'.  (1)  A `permanent' area means consing proceeds as normal,
-with all create objects having dynamic extent.  However, whenever
+`temporary'.  (1) A `permanent' area means consing proceeds as normal,
+with all created objects having dynamic extent.  However, whenever
 consing happens within a `temporary' scope, then the object's lifetime
 only has dynamic scope back to the exit point of the `temporary'
 `consing-area'.  The `consing-area' declaration is similar to the
@@ -567,20 +569,25 @@ gotcha.
 
    Lastly, ThinLisp can issue compile-time warnings about non-local
 exits.  The `unwind-protect' form can guarantee that clean-up code is
-executed on exit from a scope, but it is a very expensive operation.
-There are some macro forms where is it acceptible if an error exits a
-scope without a clean-up, but a normal execution of the body form
-should not leave the scope with a `return-from' form.  ThinLisp
-provides a `require-local-exit' declaration that will cause compile
-time warnings if a scope is left prematurely.  The other kind of
-non-local exit that ThinLisp prevents is `goto' or `return-from' forms
-that exit a lexical closure and re-enter a surrounding function.  These
-patterns of code are tantamount to `catch' and `throw' forms, which are
-very expensive.  By declining to implement this form of non-local exit,
-we can prevent this kind of performance pratfall.
+executed on exit from a scope, but it is a very expensive operation do
+to `setjmp' calls establish a reentry point into the function, and the
+need to declare variables `volitile' if they are modified within that
+scope.  There are some macro forms where is it acceptible if an error
+exits a scope without a clean-up, but a normal execution of the body
+form should not leave the scope with a `return-from' form.  In order to
+allow programmers to write macros that have clean-up code without
+resorting to an `unwind-protect' form, ThinLisp provides a
+`require-local-exit' declaration that will cause compile time warnings
+if a scope is left prematurely.  The other kind of non-local exit that
+ThinLisp prevents is `goto' or `return-from' forms that exit a lexical
+closure and re-enter a surrounding function.  These patterns of code are
+tantamount to `catch' and `throw' forms, which are very expensive.  By
+declining to implement this form of non-local exit, we can prevent this
+kind of performance pratfall.
 
    ---------- Footnotes ----------
 
    (1) For consing operations that can be called from either context,
-you can declare a consing area of `either', but that is fairly rare.
+you can declare a consing area of `either', but in practice that is
+fairly rare.
 
