@@ -2,7 +2,7 @@
  *
  * Module:      lecho/c/boot.h
  *
- * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2001 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of lecho/lisp/boot.lisp.
  *    by ThinLisp http://www.thinlisp.org
