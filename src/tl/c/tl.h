@@ -65,7 +65,10 @@
 #include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "ab-macros.h"
+/**
+ * Get rid of the old inlining cruft.  We have new cruft here.  -jallard 5/21/99
+ * #include "ab-macros.h"
+ */
 
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -644,8 +647,22 @@ extern int unlink(char *filename);
  * char and Lisp characters (immediate type tag of 3).
  */
 
-#define BOXFIX(sint32_integer) (Obj)(((sint32_integer)<<2)+1)
-#define UNBOXFIX(fixnum_integer) ((sint32)(fixnum_integer)>>2)
+#define BOXFIX(any_int) (Obj)(((uint32)(any_int)<<2)+1)
+#define UNBOXFIX(fixnum_int) ((sint32)(fixnum_int)>>2)
 
-#define BOXCHAR(char) (Obj)(((uint32)(char)<<2)+3)
+#define BOXCHAR(char_int) (Obj)((((uint32)(char_int)&0xff)<<2)+3)
 #define UNBOXCHAR(character) (unsigned char)((uint32)(character)>>2)
+
+/**
+ * The macro StrHDR() takes a pointer to an unsigned char, and returns a Str* to
+ * the Str structure that contains it.  ObjStrHDR() does the same, but returns
+ * it as type Obj.  SvHDR takes a pointer to the Obj array in a simple-vector,
+ * and returns an Sv* to its containing header.  ObjSvHDR() does the same, but
+ * returning it as an Obj.
+ */
+
+#define StrHDR(string) ((Str *)((uint32)(string) - (uint32)(&(((Str *)NULL)->body[0]))))
+#define ObjStrHDR(string) ((Obj)((uint32)(string) - (uint32)(&(((Str *)NULL)->body[0]))))
+
+#define SvHDR(obj_ptr) ((Sv *)((uint32)(obj_ptr) - sizeof(Hdr)))
+#define ObjSvHDR(obj_ptr) ((Obj)((uint32)(obj_ptr) - sizeof(Hdr)))

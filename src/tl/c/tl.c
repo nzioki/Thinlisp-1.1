@@ -53,6 +53,7 @@
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 #include <string.h>
+#include <unistd.h>
 #include "glt.h"
 
 
@@ -905,9 +906,11 @@ sint32 get_platform_code(void)
          platform_code = ALPHAOSF_CODE;
 #    endif
 
-#    if defined(WIN32) && !defined(BRISTOL) /*vkp124*/
+#    ifdef _WIN32
 #        ifdef __ALPHA
              platform_code = ALPHANT_CODE;
+#        elif defined(__CYGWIN__)
+	     platform_code = WINDOWS95_CODE;
 #        else
              if (GetVersion() < 0x80000000) {
 		 /* Windows NT */
