@@ -235,7 +235,7 @@ Obj search_list_function (Obj pattern_list, Obj source_list, Obj test_func,
   return (Obj)NULL;
 }
 
-/* Translated from GENERIC-SEARCH(T T COMPILED-FUNCTION FIXNUM T FIXNUM T) = T */
+/* Translated from GENERIC-SEARCH(T T T FIXNUM T FIXNUM T) = T */
 
 Obj generic_search (Obj pattern, Obj source, Obj test_func, sint32 start1, 
         Obj end1, sint32 start2, Obj end2)

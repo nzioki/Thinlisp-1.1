@@ -78,8 +78,8 @@
     defvar
     regions
     setf
-    clos
-    defstruct
+    ; clos
+    ; defstruct
     backquote
     c-names
     c-files

@@ -3503,15 +3503,26 @@
 	  (let ((func (cons-second function)))
 	    (and (consp func)
 		 (eq (cons-car func) 'tl:lambda))))
-     ;; When funcalling #'(lambda ...) forms, the translator can turn the call
-     ;; into a direct C function call if the function is defined via an FLET.
-     ;; So, all funcalls of lambdas will be made into flets instead.
-     (let ((new-name (make-symbol "FUNCALLED-LAMBDA"))
-	   (lambda (cons-second function)))
-       `(tl:flet ((,new-name ,(cons-second lambda)
-		    ,@(cons-cddr lambda)))
-	  (,new-name ,@args))))
-       
+     (let* ((lambda-expr (cons-second function))
+	    (arglist (cons-second lambda-expr))
+	    (body (cons-cddr lambda-expr)))
+       (multiple-value-bind (decls forms) (split-declarations-and-body body)
+         (if (and (loop for arg in arglist 
+			never (memqp arg '(&rest &key &aux &optional)))
+		  (= (length args) (length arglist)))
+	     `(tl:let ,(loop for var in arglist
+			     for arg in args
+			     collect `(,var ,arg))
+	        ,@decls
+		,@forms)
+	   ;; When funcalling #'(lambda ...) forms, the translator can turn the call
+	   ;; into a direct C function call if the function is defined via an FLET.
+	   ;; So, all funcalls of lambdas will be made into flets instead.
+	   (let ((new-name (make-symbol "FUNCALLED-LAMBDA"))
+		 (lambda (cons-second function)))
+	     `(tl:flet ((,new-name ,(cons-second lambda)
+			  ,@(cons-cddr lambda)))
+	        (,new-name ,@args)))))))
     (t
      (fat-and-slow-warning-with-description
       env 

@@ -500,7 +500,7 @@
      "LIST*"
      "COPY-LIST"
      "SUBST"
-     "MAPCAR"
+     "MAPC"
      "LAST"
      "BUTLAST"
      "REVERSE"

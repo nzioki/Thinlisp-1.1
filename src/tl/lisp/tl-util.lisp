@@ -386,6 +386,20 @@
 		   nconc `(for ,var in ,list-expr))
 	      collect (funcall ,function ,@vars))))
 
+(defmacro mapc (function list &rest more-lists)
+  (let ((loop-name (gensym))
+	(first-list-var (gensym))
+	(more-vars (loop repeat (1+ (length lists))
+			 collect (gensym))))
+    `(loop named ,loop-name
+	   with ,first-list-var = ,list
+	   ,@(loop for list-expr in (cons list more-lists)
+		   for var in more-vars
+		   nconc `(for ,var in ,list-expr))
+	   do
+       (funcall ,function ,@more-vars)
+           finally (return-from ,loop-name ,first-list-var))))
+
 
 
 

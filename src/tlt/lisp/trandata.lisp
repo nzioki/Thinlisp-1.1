@@ -110,12 +110,12 @@
 ;;; in one file can affect the availability and therefore the use of externs in
 ;;; a secondary file.
 
-;;; Inside the c/<system-name>/<module-name>.tlt files, there will be two
-;;; single forms.  The first is just a fixnum that represents the version of
-;;; the TLT files that we are will to attempt to reload.  If that fixnum is not
-;;; equal to the value of `trans-data-tlt-version', then we will not attempt to
-;;; read the file.  If the version numbers match, then the seconf form in the
-;;; file, when evaluated, will return a `trans-data' structure.
+;;; Inside the c/<system-name>/<module-name>.tlt files, there will be two forms.
+;;; The first is just a fixnum that represents the version of the TLT files that
+;;; we are will to attempt to reload.  If that fixnum is not equal to the value
+;;; of `trans-data-tlt-version', then we will not attempt to read the file.  If
+;;; the version numbers match, then the seconf form in the file, when evaluated,
+;;; will return a `trans-data' structure.
 
 (defparameter trans-data-tlt-version 1)
 
