@@ -262,16 +262,19 @@ industry by IIC.
 
 @section Mathematician's Languages vs. Engineer's Languages
 
-From the beginning Lisp was a mathematician's language.  To understand what I mean
-by Lisp this, I must explain my view of the differences between the goals of
-scientists, mathematicians, and engineers.  @footnote{All apologies in advance
-to my father-in-law (a scientist) and my brother-in-law (a mathematician).}
+From the beginning Lisp was a mathematician's language.  To understand what I
+mean by Lisp this, I must explain one view of the differences between the goals
+of scientists, mathematicians, and engineers.  @footnote{All apologies in
+advance to my father-in-law Ed (a scientist) and my brother-in-law Holger (a
+mathematician).}
+
+@subsection Scientists, Mathematicians, and Engineers (oh my!)
 
 The goal of scientists is to learn truths about the world around them, using
 observation, analysis, hypothesis, and experimentation to advance and buttress
 their claims of discovery.  Pure science aspires to being unconcerned with the
 utility or applicability of the information they seek.  The ultimate goal is to
-discover what @emph{is}.
+discover and understand what @emph{is}.
 
 Mathematicians aspire to an even higher goal --- understanding what truths there
 are or that there might be, regardless of or even entirely divorced from the
@@ -287,21 +290,23 @@ With this rigorous technique in hand, the ultimate goal is to discover what is
 
 On the other hand the goal of the engineer, in the abstract, is to bend the
 behavior of an uncooperative world to his will.  Whether it is the stereotypical
-train engineer, civil engineer, acoustic, electrical, mechanical, or software
-engineer, their work is to use the fruits of science and mathematics, exploiting
-practicality and expediency, to operate or design a physical entity so that it
-performs a specific task, usually with the motivation of the almighty dollar.
-Within the constraints of the physical world, the ultimate goal is to accomplish
-what is @emph{practical}.
+engineer operating a train, or a civil, acoustic, electrical, mechanical,
+software, or other specialty of engineer, their work is to use what is known
+from science and mathematics, exploiting practicality and expediency, to operate
+or design a physical entity so that it performs a specific task, usually with
+the motivation of the almighty dollar.  Within the constraints of the physical
+world, the ultimate goal is to accomplish what is @emph{practical}.
 
 Within the computer science community, examples of personalities suited to each
 of these different disciplines abound.  Within the the small community of
 computer language designers, the mathematician and engineer distinguish
 themselves through two very different approaches to language design.
 
-The mathematician espouses denotational semantics, where the behavior of an
-operation is determined by what the operation @emph{means}.  In this style, the
-goal is to make a complete, and unified system where each element of the
+@subsection Denotational and Operational Semantics
+
+The mathematician espouses @emph{denotational semantics}, where the behavior of
+an operation is determined by what the operation @emph{means}.  In this style,
+the goal is to make a complete, and unified system where each element of the
 language must be intricately coordinated with each other part, so that each
 element can retain its meaning when used in conjunction with any other part.
 The semantics of each operation are primary, and the consequences of the
@@ -313,36 +318,60 @@ violating the other's assumptions about eventual program behavior.  When
 finished, systems defined along these lines make powerful and elegant
 environments.
 
-The engineer espouses operational semantics, where what each operation means is
-determined by what it @emph{does}.  In this style, the goal is to determine the
-elements of a toolbox and to specify the behavior of each, largely independently
-of any other operation in the language.  The definitions of operations stand
-alone and are designed specifically to minimize the interaction between
-operations.  The semantics of each operation are thin, but this allows the
-programmer to work confident of the performance and size of the program being
-generated.  Here one is seldom surprised by the behavior of a line of
+The engineer espouses @emph{operational semantics}, where what each operation
+means is determined by what it @emph{does}.  In this style, the goal is to
+determine the elements of a toolbox and to specify the behavior of each, largely
+independently of any other operation in the language.  The definitions of
+operations stand alone and are designed specifically to minimize the interaction
+between operations.  The semantics of each operation are thin, but this allows
+the programmer to work confident of the performance and size of the program
+being generated.  Here one is seldom surprised by the behavior of a line of
 code, and moderately experienced programmers can accurately predict the behavior
 down to enumerating the machine instructions that are likely to be executed.
 
 Most computer languages is use today are exemplars of the engineering style,
 defined with operational semantics in mind.  Building primarily from the
 operations that could be implemented on the computing devices that could be made
-at the time, and perhaps secondarily on the needs of a user base at hand,
-languages were designed to allow people to command computers to do things.
-Typically the operations in the language were semanticly thin (or shallow, if
+at the time, and secondarily on the specific computing needs of a user base at
+hand, languages were designed to allow people to command computers to do things.
+This quote from the preface to @cite{K&R C}@footnote{@cite{The C Programming
+Language, Second Edition}, by Kernigan, Brian W. and Ritchie, Dennis M.,
+Copyright 1988, 1978 by Bell Telephone Laboratories, Incorporated Prentice Hall
+P T R, Englewood Cliffs, NewJersey 07632}, the original book describing C,
+explains this style well.
+
+@quotation
+C is a general-purpose programming language which features economy of
+expresssion, modern control flow, and data structures, and a rich set of
+operators.  C is not a "very high level" language, nor a "big" one, and is not
+specialized to any particular area of application.  But its absence of
+restrictions and it generality make it more convenient and effective for many
+tasks than supposedly more powerful languages.
+@end quotation
+
+Typically the operations in these languages are semanticly thin (or shallow, if
 you prefer), to the extent that a programmer of medium experience could almost
 predict the number of machine instructions required to carry out any given
 command in the language.  Fortran, Pascal, Basic, and C are all examples of
 languages in this category, with C (and it's derivative, C++) now being the
 default choice for people building big systems.
 
-Lisp and other Languages (such as Smalltalk, Eiffel, and recently Java) were
-developed along along a different tack.  The operations in these languages were
-defined with semantics that are deep (or fat if you prefer).  Here the focus was
-not on what an operation @emph{did} but on what it @emph{meant}.  Of course
-there had to be implementations of these operations, but the actual machine
-instructions carried out were allowed (even expected) to vary widely depending
-on the manner and situation in which it was used.
+Lisp and other languages (such as Smalltalk, Eiffel, and recently Java) were are
+exemplars of the mathematical style, emphasizing denotational semantics.  The
+operations in these languages were defined with semantics that are deep (or fat
+if you prefer), focusing not on what an operation @emph{did} but on what it
+@emph{meant}.  Of course there had to be implementations of these operations,
+but the actual machine instructions carried out were allowed (even expected) to
+vary widely depending on the manner and situation in which it was used.
+
+These philosophical differences lead to vastly different languages, with the
+consequences of each style evoking surprise, disbelief, or even indignant
+disgust in ardent followers of the opposing camp.  Denotational fans can't
+believe how much of the underlying limitations of systems are exposed, and
+operational fans can't believe how disassociated operations are from the
+machine.  One sees too much exposed, and the other sees too much being hidden.
+
+@subsecion GOTO, or not to GOTO
 
 An example of how this difference in design perspective plays out can be found
 in the behavior of the @code{goto} statement in C and the @code{go} special
@@ -396,12 +425,15 @@ boundaries, requires that the @code{go} be able to exit the function it is in
 and re-enter the outer function at the appropriate point.  In this case,
 entering the @code{tagbody} statement would require establishing a restart point
 similar to a @code{setjmp}, and the @code{go} would become something similar to
-a @code{longjmp}.
+a @code{longjmp}.  If the iteration contains an @code{unwind-protect}, then
+cleanup code will be executed after the @code{go} executes, but before the code
+at the @code{bad} statement.  If the @code{unwind-protect} clean-up forms
+contain a go to a further surrounding tagbody, then the code after the
+@code{bad} tag will never be executed.
 
-This is the kind of performance "gotcha" that frustrates programmers who look at
-languages from an operational semantics point of view.  Attempting to allow the
-benefits of deep semantics while preventing performance surprises is the
-underlying goal for ThinLisp.
+In this example, operational prorammers are floored by how complicated a simple
+@code{goto} statement can become.  Denotational programmers are in disbelief
+that the execution of clean-up code cannot be enforced.
 
 @menu
 * ThinLisp-Compromise::         
@@ -411,12 +443,20 @@ underlying goal for ThinLisp.
 @comment  node-name,  next,  previous,  up
 @section ThinLisp's Compromise
 
+While C++ and Java can be viewed as attempts to move C more towards a
+denotational footing, Thinlisp is an attempt to move Common Lisp more towards an
+operational footing.  I've attempted to lessen the impact of Lisp's "gotchas"
+that frustrate programmers who look at languages from an operational semantics
+point of view.  Attempting to allow the benefits of deep denotational semantics
+while warning of performance and behavior surprises is the underlying goal for
+ThinLisp.
+
 One of the goals of ThinLisp is to implement the deep semantics of Lisp, while
 offering compile time warnings whenever these semantics force behavior that
-deviates from expectations consistent with thin semantics.  If the programmer
-really intends to use the full, deep semantics, then a lexically apparent
-declaration can be used to suppress the warnings and accept the more expensive
-behavior required by the deep semantics.
+deviates from expectations consistent with operational (or "thin") semantics.
+If the programmer really intends to use the full, deep semantics, then a
+lexically apparent declaration can be used to suppress the warnings and accept
+the more expensive behavior required by the deep semantics.
 
 There are three main areas where ThinLisp warnings are used to help prevent
 performance gotchas.
