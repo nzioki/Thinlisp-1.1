@@ -104,9 +104,6 @@
 (defmacro multiple-value-list (&rest args)
   `(lisp:multiple-value-list ,@args))
 
-(defmacro lisp-implementation-version ()
-  `(lisp:lisp-implementation-version))
-
 (defmacro coerce (&rest args)
   `(lisp:coerce ,@args))
 

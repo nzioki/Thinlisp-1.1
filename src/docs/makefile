@@ -1,7 +1,7 @@
 all : tl-manual.info tl-manual.dvi tl-manual_toc.html tl-manual.pdf
 
 clean : 
-	rm tl-manual.aux tl-manual.cp tl-manual.cps tl-manual.dvi tl-manual.fn \
+	rm -f tl-manual.aux tl-manual.cp tl-manual.cps tl-manual.dvi tl-manual.fn \
    tl-manual.ky tl-manual.log tl-manual.pdf tl-manual.pg tl-manual.toc \
    tl-manual.tp tl-manual.vr tl-manual.info tl-manual_toc.html tl-manual.html
 

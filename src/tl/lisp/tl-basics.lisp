@@ -678,3 +678,21 @@
 
 #-translator
 (lisp:set-macro-character #\, #'tli::read-comma)
+
+
+
+
+
+
+;;;; Environment
+
+
+
+
+(defun lisp-implementation-version ()
+  (declare (return-type string))
+  "0.5")
+
+(defun lisp-implementation-type ()
+  (declare (return-type string))
+  "ThinLisp")
