@@ -117,7 +117,14 @@
 
 (defun expression-result-type (expr env)
   (cond
-    ((constantp expr)
+    ((null expr)
+     'null)
+    ((symbolp expr)
+     (let ((type? (variable-decl expr 'type env)))
+       (if type?
+	   (upgraded-optimizable-type type?)
+	   t)))
+    ((atom expr)
      ;; While we are translating, l-exprs can be given as "constants", since
      ;; they are produced while walking translatable forms.  In the case where
      ;; it is an l-expr, attempt to determine the result-type.  If this can't be
@@ -126,11 +133,6 @@
        (upgraded-optimizable-type
 	 (or l-expr-type?
 	     (gl-type-of (eval expr))))))
-    ((symbolp expr)
-     (let ((type? (variable-decl expr 'type env)))
-       (if type?
-	   (upgraded-optimizable-type type?)
-	   t)))
     ((and (consp expr)
 	  (symbolp (car expr)))
      (let ((operator (car expr)))
@@ -773,7 +775,10 @@
 			   for var-type = (or (variable-decl var 'type new-env)
 					      t)
 			   for given-init
-			       = (if (consp bind)
+			       = (if (and (consp bind)
+					  (or (not (null (second bind)))
+					      (eq var-type t)
+					      (gl-typep nil var-type)))
 				     (second bind)
 				     (default-init-for-lisp-type var-type))
 			   for transformed-init

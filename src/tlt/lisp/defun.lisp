@@ -51,6 +51,8 @@
 			 (most-specific-common-supertype get-type? set-type?))
 		     (or get-type? set-type?))
 		 t)))
+      ;; (format t "~%Var = ~s Decl = ~a Get = ~a Set = ~a Lisp = ~a~%"
+      ;;   variable declared-type? get-type? set-type? lisp-type)
       ;; Don't allow chosen types of NULL.  Generally this happens because of a
       ;; default initialization of NIL, but no more specific setter or getter
       ;; type can be found.  When the type is chosen as NULL, put it back to T.
@@ -59,6 +61,8 @@
 	    ((eq lisp-type 'void)
 	     (translation-error "Varible ~s had void as the chosen type."
 				variable)))
+      ;; (format t "~%Var = ~s Decl = ~a Get = ~a Set = ~a Lisp = ~a and end~%"
+      ;;   variable declared-type? get-type? set-type? lisp-type)
       (values
 	lisp-type
 	(if special-variable?

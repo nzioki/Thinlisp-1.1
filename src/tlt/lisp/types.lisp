@@ -544,4 +544,5 @@
 (defun default-init-for-lisp-type (lisp-type)
   (cond ((gl-subtypep lisp-type 'fixnum) 0)
 	((gl-subtypep lisp-type 'double-float) 0.0)
+	((gl-subtypep lisp-type 'character) #\null)
 	(t nil)))
