@@ -272,9 +272,10 @@
 		      (lexical-c-variable-identifier
 			'catch-result c-func 'obj '("volatile"))
 		      nil))
-	 ;; Change the following to 3 later.  -jallard 8/4/97
-	 (safety? (>= (tl:optimize-information 'safety (l-expr-env catch-l-expr)) 
-		      0))
+	 (env (l-expr-env catch-l-expr))
+	 ;; Change the following to 3 later.  -jallard 8/4/97 It's
+	 ;; later.  -jallard 3/4/01
+	 (safety? (>= (tl:optimize-information 'safety env) 3))
 	 (expected-tos
 	   (when safety?
 	     (lexical-c-variable-identifier
@@ -732,7 +733,7 @@
 	      ;; Change this to 3 some day when we trust that stack handling has
 	      ;; settled down again.  -jallard 6/14/00
 	      (safety? (>= (tl:optimize-information 'safety inner-env)
-			   0))
+			   3))
 	      (thread-state-var (lexical-c-variable-identifier
 				 'ts c-func '(pointer thread-state) nil))
 	      (expected-tos
@@ -799,7 +800,7 @@
   (loop with form = (l-expr-form let*-l-expr)
 	with inner-env = (l-expr-aug-env let*-l-expr)
 	with temp-storage-classes = (storage-classes-for-env inner-env)
-	with safety? = (>= (tl:optimize-information 'safety inner-env) 0)
+	with safety? = (>= (tl:optimize-information 'safety inner-env) 3)
 	with expected-tos = nil
 	with thread-state-var = nil
 	with bindings = (cons-second form)
@@ -2217,8 +2218,7 @@
 	 (protected-statement (make-c-compound-statement nil nil nil nil))
 	 (exit-statement (make-c-compound-statement nil nil nil nil))
 	 ;; Change the following to 3 later.  -jallard 8/4/97
-	 (safety? (>= (tl:optimize-information 'safety inner-env) 
-		      0))
+	 (safety? (>= (tl:optimize-information 'safety inner-env) 3))
 	 (expected-tos
 	   (when safety?
 	     (lexical-c-variable-identifier
