@@ -406,7 +406,7 @@
 	 (string ,stream)
 	 (t
 	  (get-string-or-file-stream-for-output ,stream ,needed-chars))))))
-       
+
 (defun get-string-or-file-stream-for-output (stream-arg needed-space)
   (declare (fixnum needed-space)
 	   (return-type t))
@@ -552,46 +552,51 @@
 	   (write-string-to-file-stream string stream)))
     string))
 
-(defmacro write-char-to-string-or-file-stream (character string-or-file-stream string?)
+(defmacro write-char-to-string (character string)
   (let ((char (gensym))
-	(stream (gensym))
+	(str (gensym))
 	(fill (gensym)))
-    `(let ((,char ,character)
-	   (,stream ,string-or-file-stream))
-       (declare (character ,char))
-       (cond (,string?
-	      (let ((,fill (fill-pointer (the string ,stream))))
-		(declare (fixnum ,fill))
-		(setf (char ,stream ,fill) ,char)
-		(setf (fill-pointer (the string ,stream)) (+ ,fill 1))))
-	     (t
-	      (write-char-to-file-stream ,char ,stream)))
-       ,char)))
+    (if (and (or (constantp character) (symbolp character))
+	     (symbolp string))
+	`(let ((,fill (fill-pointer (the string ,string))))
+	   (declare (fixnum ,fill))
+	   (setf (fill-pointer (the string ,string)) (+ ,fill 1))
+	   (setf (char (the string ,string) ,fill) ,character))
+      `(let ((,char ,character)
+	     (,str ,string))
+	 (declare (character ,char))
+	 (write-char-to-string ,char ,str)))))
 
-(defmacro write-char-macro (character &optional (stream? nil))
-  (if (and (or (constantp character)
-	       (symbolp character))
-	   (symbolp stream?))
-      (let ((char (gensym))
-	    (stream (gensym))
-	    (string? (gensym)))
-	`(let ((,char ,character)
-	       (,stream ,stream?)
-	       (,string? nil))
-	   (typecase ,stream?
-	     (string
-	      (setq ,string? t))
-	     (file-stream
-	      nil)
-	     (t
-	      (setq ,stream (get-string-or-file-stream-for-output ,stream 1))
-	      (setq ,string? (stringp ,stream))))
-	   (write-char-to-string-or-file-stream ,character ,stream ,string?)))))
+(defmacro write-char-to-string-or-file-stream (character string-or-file-stream string?)
+  (if (and (or (symbolp character)
+	       (constantp character))
+	   (symbolp string-or-file-stream))
+      `(progn 
+	 (if ,string?
+	     (write-char-to-string ,character ,string-or-file-stream)
+	   (write-char-to-file-stream ,character ,string-or-file-stream))
+	 ,character)
+    (let ((char (gensym))
+	  (stream (gensym)))
+      `(let ((,char ,character)
+	     (,stream ,string-or-file-stream))
+	 (declare (character ,char))
+	 (write-char-to-string-or-file-stream ,char ,stream ,string?)))))
 
 (defun write-char (char &optional (stream? nil))
   (declare (character char)
 	   (return-type character))
-  (write-char-macro char stream?))
+  (let ((string? nil))
+    (typecase stream?
+      (string
+       (setq string? t))
+      (file-stream
+       nil)
+      (t
+       (setq stream? (get-string-or-file-stream-for-output stream? 1))
+       (setq string? (stringp stream?))))
+    (write-char-to-string-or-file-stream char stream? string?)
+    char))
 
 (defun write-fixnum-in-hex (fixnum stream?)
   (declare (fixnum fixnum)

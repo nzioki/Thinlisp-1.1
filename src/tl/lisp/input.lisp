@@ -1,10 +1,5 @@
 (in-package "GL")
 
-
-
-
-
-
 ;;;; Module INPUT
 
 ;;; Copyright (c) 1997 Gensym Corporation.

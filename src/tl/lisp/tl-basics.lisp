@@ -142,12 +142,6 @@
 
 
 
-;;; The following operations implement the built-in list searching facilities,
-;;; including optimizations for the standard EQ, EQL, and EQUAL tests.
-
-(defmacro my-identity (x)
-  x)
-
 (declaim (inline identity)
 	 (functional identity))
 

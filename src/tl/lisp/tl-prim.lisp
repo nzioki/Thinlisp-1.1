@@ -96,28 +96,6 @@
 
 
 
-;;; The variable `gli::symbol-plist-of-nil' is used by the translations for
-;;; symbol-plist.
-
-(defvar gli::symbol-plist-of-nil nil)
-
-
-
-
-;;; The function make-gensymed-symbol is defined in packages, since it needs to
-;;; be after format.
-
-(defmacro gensym (&optional string-or-number)
-  `(the symbol 
-	,(if (gli::eval-feature :translator)
-	     `(make-gensymed-symbol ,string-or-number)
-	     (if string-or-number
-		 `(lisp:gensym ,string-or-number)
-		 `(lisp:gensym)))))
-
-
-
-
 ;;; The underlying Lisp constant `gl:lambda-list-keywords' is needed at runtime
 ;;; for some compiler work in NEW-MENUS.
 

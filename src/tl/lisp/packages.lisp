@@ -532,9 +532,12 @@
       ;; Do the best optimization for the default case, :upcase.
       (cond
 	((eq case :upcase)
-	 (dotimes (index length)
-	   (write-char-to-string-or-file-stream
-	     (char-upcase (char name index)) stream string?)))
+	 (if string?
+	     (dotimes (index length)
+	       (write-char-to-string (char-upcase (char name index)) stream))
+	   (dotimes (index length)
+	     (write-char-to-file-stream
+	      (char-upcase (char name index)) stream))))
 	((eq case :downcase)
 	 (dotimes (index length)
 	   (write-char-to-string-or-file-stream

@@ -42,3 +42,34 @@
 	       (= (the double-float a) (the double-float b))))
       t
       nil))
+
+
+
+
+;;; The variable `gli::symbol-plist-of-nil' is used by the translations for
+;;; symbol-plist.
+
+(defvar gli::symbol-plist-of-nil nil)
+
+
+
+
+;;; The function make-gensymed-symbol is defined in packages, since it needs to
+;;; be after format.
+
+(defmacro gensym (&optional string-or-number)
+  `(the symbol 
+	,(if (gli::eval-feature :translator)
+	     `(make-gensymed-symbol ,string-or-number)
+	     (if string-or-number
+		 `(lisp:gensym ,string-or-number)
+		 `(lisp:gensym)))))
+
+
+
+
+;;; The following operations implement the built-in list searching facilities,
+;;; including optimizations for the standard EQ, EQL, and EQUAL tests.
+
+(defmacro my-identity (x)
+  x)
