@@ -245,6 +245,7 @@
       ((= platform-code ncr-code)          'ncr)
       ((= platform-code windows95-code)    'windows95)
       ((= platform-code freebsd-code)      'freebsd)
+      ((= platform-code linux386-code)     'linux)
       ;; jh per jra, 8/26/93.  Made the "otherwise" clause more forgiving for
       ;; new ports.  Instead of an error, we return a special symbol.
       (t                                   'experimental-port))))
