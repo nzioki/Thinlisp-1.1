@@ -294,7 +294,7 @@
 ;;; When this function is used during the type combinations during a
 ;;; translation, there is no way to find a common supertype for types that
 ;;; differ in whether or not they set the values count.  In those cases this
-;;; function will signal an error.  However, this fucntion is also used before
+;;; function will signal an error.  However, this function is also used before
 ;;; actual translations to try to find the best guess at Lisp function return
 ;;; types.  When used for this purpose, you can allow this function to upgrade
 ;;; from types that don't set the values count up to values count setting types
@@ -389,6 +389,18 @@
 
 
 
+;;; The function `element-type-of-vector-type' takes a Lisp vector type and
+;;; returns the type of the elements of that vector.  If no specific type has
+;;; been declared, then the element type is T.
+
+(defun element-type-of-vector-type (lisp-vector-type)
+  (if (consp lisp-vector-type)
+      (second lisp-vector-type)
+    t))
+
+
+
+
 ;;; The parameter `upgraded-array-element-type-alist' holds the alist of Lisp
 ;;; types array element types to their equivalent TL package Lisp types and
 ;;; optimized C array element types, representing all array type optimizations
@@ -416,8 +428,43 @@
 
 
 
+;;; The function `upgraded-struct-element-type' takes a Lisp type that is the
+;;; declared element type for a structure or class, and returns the most
+;;; specific superior Lisp type that has a specialized struct implementation.
+;;; Note that this function does not handle bit-field conversions for
+;;; unsigned-byte or signed-byte Lisp types.  These must be handled specially.
+
+(defun upgraded-struct-element-type (element-type)
+  (let ((expanded-type (expand-type element-type)))
+    (if (and (consp expanded-type) (eq (cons-car expanded-type) 'integer))
+	expanded-type
+      (upgraded-tl-array-element-type element-type))))
+
+
+
+
+;;; The function `struct-slot-c-type-for-lisp-type' is like c-type-for-lisp-type
+;;; except that it will return integer and unsigned integer bit-fielded C types
+;;; when the Lisp type indicates an appropriate integer subrange.
+
+(defun struct-slot-c-type-for-lisp-type (lisp-type)
+  (setq lisp-type (upgraded-struct-element-type lisp-type))
+  (if (or (atom lisp-type)
+	  (not (eq (car lisp-type) 'integer)))
+      (c-type-for-lisp-type lisp-type)
+    (let ((low-bound (second lisp-type))
+	  (high-bound (third lisp-type)))
+      (declare (fixnum low-bound high-bound))
+      (if (>= low-bound 0)
+	  `(uint ,(integer-length high-bound))
+	`(int ,(1+ (max (integer-length low-bound) 
+			(integer-length high-bound))))))))
+
+
+
+
 ;;; The function `c-type-for-lisp-type' takes a Lisp type and returns the C type
-;;; that should be used in translations to represent it.  (See C-TYPES for a
+;;; that should be used in translations to represent it.  (See C-TYPES for a 
 ;;; description of C types.)
 
 (defun c-type-for-lisp-type (lisp-type)

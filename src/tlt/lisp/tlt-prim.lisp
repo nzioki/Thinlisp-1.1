@@ -2103,9 +2103,8 @@
        (make-c-cast-expr '(pointer pkg) package)
        "root_symbol")
      "=" symbol)))
+	      
      
-
-
 
 
 
@@ -2114,6 +2113,9 @@
 
 
 
+
+;;; The macro `typep' implements runtime type checking for Lisp objects but has
+;;; the restriction that the type argument must be a constant.
 
 (def-tl-macro tl:typep (&environment env object type)
   (let ((expanded-type (tl:macroexpand type env)))
@@ -2132,12 +2134,38 @@
 			       collect `(tl:typep ,object (tl:quote ,subtype)))))
 		 ((satisfies tl:satisfies)
 		  `(,(cons-second type) ,object))
-		 ((unsigned-byte)
-		  `(and (inlined-typep ,object 'fixnum)
-			(>= (the fixnum ,object) 0)
-			(< (the fixnum ,object) ,(expt 2 (second type)))))
+		 ((integer)
+		  `(tl:and (inlined-typep ,object 'tl:fixnum)
+			   ,@(cond ((eq (cons-second type) '*)
+				    nil)
+				   ((atom (cons-second type))
+				    `((tl:>= (tl:the tl:fixnum ,object) 
+					     ,(cons-second type))))
+				   (t
+				    `((tl:> (tl:the tl:fixnum ,object) 
+					    ,(car (cons-second type))))))
+			   ,@(cond ((eq (cons-third type) '*)
+				    nil)
+				   ((atom (cons-third type))
+				    `((tl:<= (tl:the tl:fixnum ,object) 
+					     ,(cons-third type))))
+				   (t
+				    `((tl:< (tl:the tl:fixnum ,object) 
+					    ,(car (cons-third type))))))))
 		 (t
 		  `(inlined-typep ,object (tl:quote ,type))))))
+	      ((class-type-p type)
+	       (let* ((tag-var (gensym))
+		      (info (structure-info type))
+		      (min-type-tag (struct-type-tag info))
+		      (max-type-tag (struct-maximum-subtype-tag info)))
+		 (declare (fixnum min-type-tag max-type-tag))
+		 (if (= min-type-tag max-type-tag)
+		     `(tl:= (type-tag ,object) ,min-type-tag)
+		     `(tl:let ((,tag-var (type-tag ,object)))
+		        (tl:declare (tl:fixnum ,tag-var))
+			(tl:and (tl:<= ,min-type-tag ,tag-var)
+				(tl:<= ,tag-var ,max-type-tag))))))
 	      (t
 	       `(inlined-typep ,object (tl:quote ,type))))
 	(let ((object-var (gensym)))
@@ -2150,18 +2178,9 @@
   ((trans-specs :c-type ((obj) sint32))
    (let ((tag-var (reusable-c-variable-identifier
 		    'temp c-func 'sint32 (l-expr-env function-call-l-expr))))
-     (make-c-conditional-expr
-       (make-c-infix-expr object "==" "NULL")
-       (make-c-literal-expr 0)
-       (make-c-conditional-expr
-	 (make-c-infix-expr
-	   (make-c-name-expr tag-var)
-	   "=" (make-c-infix-expr (make-c-cast-expr 'uint32 object) "&" 3))
-	 (make-c-name-expr tag-var)
-	 (make-c-cast-expr
-	   'sint32 (make-c-indirect-selection-expr
-		     (make-c-cast-expr '(pointer hdr) object)
-		     "type")))))))
+     (make-c-function-call-expr 
+       (make-c-name-expr "TYPE_TAG")
+       (list object (make-c-name-expr tag-var))))))
 
 (def-tl-macro tl:typecase (keyform &rest clauses)
   ;; Note that tli::type-tag is not a proper macro, and can evaluate its

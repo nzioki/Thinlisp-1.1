@@ -62,7 +62,10 @@
 ;;;   (pointer <c-type>) is a pointer to the enclosed C type, and
 ;;;   (array <c-type> [<array-length>]) is an array of the C type.
 ;;;   (const-array <c-type> <array-length>) is described below.
-;;;   (c-type "<c-type-string>" | (pointer "<c-type-string>")) described below.
+;;;   (c-type "<c-type-string>") allows an arbitrary type.
+;;;   (pointer "<c-type-string>") allows a pointer to an arbitrary type.
+;;;   (struct (<c-type> <name>)...) allows C struct types.
+;;;   (int <bit-field-width>) and (uint <b-f-w>) allows bit field widths.
 
 ;;; Const-array is a type used for emitting new type definitions to initialize
 ;;; Lisp arrays of constant sizes.  For example, the type Sv is a C structure
@@ -90,13 +93,10 @@
 ;;; suitable for use in a type casting operation.  New type translations can be
 ;;; made using def-c-type.
 
-(defmacro c-type-string (c-type)
-  (let* ((type (if (symbolp c-type) c-type (gensym)))
-	 (prefix (if (eq type c-type) '(progn) `(let ((,type ,c-type))))))
-    `(,@prefix
-       (if (symbolp ,type)
-	   (get ,type 'c-type-string)
-	   (get-compound-c-type-string ,type)))))
+(defun c-type-string (c-type)
+  (if (symbolp c-type)
+      (get c-type 'c-type-string)
+    (get-compound-c-type-string c-type)))
 
 (defun get-compound-c-type-string (c-type)
   (let ((car (cons-car c-type)) 
@@ -110,10 +110,18 @@
 		  (format nil "~a *" (cons-second second)))
 		 (t
 		  (error "Can't make type string for ~s" c-type))))
-	  ((or (eq car 'pointer) (eq car 'array))
-	   (if (symbolp second)
-	       (get second 'c-pointer-type-string)
-	       (format nil "(~a) *" (c-type-string second))))
+	  ((memqp car '(uint int))
+	   ;; These are integers with bit field widths.  The bit widths are only
+	   ;; emitted into struct type declarations, and so can be ignored in
+	   ;; this function.
+	   (c-type-string car))
+	  ((memqp car '(pointer array))
+	   (cond ((symbolp second)
+		  (get second 'c-pointer-type-string))
+		 ((stringp second)
+		  (format nil "~a *" second))
+		 (t
+		  (format nil "~a *" (c-type-string second)))))
 	  ((eq car 'const-array)
 	   (format nil "~a_~a" (c-type-string second) (third c-type)))
 	  ((eq car 'function)
@@ -130,17 +138,69 @@
 		       (format out ", "))
 		     (format out "~a" (c-type-string arg-type))))
 	       (format out ")"))))
+	  ((eq car 'struct)
+	   (c-struct-type-string c-type))
 	  (t
 	   (error "Can't make type string for ~s" c-type)))))
 
+(defun c-struct-type-string (c-type)
+  (let* ((type-strings (loop for (elt-type) in (cons-cdr c-type)
+			     collect (c-type-string elt-type)))
+	 (max-length 
+	  (apply 'max (mapcar #'length type-strings))))
+    (format nil "struct {~%~a}"
+	    (apply 'concatenate 'string
+		   (loop for elt in (cons-cdr c-type) 
+			 for type-string in type-strings
+			 for (elt-type name) = elt
+			 collect 
+			 (if (and (consp elt-type)
+				  (memqp (car elt-type) '(int uint)))
+			     (format nil "  ~Va ~a : ~a;~%"
+				     max-length type-string name 
+				     (cons-second elt-type))
+			   (format nil "  ~Va ~a;~%"
+				   max-length type-string name)))))))
 
 
 
-;;; The macro `c-types-equal-p' takes two C types and returns whether or not
-;;; they are equivalent.
 
-(defmacro c-types-equal-p (type1 type2)
-  `(equal ,type1 ,type2))
+;;; The function `c-types-equal-p' takes two C types and returns whether or not
+;;; they are equivalent.  If we were being truely slick, we would implement the
+;;; C type compatibility rules found in CARM, 4th Edition, pp. 151-155.
+;;; Checking equality is a proper subset of what is documented inere.
+
+(defun c-types-equal-p (type1 type2)
+  (equal type1 type2))
+
+
+
+
+;;; The function `c-pointer-type-p' takes a C type and returns whether or not it
+;;; is a pointer suitable for an indirect selection expr.
+
+(defun c-pointer-type-p (c-type)
+  (and (consp c-type)
+       (eq (cons-car c-type) 'pointer)))
+
+
+
+
+;;; The macro `expand-c-type' is used to revert C types to a cannonical form.
+;;; In practice, that means that bit-fielded int types are changed to their
+;;; corresponding int types, and that array types are converted into pointer
+;;; types.
+
+(defun expand-c-type (c-type)
+  (if (atom c-type)
+      c-type
+    (let ((car (cons-car c-type)))
+      (cond ((memqp car '(uint it))
+	     car)
+	    ((eq car 'array)
+	     (cons 'pointer (cons-cdr c-type)))
+	    (t
+	     c-type)))))
 
 
 
@@ -149,25 +209,11 @@
 ;;; C type, and then this function returns whether or not the result type is
 ;;; appropriate as a value to an operation needing the required-type.
 
-(defmacro satisfies-c-required-type-p (result-type required-type)
-  (let ((result (make-symbol "RESULT"))
-	(required (if (constantp required-type)
-		      required-type
-		      (make-symbol "REQUIRED"))))
-    `(let ((,result ,result-type)
-	   ,@(if (not (eq required required-type))
-		 `((,required ,required-type))))
-       (or (eq ,required 'void)
-	   (equal ,result ,required)
-	   ,@(if (or (not (constantp required-type))
-		     (consp (eval required-type)))
-		 `((and (consp ,result)
-			,@(if (not (constantp required-type))
-			      `((consp ,required)))
-			(memqp (cons-car ,result) '(pointer array))
-			(memqp (cons-car ,required) '(pointer array))
-			(equal (cons-second ,result)
-			       (cons-second ,required)))))))))
+(defun satisfies-c-required-type-p (result-type required-type)
+  (let ((result (expand-c-type result-type))
+	(required (expand-c-type required-type)))
+    (or (eq required 'void)
+	(c-types-equal-p result required))))
 
 
 
@@ -176,7 +222,9 @@
 ;;; for that type, if any.  The function `c-type-implementing-lisp-type' takes a
 ;;; Lisp type and returns a C type symbol, where a pointer to that C type
 ;;; implements the given Lisp type.  The function `lisp-type-tag' takes a Lisp
-;;; type and returns an integer which is the type tag for that Lisp type.
+;;; type and returns an integer which is the type tag for that Lisp type.  Note
+;;; that c-type-tag only expects to get primitive TL types that are defined
+;;; using def-c-type.
 
 (defun c-type-tag (c-type)
   (or (if (symbolp c-type)
@@ -199,12 +247,15 @@
 	     (return (cons-cdr entry)))))))
 
 (defun lisp-type-tag (lisp-type)
-  (if (eq lisp-type 'null)
-      0
-      (let ((c-type (c-type-implementing-lisp-type lisp-type)))
-	(if (symbolp c-type)
-	    (get c-type 'c-type-tag)
-	    nil))))
+  (cond ((eq lisp-type 'null)
+	 0)
+	((class-type-p lisp-type)
+	 (class-type-tag lisp-type))
+	(t
+	 (let ((c-type (c-type-implementing-lisp-type lisp-type)))
+	   (if (symbolp c-type)
+	       (get c-type 'c-type-tag)
+	     nil)))))
 
 
 
@@ -227,11 +278,11 @@
 	       (push tag tag-list)))
 	   (loop for (type . c-type) in c-types-implementing-lisp-type-alist do
 	     (when (tl-subtypep type lisp-type)
-	       (push (c-type-tag c-type) tag-list)))))
+	       (push (c-type-tag c-type) tag-list)))
+	   (when (class-type-p lisp-type)
+	     (setq tag-list 
+		   (nconc tag-list (type-tags-for-class-type lisp-type))))))
     (sort (the list tag-list) #'<)))
-    
-
-
 
 
 
@@ -327,8 +378,9 @@
 	       `((setf (get ',lisp-type? 'c-type-implementing-lisp-type)
 		       ',type-name)))
 	     (push (cons ',lisp-type? ',type-name)
-		   c-types-implementing-lisp-type-alist)
-	     (setf (get ',type-name 'c-type-tag) ,type-tag?)))
+		   c-types-implementing-lisp-type-alist)))
+     ,@(when type-tag?
+	 `((setf (get ',type-name 'c-type-tag) ,type-tag?)))
      ',type-name))
 
 

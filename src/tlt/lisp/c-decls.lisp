@@ -77,17 +77,11 @@
   (let* ((c-type (c-var-decl-c-type c-decl))
 	 (type-is-cons? (consp c-type))
 	 (identifier (c-var-decl-identifier c-decl)))
-    (cond ((or (symbolp c-type)
-	       (and type-is-cons?
-		    (eq (cons-car c-type) 'const-array)))
-	   (emit-string-to-c-file (c-type-string c-type) c-file)
-	   (emit-character-to-c-file #\space c-file)
-	   (emit-string-to-c-file identifier c-file))
-	  ((and type-is-cons?
+    (cond ((and type-is-cons?
 		(eq (cons-car c-type) 'pointer))
 	   (emit-string-to-c-file (c-type-string (second c-type)) c-file)
 	   (emit-string-to-c-file " *" c-file)
-	   (emit-string-to-c-file identifier c-file)) 
+	   (emit-string-to-c-file identifier c-file))
 	  ((and type-is-cons?
 		(eq (cons-car c-type) 'array))
 	   (emit-string-to-c-file (c-type-string (second c-type)) c-file)
@@ -106,9 +100,14 @@
 		  (emit-character-to-c-file #\] c-file))
 		 (t
 		  (emit-character-to-c-file #\* c-file)
-		  (emit-string-to-c-file identifier c-file))))
+		  (emit-string-to-c-file identifier c-file)))) 
 	  (t
-	   (translation-error "Don't know how to emit c-type ~s" c-type)))
+	   (let ((type-string (c-type-string c-type)))
+	     (when (null type-string)
+	       (translation-error "Don't know how to emit c-type ~s" c-type))
+	     (emit-string-to-c-file type-string c-file)
+	     (emit-character-to-c-file #\space c-file)
+	     (emit-string-to-c-file identifier c-file))))
     (when (c-var-decl-init-expr? c-decl)
       (if (not (eq c-type 'obj))
 	  (emit-indentation-to-c-file c-file (1+ indent))
@@ -185,72 +184,79 @@
 ;;; (const-array <struct-type> <length>).  All other types used by the
 ;;; translator are defined beforehand in the tlt/tlt.h file.
 
-;;; In the future, we may wish to have specific C types defined for translated
-;;; def-structures.  When that occurs, C types and this declaration operation
-;;; should be extended to support emitting new structure types.  -jra 9/1/95
+;; In the future, we may wish to have specific C types defined for translated
+;; def-structures.  When that occurs, C types and this declaration operation
+;; should be extended to support emitting new structure types.  -jra 9/1/95
+
+;; Done.  -jallard 11/3/99
 
 (def-c-decl c-typedef-decl (c-type identifier)
   (let ((c-type (c-typedef-decl-c-type c-decl))
 	(identifier (c-typedef-decl-identifier c-decl))
-	(type-format-string nil))
+	(type-format-string nil)
+	(type-string nil))
     (unless (and (consp c-type)
-		 (eq (car c-type) 'const-array)
-		 (fixnump (third c-type)))
-      (error "Can only define new types of explicitly sized arrays, not ~s"
+		 (or (eq (car c-type) 'struct)
+		     (and (eq (car c-type) 'const-array)
+			  (fixnump (third c-type)))))
+      (error "Can only define new types of structs and explicitly sized arrays, not ~s"
 	     c-type))
-    (ecase (second c-type)
-      ((sv)
-       (setq type-format-string
-	     "struct {
+    (cond ((eq (car c-type) 'struct)
+	   (setq type-string (c-type-string c-type)))
+	  (t
+	   (ecase (second c-type)
+	     ((sv)
+	      (setq type-format-string
+		    "struct {
   unsigned int type  :  8;
   unsigned int length: 24;
   Obj body[~a];
 }"
-	     ))
-      ((str)
-       (setq type-format-string
-	     "struct{
+		    ))
+	     ((str)
+	      (setq type-format-string
+		    "struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
   unsigned char body[~a];
 }"
-	     ))
-      ((sa-uint8)
-       (setq type-format-string
-	     "struct {
+		    ))
+	     ((sa-uint8)
+	      (setq type-format-string
+		    "struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
   uint8 body[~a];
 }"
-	     ))
-      ((sa-uint16)
-       (setq type-format-string
-	     "struct {
+		    ))
+	     ((sa-uint16)
+	      (setq type-format-string
+		    "struct {
   unsigned int type       :  8;
   unsigned int length     : 24;
   unsigned int fill_length: 24;
   uint16 body[~a];
 }"
-	     ))
-      ((sa-double)
-       (setq type-format-string
-	     "struct {
+		    ))
+	     ((sa-double)
+	      (setq type-format-string
+		    "struct {
   unsigned int type:    8;
   unsigned int length: 24;
   double body[~a];
 }"
-	     )))
+		    )))
+	   (setq type-string (format nil type-format-string (third c-type)))))
     ;; Now format the typedef.  Emit a blank line before top level typedefs.
     (if (zerop indent)
 	(emit-newline-to-c-file c-file)
-	(emit-indentation-to-c-file c-file indent))
+      (emit-indentation-to-c-file c-file indent))
     (emit-string-to-c-file "typedef " c-file)
     ;; Note that the following string has newlines in it, which messes up the
     ;; line length unless you use the connect emitter.
-    (emit-string-with-newlines-to-c-file
-      (format nil type-format-string (third c-type)) c-file)
+    (emit-string-with-newlines-to-c-file type-string c-file)
     (emit-character-to-c-file #\space c-file)
     (emit-string-to-c-file identifier c-file)
     (emit-character-to-c-file #\; c-file)
@@ -330,6 +336,20 @@
     (setf (gethash c-identifier (c-file-needed-function-externs c-file))
 	  (make-c-function-decl
 	    storage-classes c-return-type c-identifier c-parameter-types))))
+
+
+
+
+;;; The function `register-needed-class-typedef' is used to register the need
+;;; for a typedef statement with the given characteristics.  The first time this
+;;; is called for a file, a typedef will be emitted into the include file.
+;;; Second and subsequent calls to this function for a particular file have no
+;;; effect.
+
+(defun register-needed-class-typedef (c-file c-type-name c-struct-type)
+  (unless (gethash c-type-name (c-file-needed-class-typedefs c-file))
+    (setf (gethash c-type-name (c-file-needed-class-typedefs c-file))
+	  (make-c-typedef-decl c-struct-type c-type-name))))
 
 
 

@@ -46,14 +46,19 @@
 ;;; written when attempting a translate of a Lisp file, so comparing that file's
 ;;; date is adequate.
 
-(defun tl:translate-system
-    (system &key (verbose t)
-	    (recompile nil) (from nil) (to nil)
-	    (compile-used-systems t)
-	    (recompile-used-systems nil)
-	    (retranslate-used-systems nil)
-	    (retranslate nil)
-	    (print nil))
+(defun tl:translate-system (system &key (verbose t)
+				   (recompile nil) (from nil) (to nil)
+				   (compile-used-systems t)
+				   (recompile-used-systems nil)
+				   (retranslate-used-systems nil)
+				   (retranslate nil)
+				   (rebuild nil)
+				   (print nil))
+  (when rebuild
+    (setq recompile-used-systems t)
+    (setq recompile t)
+    (setq retranslate-used-systems t)
+    (setq retranslate t))
   (when from
     (setq from (normalize-module-name from)))
   (when to
@@ -82,11 +87,10 @@
 	  (*global-package-registry*
 	    (list *tl-package* *tl-user-package* *keyword-package*)))
       (unwind-protect
-	   (progn
+	   (with-structure-tag-assignments
 	     (reserve-foreign-function-identifiers)
 	     (loop for used-system-name in used-system-names do
-	       (reserve-function-and-global-variable-identifiers
-		 used-system-name)
+	       (reserve-global-identifiers used-system-name)
 	       (if (eq used-system-name system-name)
 		   (translate-system-1
 		     used-system-name :verbose verbose :print print
@@ -183,7 +187,7 @@
 (defun translate-module (system module &key (verbose t) (print nil)
 				(module-number 0) (total-modules 0))
   (when verbose
-    (format t "~%Translating ~40a    [~3d/~3d]"
+    (format t "~%Translating ~40a    [~3d/~3d] "
 	    (system-c-file system module) module-number total-modules)
     (force-output))
   (let ((*package* *package*)
@@ -601,7 +605,10 @@
     (setf (c-file-used-constants c-file) (make-hash-table :test #'equal))
     (setf (c-file-used-symbols c-file) (make-hash-table :test #'eq))
     (setf (c-file-used-compiled-functions c-file) (make-hash-table :test #'eq))
+    (setf (c-file-used-class-typedefs c-file) (make-hash-table :test #'eq))
     (setf (c-file-needed-function-externs c-file)
+	  (make-hash-table :test #'equal))
+    (setf (c-file-needed-class-typedefs c-file)
 	  (make-hash-table :test #'equal))
     (setf (c-file-needed-variable-externs c-file)
 	  (make-hash-table :test #'equal))
@@ -625,6 +632,7 @@
 
 (defun close-c-file (c-file &key abort)
   (let ((variable-decls nil)
+	(class-typedefs nil)
 	(function-decls nil))
     (unless abort
       (loop for last-emitted-symbol-definition = nil then last-definition
@@ -732,12 +740,18 @@
 	  ;; Don'tcha just love lexical closures?  -jra 11/16/95 Don'tcha just
 	  ;; hate the way they cons up a storm and slow everything down?
 	  ;; -jallard 9/25/99
+	  (maphash #'(lambda (id decl) (push (cons id decl) class-typedefs))
+		   (c-file-needed-class-typedefs c-file))
 	  (maphash #'(lambda (id decl) (push (cons id decl) variable-decls))
 		   (c-file-needed-variable-externs c-file))
 	  (maphash #'(lambda (id decl) (push (cons id decl) function-decls))
 		   (c-file-needed-function-externs c-file))
+	  (setq class-typedefs (sort class-typedefs #'string< :key #'car))
 	  (setq variable-decls (sort variable-decls #'string< :key #'car))
 	  (setq function-decls (sort function-decls #'string< :key #'car))
+	  (loop for (nil . decl) in class-typedefs
+		do
+	    (emit-declaration-to-c-file decl h-file 0))
 	  (loop for (nil . decl) in variable-decls
 		do
 	    (emit-declaration-to-c-file decl h-file 0))
@@ -799,11 +813,14 @@
 	 (progn
 	   (pushnew :translator *features*)
 	   (pushnew :no-macros *features*)
-	   (with-open-c-file (c-file system 'debug)
-	     (let ((current-translation-context lisp-form)
-		   (within-translation-catcher t))
-	       (catch :translation-error
-		 (translate-top-level-lisp-form lisp-form c-file)))))
+	   (with-structure-tag-assignments
+	     (reserve-foreign-function-identifiers)
+	     (with-open-c-file (c-file system 'debug)
+	       (let ((current-translation-context lisp-form)
+		     (within-translation-catcher t))
+		 (catch :translation-error
+		   (translate-top-level-lisp-form lisp-form c-file))))))
+      (clear-c-name-declarations)
       (setq *features* (delete :translator *features*))
       (setq *features* (delete :no-macros *features*)))
 

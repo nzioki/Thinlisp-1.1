@@ -41,51 +41,624 @@
 ;;; contain the type number for all structures, and the fill slot will contain
 ;;; the unique number for this type.
 
-(defmacro tl:defstruct (name-and-options &rest doc-and-slot-descriptions)
-  (let ((name (if (consp name-and-options) 
-		  (cons-car name-and-options)
-		name-and-options))
-	(options (if (consp name-and-options)
-		     (cdr name-and-options)
-		   nil))
-	(doc (if (stringp (car doc-and-slot-descriptions))
-		 (pop doc-and-slot-descriptions)
-	       nil))
-	(slot-descriptions 
-	 (loop for slot in doc-and-slot-descriptions
-	       collect
-	       (if (symbolp slot)
-		   (list slot nil)
-		 slot)))
-	(constructor
-	 (get-defstruct-option
-	  options :constructor (intern (format nil "MAKE-~a" name))))
-	(copier 
-	 (get-defstruct-option
-	  options :copier (intern (format nil "COPY-~a" name))))
-	(predicate
-	 (get-defstruct-option
-	  options :predicate (intern (format nil "~a-P" name))))
-	
+;;; The `get-defstruct-option' function is used to help decipher the unusual
+;;; options format for defstruct.
 
-	)
-    nil))
-
-
-(defun get-defstruct-option (options name default)
-  (loop for option-cons = options then (cdr option-cons)
-	while option-cons
-	for elt = (car option-cons)
-	do
+(defun get-defstruct-option (options name default 
+				     &optional (singleton-default nil))
+  (loop for elt in options do
     (cond ((eq elt name)
-	   (return nil))
+	   (return singleton-default))
 	  ((and (consp elt) (eq (car elt) name))
 	   (return (cdr elt))))
         finally (return default)))
 
-;;; The `structure-info' structure type is used to hold structure type
+
+
+;;; The accessors `structure-info' and `class-info' take a symbol and return the
+;;; struct that holds its information, or else NIL if it is not a defined class
+;;; or structure type.  Thare are setfable.  Currently they are synonyms.
+
+(defmacro structure-info (name)
+  `(get ,name :structure-info))
+
+(defmacro class-info (name)
+  `(structure-info ,name))
+
+
+
+
+;;; The function `class-type-p' takes a Lisp type and returns whether or this
+;;; type directly names a structure-class or standard-class.  That is, this
+;;; returns non-null if the type is a symbol and names a structure or class.
+
+(defun class-type-p (lisp-type)
+  (and (symbolp lisp-type)
+       (structure-info lisp-type)))
+
+
+
+
+;;; The variable `*all-classes*' contains a list of all symbols naming classes.
+
+(defvar *all-classes* nil)
+
+
+
+
+;;; The variable `*root-classes*' contains a list of all classes defined with no
+;;; superior class.
+
+(defvar *root-classes* nil)
+
+
+
+
+;;; The `struct' structure type is used to hold structure type
 ;;; information during Lisp development time.
 
-(defstruct (structure-info :print-function print-structure-info)
+(defstruct (struct)
   name
+  doc
+  local-slot-descriptions
+  slot-descriptions
+  conc-name
+  copier
+  include
+  (initial-offset 0)
+  predicate
+  print-object
+  print-function
+  type
+  reclaimer
+  (type-tag nil)
+  (maximum-subtype-tag nil)
+  (c-type nil)
+  (c-type-name nil)
+  (c-alignment nil))
+
+(defstruct (struct-slot (:copier copy-struct-slot))
+  name
+  (initial-form nil)
+  (original-type t)
+  (type t)
+  (read-only nil)
+  (reclaimer nil)
+  (reader nil)
+  (dev-reader nil)
+  (c-accessor nil)
+  (c-type nil))
+
+(defun construct-struct-slot (slot-description &optional conc-name overridden-slot)
+  (let ((new-slot
+	 (destructuring-bind (name &optional init 
+				   &key (type t) (read-only nil)
+				   (reclaimer nil))
+			     slot-description
+	   (make-struct-slot :name name 
+			     :initial-form init :type type 
+			     :original-type type :read-only read-only
+			     :reclaimer reclaimer))))
+    (cond (overridden-slot
+	   (setf (struct-slot-original-type new-slot)
+	     (struct-slot-original-type overridden-slot))
+	   (setf (struct-slot-read-only new-slot)
+	     (or (struct-slot-read-only overridden-slot)
+		 (struct-slot-read-only new-slot)))
+	   (setf (struct-slot-reader new-slot)
+	     (struct-slot-reader overridden-slot))
+	   (setf (struct-slot-dev-reader new-slot)
+	     (struct-slot-dev-reader overridden-slot)))
+	  (t
+	   (let ((reader 
+		  (if conc-name
+		      (intern (format nil "~a~a" conc-name
+				      (struct-slot-name new-slot)))
+		    (struct-slot-name new-slot))))
+	     (setf (struct-slot-reader new-slot) reader)
+	     (setf (struct-slot-dev-reader new-slot)
+	       (intern (format nil "TL-DEV-~a" reader))))))
+    new-slot))
+
+
+
+
+;;; The function `assign-structure-type-tags' assigns a new set of integer type
+;;; tags to all structure and class types currently defined.  This should be
+;;; done immediately before a translation begins.  If it is called twice during
+;;; a translation, then the second call has no effect.  It is an error to define
+;;; a new structure type while type tags are assigned.  The function
+;;; `clear-structure-type-tags' removes those tags.  The macro
+;;; `with-structure-tag-assignments' will assign type tags and then clear them
+;;; on exit, unless this is a dynamically nested call to
+;;; with-structure-tag-assignments, in which case it is a no-op.
+
+(defvar structure-type-tags-assigned nil)
+
+(defparameter base-structure-type-tag 32)
+
+(defun assign-structure-type-tag-tree (type initial-tag)
+  (declare (fixnum initial-tag))
+  (let ((info (structure-info type)))
+    (setf (struct-type-tag info) initial-tag)
+    (incf initial-tag)
+    (loop for subtype in (struct-subtypes type) do
+      (setq initial-tag (assign-structure-type-tag-tree subtype initial-tag)))
+    (setf (struct-maximum-subtype-tag info) (1- initial-tag))
+    initial-tag))
+
+(defun assign-structure-type-tags ()
+  (unless structure-type-tags-assigned
+    (setq structure-type-tags-assigned t)
+    (loop with current-tag = base-structure-type-tag
+	  for root in *root-classes*
+	  do
+      (setq current-tag (assign-structure-type-tag-tree root current-tag)))))
+
+(defun clear-structure-type-tags ()
+  (loop for type in *all-classes* do
+    (setf (struct-type-tag (structure-info type)) nil))
+  (setq structure-type-tags-assigned nil))
+
+(defmacro with-structure-tag-assignments (&body forms)
+  (let ((previously-assigned (gensym)))
+    `(let ((,previously-assigned structure-type-tags-assigned))
+       (unwind-protect
+	   (progn
+	     (unless ,previously-assigned
+	       (assign-structure-type-tags))
+	     ,@forms)
+	 (unless ,previously-assigned
+	   (clear-structure-type-tags))))))
+
+
+
+
+;;; The function `class-type-tag' takes a Lisp type naming a class and returns
+;;; its integer type tag.  Note that this function will only work for Lisp types
+;;; that are symbols naming strutuure or class types.
+
+(defun class-type-tag (lisp-type)
+  (if (symbolp lisp-type)
+      (let ((info (structure-info lisp-type)))
+	(if info
+	    (struct-type-tag info)
+	  nil))
+    nil))
+
+
+
+
+;;; The function `struct-subtypes' takes a symbol naming a class or structure
+;;; type, and returns a list of the direct subtypes of that type.  The function
+;;; `struct-add-subtype' takes a superior type and a subtype, and adds the
+;;; subtype to the superior type's list.
+
+(defun struct-subtypes (type-symbol)
+  (get type-symbol :subtypes))
+
+(defun struct-add-subtype (superior-type subtype)
+  (pushnew subtype (get superior-type :subtypes))
+  superior-type)
+
+
+
+
+;;; The function `type-tags-for-class-type' takes a symbol naming a structure
+;;; or class and returns a list of the integer type tags for that type and all
+;;; of its subtypes.
+
+(defun type-tags-for-class-type (type-symbol)
+  (let* ((struct-info (structure-info type-symbol))
+	 (tag (struct-type-tag struct-info)))
+    (when (null tag)
+      (error "Type ~s did not yet have a type tag assigned." type-symbol))
+    (loop for next-tag from tag to (struct-maximum-subtype-tag struct-info) 
+	  collect next-tag)))
+
+
+
+
+;;; The function `get-c-name-for-class-and-slot' takes a symbol naming a class
+;;; and a symbol naming a slot in that class.  It returns a string naming the C
+;;; accessor for that slot.  Note that this function can only be called during
+;;; translation, and not during normal compilation.  The function
+;;; `get-c-type-for-class-and-slot' is similar, except that it returns the C
+;;; type for values stored in this slot.
+
+(defun get-slot-for-class-and-slot-name (class-name slot-name)
+  (loop with class-info = (class-info class-name)
+	for slot in (struct-slot-descriptions class-info)
+	do
+    (when (eq (struct-slot-name slot) slot-name)
+      (return slot))))
+
+(defun get-c-name-for-class-and-slot (class-name slot-name)
+  (struct-slot-c-accessor (get-slot-for-class-and-slot-name class-name slot-name)))
+
+(defun get-c-type-for-class-and-slot (class-name slot-name)
+  (struct-slot-c-type (get-slot-for-class-and-slot-name class-name slot-name)))
+
+
+
+
+;;; The function `collect-struct-slot-descriptions' takes struct that has the
+;;; local-slot-descriptions, include, and initial-offset slots filled in, and it
+;;; computes a new full set of slot descriptions for this struct type and stores
+;;; it into the slot-descriptions element of the given struct.
+
+(defun collect-slot-descriptions (struct conc-name)
+  (let* ((include-spec (struct-include struct))
+	 (include-name (car include-spec))
+	 (include-overrides (loop for elt in (cdr include-spec)
+				  collect (if (symbolp elt)
+					      (list elt)
+					    elt)))
+	 (superior-struct? (if include-name (structure-info include-name) nil))
+	 (superior-descriptions
+	  (cond ((null include-name)
+		 nil)
+		(superior-struct?
+		 (struct-slot-descriptions superior-struct?))
+		(t
+		 (error "Included structure ~s is not defined." 
+			include-name))))
+	 (new-descriptions-list
+	  (append
+	   (loop for desc in superior-descriptions
+		 for override = (member (struct-slot-name desc) 
+					include-overrides
+					:key #'car :test #'eq)
+		 collect (if override
+			     (construct-struct-slot 
+			      (car override) nil desc)
+			   (copy-struct-slot desc)))
+	   (if (struct-type struct)
+	       (loop repeat (struct-initial-offset struct)
+		     collect (construct-struct-slot nil))
+	     nil)
+	   (loop for desc in (struct-local-slot-descriptions struct)
+		 collect (construct-struct-slot desc conc-name)))))
+    new-descriptions-list))
+
+	  
+    
+
+;;; The macro `tl:defstruct' implements ANSI defstruct, with the following
+;;; extensions.
+
+;;; The option (:reclaimer <name>) can be given to indicate that a reclaimer
+;;; function should be defined which will call all slot reclaimer functions, and
+;;; then store the structure in a resource pool which will be used to fetch a
+;;; new structure instance the next time one is needed.  If this option is
+;;; given, but no name is provided, then the name defaults to "RECLAIM-"
+;;; prepended to the structure name and interned in the default package where
+;;; the defstruct is defined.
+
+;;; The slot description option :reclaimer should be given an argument naming a
+;;; function or macro which should be called to reclaim the value of this slot
+;;; when the structure reclaimer is called.  Note that this option is only
+;;; useful when the structure as a whole has been given the :reclaimer option,
+;;; which will force definition of a reclaimer function from which this
+;;; reclaimer will be called.
+
+(defmacro tl:defstruct (name-and-options &rest doc-and-slots)
+  (let* ((name (if (consp name-and-options) 
+		   (cons-car name-and-options)
+		 name-and-options))
+	 (options (if (consp name-and-options)
+		      (cdr name-and-options)
+		    nil))
+	 (doc (if (stringp (car doc-and-slots))
+		  (car doc-and-slots)
+		nil))
+	 (local-slot-descriptions 
+	  (loop for desc in (if doc (cdr doc-and-slots) doc-and-slots)
+		for slot-name = (if (symbolp desc) desc (car desc))
+		collect (if (symbolp desc) (list slot-name) desc)))
+	 (conc-name 
+	  (string (get-defstruct-option
+		   options :conc-name (format nil "~a-" name))))
+	 (copier 
+	  (get-defstruct-option
+	   options :copier (intern (format nil "COPY-~a" name))))
+	 (include (get-defstruct-option options :include nil))
+	 (initial-offset (get-defstruct-option options :initial-offset 0))
+	 (named-option (get-defstruct-option options :named nil t))
+	 (predicate
+	  (let ((default-predicate (intern (format nil "~a-P" name))))
+	    (get-defstruct-option
+	     options :predicate default-predicate default-predicate)))
+	 (print-object (get-defstruct-option options :print-object nil))
+	 (print-function (get-defstruct-option options :print-function nil))
+	 (type (get-defstruct-option options :type nil))
+	 (reclaimer (get-defstruct-option options :reclaimer nil))
+	 (new-struct (make-struct
+		      :name name :doc doc
+		      :local-slot-descriptions local-slot-descriptions
+		      :copier copier :include include
+		      :initial-offset initial-offset :predicate predicate
+		      :print-object print-object :print-function print-function
+		      :type type :reclaimer reclaimer))
+	 (slots (collect-slot-descriptions new-struct conc-name))
+	 (local-slots
+	  (nthcdr (- (length slots) (length local-slot-descriptions)) slots))
+	 (raw-constructor (intern (format nil "MAKE-~a" name) *tli-package*))
+	 (constructors (collect-constructors name options slots)))
+    `(tl:progn
+      (tl:declaim (class-name ,name))
+      ,@(if (not (eval-feature :translator))
+	    `((tl:eval-when (:compile-toplevel :load-toplevel :execute)
+	        (install-structure
+		  ',name ,doc ',local-slot-descriptions ',copier ',include 
+		  ,initial-offset ',predicate ',print-object 
+		  ',print-function ',type ',reclaimer ',conc-name))
+	      (defstruct (,name (:conc-name nil)
+			  (:constructor ,raw-constructor ())
+			  (:copier nil) (:predicate ,predicate))
+		,@(loop for local-slot in local-slots
+		      collect (struct-slot-dev-reader local-slot))))
+	  nil)
+      ,@(expand-readers-and-writers 
+	 name type named-option slots local-slot-descriptions)
+      ,@(expand-constructors name type named-option slots 
+			     raw-constructor constructors)
+      ,@(if predicate
+	    `((tl:declaim (tl:ftype (tl:function (t) t) ,predicate))
+	      (tl:define-compiler-macro ,predicate (x)
+	        `(tl:typep ,x ',',name))
+	      ,@(if (eval-feature :translator)
+		    `((tl:defun ,predicate (x)
+			(tl:declare (tl:return-type t))
+			(,predicate x)))
+		  nil))
+	  nil)
+      ,@(if copier
+	    (expand-copier name copier type raw-constructor slots)
+	  nil)
+      ',name)))
+
+(defun expand-copier (name copier type raw-constructor slots)
+  (let ((new-form 
+	 (cond ((null type)
+		`(malloc-class-instance ,name ,raw-constructor))
+	       ((tl-subtypep type 'list)
+		`(tl:copy-list old))
+	       (t
+		`(tl:make-array
+		  (tl:length old)
+		  :element-type 
+		  ',(element-type-of-vector-type type)))))
+	(element-copy-forms
+	 (cond ((null type)
+		 (loop for slot in slots
+		     for reader = (struct-slot-reader slot)
+		     when (and (struct-slot-name slot) reader)
+		     collect `(tl:setf (,reader new) (,reader old))))
+		((tl-subtypep type 'list)
+		 nil)
+		((tl-subtypep type 'simple-vector)
+		 `((tl:replace-simple-vectors new old)))
+		(t 
+		 `((tl:dotimes (index (tl:length old))
+		     (tl:setf (tl:aref new index)
+		       (tl:aref old index))))))))
+    `((tl:define-compiler-macro ,copier (x)
+	`(tl:let* ((old ,x)
+		   (new ,',new-form))
+	   (tl:declare (tl:type ,',(or type name) old new))
+	   ,@',element-copy-forms
+	   new))
+      (tl:defun ,copier (,name)
+	(tl:declare (tl:return-type ,(or type name))
+		    (tl:type ,(or type name) ,name)
+		    (tl:consing-area tl:either))
+	(,copier ,name)))))
   
+(defun expand-readers-and-writers (name type named slots local-slots)
+  (loop with local-start = (- (length slots) (length local-slots))
+      for slot in (nthcdr local-start slots)
+      for slot-offset from (+ local-start (if named 1 0))
+      for slot-name = (struct-slot-name slot)
+      for slot-reader = (struct-slot-reader slot)
+      for slot-type = (struct-slot-type slot)
+      for setter = (if (not (struct-slot-read-only slot))
+		       (intern (format nil "SETF-~a" slot-reader))
+		     nil)
+      for struct-var = name
+      for new-value-var = 'tl::new-value
+      nconc `((tl:declaim (tl:functional ,slot-reader))
+	      (tl:define-compiler-macro ,slot-reader (,struct-var)
+		,(cond ((null type)
+			``(get-slot ,,struct-var ,',slot-name ,',name 
+				    obj ,',slot-type nil))
+		       ((tl-subtypep type 'list)
+			``(tl:nth ,,slot-offset ,,struct-var))
+		       (t
+			``(tl:aref (tl:the ,',type ,,struct-var) 
+				   ,,slot-offset))))
+	      ;; Since the reader and setter functions will only be called when
+	      ;; the compiler macro cannot be expanded, i.e. when there is a
+	      ;; funcalled invocation, declare the argument and return types to
+	      ;; be T to simplify funcall's argument handling job.
+	      (tl:defun ,slot-reader (,struct-var)
+		(tl:declare (tl:return-type t)
+			    (tl:type t ,struct-var))
+		(,slot-reader ,struct-var))
+	      ,@(if setter
+		    `((tl:defsetf ,slot-reader ,setter)
+		      (tl:define-compiler-macro ,setter (,struct-var 
+							 ,new-value-var)
+			`(set-slot ,,struct-var ,',slot-name ,',name obj
+				   ,',slot-type nil ,,new-value-var))
+		      (tl:defun ,setter (,struct-var ,new-value-var)
+			(tl:declare (tl:return-type t)
+				    (tl:type t ,struct-var ,new-value-var))
+			(,setter ,struct-var ,new-value-var)))
+		  nil))))
+
+(defun collect-constructors (name options slots) 
+  (loop with collected = nil
+	with slot-names = (loop for slot in slots
+				for slot-name = (struct-slot-name slot)
+				when slot-name collect slot-name)
+	for elt in options
+	do
+    (cond ((eq elt :constructor)
+	   (push (list nil) collected))
+	  ((atom elt)
+	   nil)
+	  ((eq (cons-car elt) :constructor)
+	   (cond ((null (cons-cdr elt))
+		  (push (list nil) collected))
+		 ((null (cons-cddr elt))
+		  (push (list (cons-second elt) (cons 'tl:&key slot-names))
+			collected))
+		 (t
+		  (push (cons-cdr elt) collected)))))
+	finally 
+	(when (null collected)
+	  (setq collected 
+		(list (list (intern (format nil "MAKE-~a" name))
+			    (cons 'tl:&key slot-names)))))
+	(return collected)))
+
+(defun find-slot (slot-name slots)
+  (loop for slot in slots
+	do
+    (when (eq (struct-slot-name slot) slot-name)
+      (return slot))))
+
+(defun supply-default-initial-binding (slot-name-or-binding
+				       supply-default slots
+				       constructor args)
+  
+  (let* ((slot-name (cond ((consp slot-name-or-binding)
+			   (setq supply-default nil)
+			   (car slot-name-or-binding))
+			  (t slot-name-or-binding)))
+	 (slot (find-slot slot-name slots)))
+    (cond ((null slot)
+	   (error "No slot named ~s in ~s" slot-name
+		  (append `(:constructor ,constructor) 
+			  (if args (list args) nil))))
+	  (supply-default
+	   (list slot-name (struct-slot-initial-form slot)))
+	  (t slot-name-or-binding))))
+
+(defconstant boa-lambda-list-keywords 
+  '(tl:&optional tl:&rest tl:&aux tl:&key tl:&allow-other-keys))
+
+(defun expand-constructors (name type named slots 
+			    raw-constructor constructors)
+  (loop with slot-count = (+ (length slots) (if named 1 0))
+      for (constructor args) in constructors
+      when constructor
+      collect
+	(loop with arglist = 
+	      (loop with optional-or-key = nil
+		  for arg in args
+		  until (eq arg 'tl:&aux)
+		  collect 
+		    (cond ((memqp arg boa-lambda-list-keywords)
+			   (setq optional-or-key (not (eq arg 'tl:&rest)))
+			   arg)
+			  (t
+			   (supply-default-initial-binding 
+			    arg optional-or-key slots
+			    constructor args))))
+	    with aux-vars = (loop for arg in (cdr (memq 'tl:&aux args))
+				collect (supply-default-initial-binding 
+					 arg t slots constructor args))
+	    with boa-slot-names = (append
+				   (loop for arg in arglist
+				       unless (memqp arg boa-lambda-list-keywords)
+				       collect (if (consp arg) (car arg) arg))
+				   (loop for arg in aux-vars
+				       collect (car arg)))
+	    with body = nil
+	    with struct-var = (gensym)
+	    for slot-index from (if named 1 0)
+	    for slot in slots
+	    for slot-name = (struct-slot-name slot)
+	    for value-form = (if (memqp slot-name boa-slot-names) 
+				 slot-name
+			       (struct-slot-initial-form slot))
+	    for set-form 
+	    = (cond ((null type)
+		     `(set-slot 
+		       ,struct-var ,slot-name ,name obj
+		       ,(struct-slot-type slot) nil
+		       ,value-form))
+		    ((tl-subtypep type 'list)
+		     value-form)
+		    (t
+		     `(tl:setf (tl:aref (tl:the ,type ,struct-var) ,slot-index)
+			,value-form)))
+	    do
+	      (when slot-name
+		(push set-form body))
+	    finally
+	      (setq body (reverse body))
+	      (return 
+		`(tl:defun ,constructor ,arglist
+		   (tl:declare 
+		    (tl:return-type ,(or type name))
+		    ,@(loop for arg in arglist 
+			  for arg-name = (if (consp arg) (car arg) arg)
+			  unless (memqp arg-name boa-lambda-list-keywords)
+			  collect
+			    `(tl:type
+			      ,(struct-slot-type 
+				(find-slot arg-name slots))
+			      ,arg-name))
+		    (tl:consing-area tl:either))
+		   (tl:let* (,@aux-vars
+			     (,struct-var 
+			      ,(cond ((null type) 
+				      `(malloc-class-instance ,name ,raw-constructor))
+				     ((tl-subtypep type 'list)
+				      `(tl:make-list ,slot-count))
+				     (t
+				      `(tl:make-array 
+					,slot-count 
+					:element-type 
+					',(element-type-of-vector-type
+					   type))))))
+		     (tl:declare (tl:type ,(or type name) ,struct-var))
+		     ,@(if type
+			   (if (tl-subtypep type 'list)
+			       `((tl:set-list-contents
+				  ,@(if named
+					(cons (list 'tl:quote name) body)
+				      body)))
+			     (if named
+				 (cons `(tl:setf (tl:aref (tl:the ,type ,struct-var) 0)
+					  ',name)
+				       body)
+			       body))
+			 body)
+		     ,struct-var))))))
+
+(defun install-structure (name doc local-slot-descriptions copier include 
+			       initial-offset predicate print-object 
+			       print-function type reclaimer conc-name)
+  (let ((struct (make-struct
+		  :name name
+		  :doc doc
+		  :local-slot-descriptions local-slot-descriptions
+		  :copier copier
+		  :include include
+		  :initial-offset initial-offset
+		  :predicate predicate
+		  :print-object print-object
+		  :print-function print-function
+		  :type type
+		  :reclaimer reclaimer)))
+    (setf (structure-info name) struct)
+    (setf (struct-slot-descriptions struct) 
+	  (collect-slot-descriptions struct conc-name))
+    (when (null include)
+      (pushnew name *root-classes*))
+    (pushnew name *all-classes*)
+    name))

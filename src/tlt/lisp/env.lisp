@@ -54,11 +54,11 @@
 ;;; associated with the given symbol key.  New enviroments are made by
 ;;; augment-environment.
 
-(defstruct
-    (environment
-      (:constructor
-       make-environment-1
-       (local-variable-env local-function-env local-declaration-env next-env?))
+(defstruct (environment
+	    (:constructor
+	     make-environment-1
+	     (local-variable-env local-function-env local-declaration-env 
+				 next-env?))
       (:print-function print-environment))
   local-variable-env
   local-function-env
@@ -208,8 +208,7 @@
 	     (when (and decl-env (not (eq decl-env next-decl-env)))
 	       (print-env-contents
 		 "Decls" (environment-local-declaration-env env) stream))
-	     (write-string " Next-env: " stream)
-	     (format stream "~a" next-env))))))
+	     (format stream " Next-env: ~a" next-env))))))
 
 (defun print-env-contents (env-name alist-or-hash-table stream)
   (when alist-or-hash-table
@@ -244,7 +243,8 @@
 
 (defun print-global-environment ()
   (let* ((global-env global-tlt-environment)
-	 (global-tlt-environment nil))
+	 (global-tlt-environment nil)
+	 (verbose-environment-printing t))
     (print-environment global-env *standard-output* 0)))
     
 
@@ -512,24 +512,36 @@
 		       (cons (cons key value) (cons-car bindings-cons))))))
 	  ((:function)
 	   (loop for (func-name key value) in decl-info
+		 for binding-type = (cond ((or (eq decl-name 'ftype)
+					       (eq decl-name 'computed-ftype))
+					   :function)
+					  ((eq decl-name 'special-form)
+					   :special-form)
+					  (t nil))
 		 for local-binding =
 		 (or (assq func-name function-env)
 		     (multiple-value-bind (type? local? decls?)
 			 (tl:function-information func-name env)
-		       (let* ((new-type
-				(cond ((or (eq decl-name 'ftype)
-					   (eq decl-name 'computed-ftype))
-				       :function)
-				      ((eq decl-name 'special-form)
-				       :special-form)
-				      (type? type?)
-				      (t nil)))
-			      (new-binding
-				(list func-name new-type local? decls?)))
+		       (let ((new-binding (list func-name type? local? decls?)))
 			 (push new-binding function-env)
 			 new-binding)))
 		 for bindings-cons = (cons-cdddr local-binding)
 		 do
+	     (when binding-type
+	       ;; When the delcaration type implies a binding type
+	       ;; (i.e. binding-type is non-null), and when the previous binding
+	       ;; had a type that was explicitly determined, and the type is now
+	       ;; changing, issue a warning.  A previous binding can only be
+	       ;; explicitly determined if there are previous declarations in
+	       ;; effect.  -jallard 11/21/99
+	       (when (and (cons-second local-binding) 
+			  (not (eq binding-type (cons-second local-binding)))
+			  (or (cons-third local-binding)
+			      (cons-fourth local-binding)))
+		 (translation-warning 
+		  "Changing ~s from a ~s to a ~s."
+		  func-name (cons-second local-binding) binding-type))
+	       (setf (second local-binding) binding-type))
 	     (setf (car bindings-cons)
 		   (if (eq env global-tlt-environment)
 		       (add-to-alist-without-duplication

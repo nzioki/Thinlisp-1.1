@@ -3,7 +3,6 @@
 ;;;; Module MAKEFILES
 
 ;;; Copyright (c) 1999 The ThinLisp Group
-;;; Copyright (c) 1999 Jim Allard
 ;;; All rights reserved.
 
 ;;; This file is part of ThinLisp.
@@ -102,8 +101,6 @@
   (or (cdr (assoc key makefile-elements))
       ""))
 
-(defparameter debuggable-makefile t)
-
 (defun generate-makefiles (system verbose)
   (loop for ((port-name . subports) . port-alist) in makefile-ports
 	for makefile-elements 
@@ -131,6 +128,7 @@
   (let ((path (system-makefile system port-name))
 	(temp-path (system-temporary-makefile system))
 	(bin-dir (system-bin-dir system))
+	(optimized-bin-dir (system-optimized-bin-dir system))
 	(current-year
 	 (sixth (multiple-value-list
 		 (decode-universal-time (get-universal-time)))))
@@ -147,18 +145,29 @@
 	(pattern (makeup 'wild))
 	(files-per-line 5))
     (with-open-file (output temp-path :direction :output :if-exists :supersede)
-      (format output "#~%# ~a ~a Makefile~%#~%# Copyright (c) ~a Jim Allard~%~%"
+      (format output "#~%# ~a ~a Makefile~%#~%# Copyright (c) ~a The ThinLisp Group~%~%"
 	      (system-name system) (string-capitalize port-name) current-year)
-      
       (format output "CC=~a~%" (makeup 'cc))
-      (format output "CFLAGS=~a~%" 
-	      (makeup (if debuggable-makefile 'debug-flags 'cc-flags)))
+      (format output "~%ifdef OPT~%")
+      (format output "CFLAGS=~a~%" (makeup 'cc-flags))
+      (format output "else~%")
+      (format output "CFLAGS=~a~%" (makeup 'debug-flags))
+      (format output "endif~2%")
       (cond ((system-is-library-p system)
 	     (format output "ARCHIVE=~a~%" (makeup 'archive)))
 	    (t
 	     (format output "LINK=~a~%" (makeup 'link))
-	     (format output "LINKFLAGS=~a~%" 
-		     (makeup (if debuggable-makefile 'debug-link 'link-flags)))
+	     (format output "~%ifdef OPT~%")
+	     (format output "LINKFLAGS=~a~%" (makeup 'link-flags))
+	     (format output "LIBS=")
+	     (loop for subsystem in (butlast (system-all-used-systems system)) do
+	       (tlt-write-char #\space output)
+	       (relative-path-to-directory
+		optimized-bin-dir (system-optimized-bin-dir (tl:find-system subsystem))
+		output)
+	       (format output "lib~(~a~).a" subsystem))	    
+	     (format output "~%else~%")
+	     (format output "LINKFLAGS=~a~%" (makeup 'debug-link))
 	     (format output "LIBS=")
 	     (loop for subsystem in (butlast (system-all-used-systems system)) do
 	       (tlt-write-char #\space output)
@@ -166,7 +175,8 @@
 		bin-dir (system-bin-dir (tl:find-system subsystem))
 		output)
 	       (format output "lib~(~a~).a" subsystem))
-	     (format output "~%SYSLIBS=~a~%" (makeup 'system-libs))))
+	     (format output "~%endif~2%")
+	     (format output "SYSLIBS=~a~%" (makeup 'system-libs))))
       (tlt-write-string "OBJECTS=" output)
       (loop for file-count = 1 then (1+ file-count)
 	  for file-name in (system-extra-c-files system) do
@@ -229,7 +239,10 @@
     
     ;; If the makefile is different from the one in the binary directory, push
     ;; it into the binary directory.
-    (let ((binary-makefile (system-binary-makefile system port-name)))
+    (loop for binary-makefile in (list (system-binary-makefile system port-name)
+				       (system-optimized-binary-makefile
+					system port-name))
+	  do
       (ensure-directories-exist binary-makefile)
       (when (or (not (probe-file binary-makefile))
 		(not (file-contents-equal path binary-makefile)))

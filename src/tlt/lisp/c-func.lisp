@@ -93,6 +93,7 @@
       (loop for first? = t then nil
 	    for name in (c-func-parameter-names c-func)
 	    for c-type in (c-func-c-parameter-types c-func)
+	    for c-type-string = (c-type-string c-type)
 	    for storage-classes in (c-func-c-parameter-storage-classes c-func)
 	    do
 	(unless first?
@@ -101,9 +102,8 @@
 	(loop for storage-class in storage-classes do
 	  (emit-string-to-c-file storage-class c-file)
 	  (emit-character-to-c-file #\space c-file))
-	(emit-string-to-c-file (c-type-string c-type) c-file)
-	(unless (and (consp c-type)
-		     (or (eq (car c-type) 'pointer) (eq (car c-type) 'array)))
+	(emit-string-to-c-file c-type-string c-file)
+	(unless (char= (char c-type-string (1- (length c-type-string))) #\*)
 	  (emit-character-to-c-file #\space c-file))
 	(emit-string-to-c-file name c-file))
       (emit-string-to-c-file "void" c-file))

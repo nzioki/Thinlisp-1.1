@@ -68,7 +68,7 @@
    (make-c-cast-expr
      'obj
      (make-c-infix-expr (make-c-cast-expr 'uint32 c-expr) "+" 2)))
-  ((sint32 uint32 uint16 uint8 int long size-t)
+  ((sint32 uint32 uint16 uint8 int uint long ulong size-t)
    (make-c-function-call-expr (make-c-name-expr "BOXFIX") (list c-expr)))
   ((unsigned-char)
    (make-c-function-call-expr (make-c-name-expr "BOXCHAR") (list c-expr)))
@@ -265,20 +265,13 @@
 
 (def-c-type long "long" "long *" nil nil)
 
+(def-c-type ulong "unsigned long" "unsigned long *" nil nil)
+
 (def-c-type size-t "size_t" "size_t *" nil nil)
 
 (def-c-type int "int" "int *" nil nil)
 
-(def-c-type-coercion int (c-expr original-type)
-  ((obj)
-   (make-c-cast-expr
-     'int
-     (coerce-c-expr-result-to-type c-expr 'obj 'sint32 env)))
-  ((sint32 uint8 uint16 char unsigned-char long size-t)
-   (make-c-cast-expr 'int c-expr))
-  ((void)
-   (make-void-cast-stand-in-expr
-     c-expr original-type 'int (make-c-literal-expr 0))))
+(def-c-type uint "unsigned int" "unsigned int *" nil nil)
 
 (def-c-type-coercion long (c-expr original-type)
   ((obj)
@@ -291,6 +284,17 @@
    (make-void-cast-stand-in-expr
      c-expr original-type 'long (make-c-literal-expr 0))))
 
+(def-c-type-coercion ulong (c-expr original-type)
+  ((obj)
+   (make-c-cast-expr
+     'ulong
+     (coerce-c-expr-result-to-type c-expr 'obj 'uint32 env)))
+  ((sint32 uint8 uint16 char unsigned-char int size-t)
+   (make-c-cast-expr 'ulong c-expr))
+  ((void)
+   (make-void-cast-stand-in-expr
+     c-expr original-type 'ulong (make-c-literal-expr 0))))
+
 (def-c-type-coercion size-t (c-expr original-type)
   ((obj)
    (make-c-cast-expr
@@ -301,6 +305,28 @@
   ((void)
    (make-void-cast-stand-in-expr
      c-expr original-type 'size-t (make-c-literal-expr 0))))
+
+(def-c-type-coercion int (c-expr original-type)
+  ((obj)
+   (make-c-cast-expr
+     'int
+     (coerce-c-expr-result-to-type c-expr 'obj 'sint32 env)))
+  ((sint32 uint8 uint16 char unsigned-char long size-t)
+   (make-c-cast-expr 'int c-expr))
+  ((void)
+   (make-void-cast-stand-in-expr
+     c-expr original-type 'int (make-c-literal-expr 0))))
+
+(def-c-type-coercion uint (c-expr original-type)
+  ((obj)
+   (make-c-cast-expr
+     'uint
+     (coerce-c-expr-result-to-type c-expr 'obj 'uint32 env)))
+  ((sint32 uint8 uint16 char unsigned-char long size-t)
+   (make-c-cast-expr 'uint c-expr))
+  ((void)
+   (make-void-cast-stand-in-expr
+     c-expr original-type 'uint (make-c-literal-expr 0))))
 
 (def-c-type-coercion unsigned-char (c-expr original-type)
   ((obj)
@@ -466,6 +492,8 @@
 (def-c-type c-function "ERROR" "Obj (*)(Obj)" nil nil)
 
 (def-c-type char-pointer "char *" "char **" nil nil)
+
+(def-c-type class-hdr "Class_hdr" "Class_hdr *" nil 17)
 
 
 

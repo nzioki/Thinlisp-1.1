@@ -156,6 +156,7 @@
       ("alloc_package" function)
       ("alloc_string_strm" function)
       ("alloc_file_strm" function)
+      ("alloc_struct" function)
       ("notify" function)
       ("warn" function)
       ("error" function)
@@ -163,8 +164,56 @@
       ("fatal_error" function)
       ("write_fixnum_into_str" function)
       ("write_double_into_str" function)
+      ("current_time" function)
+      ("get_platform_code" function)
+      ("delete_named_file" function)
 
-      ;; Macros in tlt.h
+      ;; Types defined in tl.h
+      ("uint8" type)
+      ("sint8" type)
+      ("uint16" type)
+      ("sint16" type)
+      ("uint32" type)
+      ("sint32" type)
+      ("Hdr" type)
+      ("Obj" type)
+      ("Cons" type)
+      ("Sv" type)
+      ("Str" type)
+      ("Sa_uint8" type)
+      ("Sa_uint16" type)
+      ("Sa_double" type)
+      ("Ldouble" type)
+      ("Mdouble" type)
+      ("Sym" type)
+      ("Func" type)
+      ("Func_0" type)
+      ("Func_1" type)
+      ("Func_2" type)
+      ("Func_3" type)
+      ("Func_4" type)
+      ("Func_5" type)
+      ("Func_6" type)
+      ("Func_7" type)
+      ("Func_8" type)
+      ("Func_9" type)
+      ("Func_10" type)
+      ("Func_11" type)
+      ("Func_12" type)
+      ("Func_13" type)
+      ("Func_14" type)
+      ("Func_15" type)
+      ("Func_16" type)
+      ("Func_17" type)
+      ("Func_18" type)
+      ("Func_19" type)
+      ("Func_20" type)
+      ("Pkg" type)
+      ("String_strm" type)
+      ("File_strm" type)
+      ("Class_hdr" type)
+
+      ;; Macros in tl.h
       ("CAR" macro)
       ("CDR" macro)
       ("BOXFIX" macro)
@@ -175,12 +224,12 @@
       ("ObjStrHDR" macro)
       ("SvHDR" macro)
       ("ObjSvHDR" macro)
-
-      ;; Externs for libcprim
-      ("current_time" function)
-      ("get_platform_code" function)
-      ("delete_named_file" function)
-
+      ("CLASS_HDR_TAG" macro)
+      ("TYPE_TAG" macro)
+      ("IMMED_TAG" macro)
+      ("STD_TAG" macro)
+      ("EXTENDED_TAG" macro)
+      
       ;; Oddball reserved words
       ("j0" function)			; Bessel functions in math.h
       ("j1" function)
@@ -536,7 +585,11 @@
 ;;; character shorter than this, since we assume that we will have up to 9
 ;;; collisions in common cases.
 
-(defconstant maximum-c-identifier-length 31)
+;;; Since the VAX is less and less of an issue, we'll up this to a value more in
+;;; keeping with Lisp coding style, 63.  If this is a problem, then we'll have
+;;; to dump it back down again.  -jallard 10/31/99
+
+(defconstant maximum-c-identifier-length 63)
 
 
 
@@ -832,7 +885,7 @@
 ;;; search at the next index.  In cases where there were hundreds or thousands
 ;;; of constants in a single file, this function takes on polynomial order
 ;;; execution times searching for an unused name.  This optimization turns this
-;;; operation back into one that is typically linear.
+;;; operation back into one that is typically constant.
 
 ;;; The short description should be a list whose first element is a symbol
 ;;; describing the identified thing, either function, variable, macro, or
@@ -931,6 +984,34 @@
 
 
 
+;;; The function `c-identifier-for-class' takes a Lisp symbol and returns a
+;;; string naming the C identifier for the typedef for this type.
+
+(defun c-identifier-for-class (lisp-class id-namespace referencing-namespace)
+  (let* ((info (or (class-info lisp-class)
+		   (translation-error "Undefined structure or class ~s." 
+				      lisp-class)))
+	 (c-name? (struct-c-type-name info)))
+    (unless c-name?
+      (setq c-name? (c-identifier-for-symbol lisp-class (list 'class lisp-class)
+					     id-namespace referencing-namespace))
+      (setf (struct-c-type-name info) c-name?))
+    c-name?))
+
+
+
+
+;;; The function `c-identifier-for-struct-slot' takes a Lisp symbol
+;;; and returns a string naming the C identifier that should be used
+;;; as the member name for a struct slot.
+
+(defun c-identifier-for-struct-slot (slot id-namespace referencing-namespace)
+  (c-identifier-for-symbol 
+    slot (list 'slot slot) id-namespace referencing-namespace))
+
+
+
+
 ;;; The function `c-identifier-for-foreign-function' is called when registering
 ;;; a foreign function name in the C namespaces.  While translating, this
 ;;; function should ensure that the given string is registered as the
@@ -978,8 +1059,8 @@
 ;;; The function `clear-c-name-declarations' is called to clear out the global
 ;;; namespace of any cached c-identifiers-for-variable and
 ;;; c-identifiers-for-function stored within the variable-c-identifier and
-;;; function-c-identifier declarations.  This is called at the end of each
-;;; translate.
+;;; function-c-identifier declarations.  It also clears any cached c-identifiers
+;;; for class typedefs.  This is called at the end of each translate.
 
 (defun clear-c-name-declarations ()
   (let* ((new-decls nil)
@@ -996,7 +1077,13 @@
     ;; Assert these one at a time, since collect-environment-augmentations is
     ;; order polynomial on the number of declarations.  -jallard 11/11/97
     (loop for decl in new-decls do
-      (proclaim-decl-list (list decl)))))
+      (proclaim-decl-list (list decl)))
+    ;; Clear class names.
+    (loop for class in *all-classes*
+	  for info = (class-info class)
+	  do
+      (setf (struct-c-type-name info) nil))
+    nil))
 
 
 
@@ -1015,41 +1102,89 @@
 
 
 
+;;; The function `reserve-global-identifiers' will iterate over all functions,
+;;; variables, structures, and classes defined within the given system and it
+;;; will reserve the identifiers for those symbols.  Note that during
+;;; translations we can allocate function names appropriately within scopes that
+;;; already define C identifiers that would clash with the natural C name (in
+;;; these cases the function gets a "_1" postpended name) but this approach
+;;; risks variable shadowing warnings within other functions that have already
+;;; used the name that some function will eventually get.  By getting all such
+;;; names now, we prevent all varieties of this kind of warning.
 
-;;; The function `reserve-function-and-global-variable-identifiers' will iterate
-;;; over all functions and variables defined within the given system and it will
-;;; reserve the identifiers for those symbols.  Note that during translations we
-;;; can allocate function names appropriately within scopes that already define
-;;; C identifiers that would clash with the natural C name (in these cases the
-;;; function gets a "_1" postpended name) but this approach risks variable
-;;; shadowing warnings within other functions that have already used the name
-;;; that some function will eventually get.  By getting all such names now, we
-;;; prevent all classes of this kind of warning.
+;;; Note that the names of the structure and class slot accessors are also
+;;; reserved.
 
-(defun reserve-function-and-global-variable-identifiers (system-name)
-  (let ((lisp-function-symbols nil)
+(defun reserve-global-identifiers (system-name)
+  (let ((lisp-class-symbols nil)
+	(lisp-function-symbols nil)
 	(lisp-variable-symbols nil))
+
+    ;; Classes.
+    (map-over-declarations
+      #'(lambda (lisp-symbol home)
+	  (when (eq (cons-car home) system-name)
+	    (push lisp-symbol lisp-class-symbols)))
+      :function
+      'class-home)
+    (setq lisp-class-symbols
+      (sort lisp-class-symbols #'string< :key #'symbol-name))
+    (loop for class in lisp-class-symbols
+	for info = (class-info class)
+	for struct = nil
+	for align = 4
+	for c-namespace = *global-c-namespace*
+	do
+      (push (list '(uint 24) (c-identifier-for-struct-slot
+			      'type c-namespace *global-c-namespace*))
+	    struct)
+      (push (list '(uint 8) (c-identifier-for-struct-slot
+			     'extended-type c-namespace *global-c-namespace*))
+	    struct)
+      (c-identifier-for-class class c-namespace *global-c-namespace*)
+      (loop for slot in (struct-slot-descriptions info)
+	  for c-slot-name = (c-identifier-for-struct-slot
+			     (struct-slot-reader slot)
+			     c-namespace *global-c-namespace*)
+	  for lisp-slot-type = (struct-slot-original-type slot)
+	  for c-slot-type = (struct-slot-c-type-for-lisp-type lisp-slot-type)
+	  do
+	(setf (struct-slot-c-accessor slot) c-slot-name)
+	(setf (struct-slot-c-type slot) c-slot-type)
+	(when (c-types-equal-p c-slot-type 'double)
+	  (setq align 8))
+	(push (list c-slot-type c-slot-name) struct))
+      (setf (struct-c-type info) (cons 'struct (nreverse struct)))
+      (setf (struct-c-alignment info) align))
+
+    ;; Functions
     (map-over-declarations
       #'(lambda (lisp-symbol home)
 	  (when (eq (cons-car home) system-name)
 	    (push lisp-symbol lisp-function-symbols)))
       :function
       'function-home)
+    (setq lisp-function-symbols
+	  (sort lisp-function-symbols #'string< :key #'symbol-name))
+    (loop for lisp-symbol in lisp-function-symbols do
+      (c-identifier-for-function
+	lisp-symbol *global-c-namespace* *global-c-namespace*))
+    (setq lisp-function-symbols nil)
+
+    ;; Variables.
     (map-over-declarations
       #'(lambda (lisp-symbol home)
 	  (when (eq (cons-car home) system-name)
 	    (push lisp-symbol lisp-variable-symbols)))
       :variable
       'variable-home)
-    (setq lisp-function-symbols
-	  (sort lisp-function-symbols #'string< :key #'symbol-name))
-    (loop for lisp-symbol in lisp-function-symbols do
-      (c-identifier-for-function
-	lisp-symbol *global-c-namespace* *global-c-namespace*))
-
     (setq lisp-variable-symbols
 	  (sort lisp-variable-symbols #'string< :key #'symbol-name))
     (loop for lisp-symbol in lisp-variable-symbols do
       (c-identifier-for-variable
 	lisp-symbol *global-c-namespace* *global-c-namespace*))
-  nil))
+
+    nil))
+
+	
+	      

@@ -422,6 +422,18 @@
      'makefile)
    nil nil (system-bin-dir system)))
 
+(defun system-optimized-bin-dir (system)
+  (let ((c-dir (system-c-dir system)))
+    (make-pathname 
+     :directory (append (butlast (pathname-directory c-dir)) '("opt"))
+     :defaults c-dir)))
+
+(defun system-optimized-binary-makefile (system &optional port-name)
+  (make-system-file-pathname
+   (if port-name 
+       (intern (format nil "makefile-~a" port-name))
+     'makefile)
+   nil nil (system-optimized-bin-dir system)))
 
 (defun relative-path-to-directory (start-pathname end-pathname output)
   (let* ((source-directory (pathname-directory start-pathname))
@@ -731,7 +743,7 @@
 			      user::exports-file-write-date))))
 	(when verbose
 	  (format t "~%Compiling   ~40a    [~3d/~3d] ~a"
-		  binary-file module-count total-modules
+		  lisp-file module-count total-modules
 		  (if development? " (development)" ""))
 	  (force-output))
 	(compile-file lisp-file
@@ -816,7 +828,7 @@
 		      (compile-used-systems t)
 		      (recompile-used-systems nil)
 		      (retranslate-used-systems nil)
-		      (retranslate nil)
+		      (retranslate nil) (rebuild nil)
 		      (print nil))
 	      `(tl:translate-system
 		 ',',system
@@ -824,7 +836,7 @@
 		 :compile-used-systems ,compile-used-systems
 		 :recompile-used-systems ,recompile-used-systems
 		 :retranslate-used-systems ,retranslate-used-systems
-		 :retranslate ,retranslate
+		 :retranslate ,retranslate :rebuild ,rebuild
 		 :print ,print))
 	    (defmacro ,cl-translate-name
 		(&key (verbose t)
@@ -832,7 +844,7 @@
 		      (compile-used-systems t)
 		      (recompile-used-systems nil)
 		      (retranslate-used-systems nil)
-		      (retranslate nil)
+		      (retranslate nil) (rebuild nil)
 		      (print nil))
 	      `(tl:translate-system
 		 ',',system
@@ -840,10 +852,15 @@
 		 :compile-used-systems ,compile-used-systems
 		 :recompile-used-systems ,recompile-used-systems
 		 :retranslate-used-systems ,retranslate-used-systems
-		 :retranslate ,retranslate
+		 :retranslate ,retranslate :rebuild ,rebuild
 		 :print ,print))))))
 
 (defun make-convenince-names-visible (name-strings)
   (let ((symbols (loop for name in name-strings
 		       collect (intern name *tl-package*))))
     (export symbols *tl-package*)))
+
+(defmacro def-system-convenience-forms (&rest systems)
+  `(user::def-system-convenience-forms ,@systems))
+
+(def-system-convenience-forms tl)

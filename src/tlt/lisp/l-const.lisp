@@ -444,7 +444,6 @@
 
 
 
-
 ;;;; Type Propagation
 
 
@@ -1158,6 +1157,100 @@
 	  (l-expr-lisp-return-type arg-l-expr))
     (setf (l-expr-c-return-type l-expr)
 	  (l-expr-c-return-type arg-l-expr))))
+
+
+
+
+;;; `Malloc-class-instance' takes an unquoted symbol that names a class or
+;;; structure type.  It will malloc and return an instance of that type, with a
+;;; Lisp type of the named class and a C type of obj.
+
+(def-l-expr-method choose-l-expr-types (malloc-class-instance-l-expr lt ct)
+  (declare (ignore lt ct))
+  (let* ((class (cons-second (l-expr-form malloc-class-instance-l-expr))))
+    (setf (l-expr-lisp-return-type malloc-class-instance-l-expr) class)
+    (setf (l-expr-c-return-type malloc-class-instance-l-expr) 'obj)
+    malloc-class-instance-l-expr))
+
+(def-l-expr-method trivial-l-expr-lisp-result-type (malloc-class-instance-l-expr)
+  (cons-second (l-expr-form malloc-class-instance-l-expr)))
+
+
+
+
+;;; The `get-slot' special form is used to translate accessors of slots of C
+;;; structures.  Note that if the argument type (i.e. the structure's required C
+;;; type) is either obj or a C pointer type, then this operation will translate
+;;; into a C indirect structure access.  For any other C type, this will
+;;; translate into a direct structure element access.  Note that if the argument
+;;; type is typedef'ed as a pointer, this function cannot find that out, and so
+;;; it will incorrectly access the slot.
+
+;;; In order to make this operation usable as a primitive for general C
+;;; structure access, the Lisp and C types of both the structure and the held
+;;; values, as well as the string naming the slot name are all given as explicit
+;;; arguments.  The exception is when used as an accessor for defstruct, the
+;;; symbol naming the slot is given instead of the C string, and the C type of
+;;; the value is given as nil.  In this case, the C accessor string and C type
+;;; of the slot value should be looked up during translation.  Only the first
+;;; argument, the structure, is evaluated.  With this style of arguments we can
+;;; make definitions for accessing C structures (for example threads or X
+;;; windows handed to us from C) and manipulate these within Lisp.  This
+;;; primitive is initially used by defstruct and def-c-struct.
+
+;;; The `set-slot' special form is the same as get-slot, except that the new
+;;; slot value is given as a final, additional argument.
+
+;;;   (get-slot <struct> <slot-name-or-string> <arg-lisp-type> <arg-c-type>
+;;;      <held-lisp-type> <held-c-type>)
+;;;   (set-slot <struct> <slot-name-or-string> <arg-lisp-type> <arg-c-type>
+;;;      <held-lisp-type> <held-c-type> <new-value>)
+
+(def-l-expr-method choose-l-expr-types (get-slot-l-expr lisp-type c-type)
+  (declare (ignore lisp-type c-type))
+  (destructuring-bind (slot-name arg-lisp-type arg-c-type 
+				 result-lisp-type result-c-type)
+		      (cons-cddr (l-expr-form get-slot-l-expr))
+    (declare (ignore arg-c-type))
+    (let ((slot-c-type (or result-c-type
+			   (and (symbolp slot-name)
+				(class-type-p arg-lisp-type)
+				(get-c-type-for-class-and-slot 
+				   arg-lisp-type slot-name))
+			   'obj)))
+      (setf (l-expr-lisp-return-type get-slot-l-expr) result-lisp-type)
+      (setf (l-expr-c-return-type get-slot-l-expr) slot-c-type)
+      get-slot-l-expr)))
+
+(def-l-expr-method trivial-l-expr-lisp-result-type (get-slot-l-expr)
+  (nth 5 (l-expr-form get-slot-l-expr)))
+
+(tl:defsetf get-slot set-slot)
+
+(def-l-expr-method choose-l-expr-types (set-slot-l-expr lisp-type c-type)
+  (declare (ignore lisp-type c-type))
+  (destructuring-bind (slot-name arg-lisp arg-c held-lisp held-c new-value)
+		      (cons-cddr (l-expr-form set-slot-l-expr))
+    (declare (ignore arg-c))
+    (let ((slot-c-type (or held-c
+			   (and (symbolp slot-name)
+				(class-type-p arg-lisp)
+				(get-c-type-for-class-and-slot
+				 arg-lisp slot-name))
+			   'obj)))
+      (setf (l-expr-lisp-return-type set-slot-l-expr)
+	    (duplicate-type-declaration 
+	     held-lisp (l-expr-lisp-return-type new-value)))
+      (setf (l-expr-c-return-type set-slot-l-expr) 
+	    (expand-c-type slot-c-type))
+      set-slot-l-expr)))
+
+(def-l-expr-method trivial-l-expr-lisp-result-type (set-slot-l-expr)
+  (nth 5 (l-expr-form set-slot-l-expr)))
+
+
+
+
 
 
 

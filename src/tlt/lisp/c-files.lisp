@@ -64,11 +64,13 @@
   (used-constants nil)
   (used-symbols nil)
   (used-compiled-functions nil)
+  (used-class-typedefs nil)
   (last-symbol-definition? nil)
   (symbols-defined nil)
   (last-compiled-function-definition? nil)
   (compiled-functions-defined nil)
   (needed-function-externs nil)
+  (needed-class-typedefs nil)
   (needed-variable-externs nil)
   (top-level-c-file? nil)
   (line-cache-length 0)
@@ -181,6 +183,24 @@
 	      (gethash lisp-function (c-file-used-functions c-file)))
     (setf (gethash lisp-function (c-file-used-functions c-file))
 	  (cons c-identifier ftype))
+    t))
+
+
+
+
+;;; The function `register-used-class' takes a C file, a Lisp symbol naming a
+;;; class, and a C identifier used in the translation of references to instances
+;;; of that class.  This is stored so that in future incremental translations it
+;;; can be determined whether or not this file needs to be retranslated due to a
+;;; change in identifiers for classes referenced from this file.
+
+;;; This function returns T when the named identifier needs a typedef within
+;;; this C file.
+
+(defun register-used-class (c-file lisp-class c-identifier c-struct-type)
+  (unless (gethash lisp-class (c-file-used-class-typedefs c-file))
+    (setf (gethash lisp-class (c-file-used-class-typedefs c-file))
+	  (cons c-identifier c-struct-type))
     t))
 
 

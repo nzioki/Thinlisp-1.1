@@ -40,13 +40,13 @@
 ;;; source is not included), and so no retranslation of that system could be
 ;;; done after it had been specialized by a user, then we need to be able to
 ;;; declare that the classes in that library may not be optimized as strongly as
-;;; the default case.  The `tl:subclassable' declaration is an extension to
-;;; Common Lisp that informs TL that it would not make assumptions about the
-;;; subclass tree of a class while translating.  Hopefully this feature will be
-;;; rarely used, since it has a devastating effect on the performance of many
-;;; operations.  For those Dylan afficianados out there, it is as if every class
-;;; were declared sealed by default, and you had to explicitly unseal them to
-;;; get the more dynamic behavior.
+;;; the default case.  A future feature of TL could be a `tl:subclassable'
+;;; declaration as an extension to Common Lisp that informs TL that it would not
+;;; make assumptions about the subclass tree of a class while translating.
+;;; Hopefully this feature will be rarely used, since it has a devastating
+;;; effect on the performance of many operations.  For those Dylan afficianados
+;;; out there, it is as if every class were declared sealed by default, and you
+;;; had to explicitly unseal them to get the more dynamic behavior.
 
 (defmacro def-metaclasses (&rest names)
   `(tl:progn

@@ -2791,20 +2791,18 @@
     (t
      (let ((type-tag? (lisp-type-tag required-lisp-type)))
        (cond (type-tag?
-	      (make-c-infix-expr
-		(make-c-infix-expr c-expr "!=" "NULL")
-		"&&"
-		(make-c-infix-expr
-		  (translate-immediate-tag-test c-expr 0)
-		  "&&"
-		  (make-c-infix-expr
-		    (make-c-indirect-selection-expr
-		      (make-c-cast-expr '(pointer hdr) c-expr)
-		      "type")
-		    "=="
-		    (make-c-line-comment-expr
-		      (make-c-literal-expr type-tag?)
-		      (format nil "~a type tag" required-lisp-type))))))
+	      (make-c-line-comment-expr
+	        (translate-tag-test c-expr type-tag?)
+		(format nil "~a-P" required-lisp-type)))
+	     ((class-type-p required-lisp-type)
+	      (let* ((info (class-info required-lisp-type))		
+		     (min-type-tag (struct-type-tag info))
+		     (max-type-tag (struct-maximum-subtype-tag info)))
+		(declare (fixnum min-type-tag max-type-tag))
+		(make-c-line-comment-expr
+		  (translate-extended-tag-test c-expr min-type-tag max-type-tag)
+		  (format nil "~a-P" required-lisp-type))))
+
 	     ((tl-subtypep required-lisp-type 'number)
 	      (make-c-infix-expr
 		(translate-type-check-predicate
@@ -2826,9 +2824,44 @@
 
 (defun translate-immediate-tag-test (c-expr tag)
   (make-c-infix-expr
-    (make-c-infix-expr (make-c-cast-expr 'uint32 c-expr) "&" 3)
+    (make-c-function-call-expr (make-c-name-expr "IMMED_TAG") (list c-expr))
     "=="
     (make-c-literal-expr tag)))
+
+(defun translate-tag-test (c-expr tag)
+  (make-c-infix-expr
+    (make-c-infix-expr c-expr "!=" "NULL")
+    "&&"
+    (make-c-infix-expr
+      (translate-immediate-tag-test c-expr 0)
+      "&&"
+      (make-c-infix-expr
+        (make-c-function-call-expr (make-c-name-expr "STD_TAG") (list c-expr))
+	"=="
+	(make-c-literal-expr tag)))))
+
+(defun translate-extended-tag-test (c-expr min-type-tag max-type-tag)
+  (make-c-infix-expr
+    (translate-tag-test c-expr (c-type-tag 'class-hdr))
+    "&&"
+    (if (= min-type-tag max-type-tag)
+	(make-c-infix-expr
+	  (make-c-function-call-expr 
+	    (make-c-name-expr "EXTENDED_TAG") (list c-expr))
+	  "=="
+	  (make-c-literal-expr min-type-tag))
+      (make-c-infix-expr
+        (make-c-infix-expr 
+	  (make-c-literal-expr min-type-tag)
+	  "<="
+	  (make-c-function-call-expr
+	    (make-c-name-expr "EXTENDED_TAG") (list c-expr)))
+	"&&"
+	(make-c-infix-expr 
+	  (make-c-function-call-expr
+	    (make-c-name-expr "EXTENDED_TAG") (list c-expr))
+	  "<="
+	  (make-c-literal-expr max-type-tag))))))
 
 
 
@@ -3547,3 +3580,135 @@
 	  (cons-third form) c-func c-body :c-expr)
 	(cons-second form))
       c-comment-form-l-expr c-func c-body return-directive)))
+
+
+
+
+;;; The translation for `malloc-class-instance' ensures that the typedef for the
+;;; needed type is visible in the H file for this translated C file.  Then it
+;;; calls the malloc_class_instance function and returns the result.
+
+(def-l-expr-method translate-l-expr-into-c 
+  (malloc-class-instance-l-expr c-func c-body return-directive)
+  (let* ((l-expr malloc-class-instance-l-expr)
+	 (form (l-expr-form l-expr))
+	 (type (cons-second form))
+	 (info (structure-info type))
+	 (c-type-name (struct-c-type-name info))
+	 (c-type (struct-c-type info))
+	 (alignment (struct-c-alignment info)))
+    (when (register-used-class
+	   (c-func-c-file c-func) type c-type-name c-type)
+      (register-needed-class-typedef
+        (c-func-c-file c-func)
+	c-type-name
+	(struct-c-type info)))
+    (emit-c-expr-as-directed
+      (make-c-function-call-expr
+        (make-c-name-expr "alloc_struct")
+	(list (make-c-sizeof-expr c-type-name)
+	      (make-c-literal-expr alignment)
+	      (make-c-literal-expr
+	        (region-number-for-type-and-area
+		  type
+		  (declared-area-name
+		    (l-expr-env l-expr)
+		    type)))
+	      (make-c-literal-expr (c-type-tag 'class-hdr))))
+      l-expr c-func c-body return-directive)))
+
+
+
+
+;;; The translation for `get-slot' will emit either an indirect selection expr,
+;;; or a direct selection expr, depending on the C type of the structure.  If
+;;; the structure C type is obj or an obvious pointer type (i.e. a list whose
+;;; car is 'pointer), then it will emit an indirect selection.  Since we don't
+;;; have knowledge of all C types, we'll assume that all other types are direct
+;;; structure types, and we'll emit a direct selection expression for those.
+
+;;; Also, this translator ensures that the typedef is visible for structure and
+;;; class slot references.
+
+;;; The translator for set-slot is nearly identical, except that the structure
+;;; access is also being assigned into.
+
+(def-l-expr-method translate-l-expr-into-c (get-slot-l-expr c-func c-body 
+							    return-spec)
+  (destructuring-bind (struct slot-name lisp-type c-type &rest ignored)
+		      (cons-cdr (l-expr-form get-slot-l-expr))
+    (declare (ignore ignored))
+    (let ((class-info? (and (class-type-p lisp-type)
+			    (class-info lisp-type)))
+	  (c-accessor (or (and (stringp slot-name)
+			       slot-name)
+			  (and (symbolp slot-name)
+			       (class-type-p lisp-type)
+			       (get-c-name-for-class-and-slot 
+				lisp-type slot-name))
+			  (translation-error 
+			   "Cannot find C accessor: ~s"
+			   (l-expr-form get-slot-l-expr))))
+	  (c-struct (translate-l-expr-into-c struct c-func c-body :c-expr)))
+      (when (and class-info?
+		 (register-used-class
+		   (c-func-c-file c-func) lisp-type 
+		   (struct-c-type-name class-info?)
+		   (struct-c-type class-info?)))
+	(register-needed-class-typedef
+	  (c-func-c-file c-func)
+	  (struct-c-type-name class-info?)
+	  (struct-c-type class-info?)))
+      (emit-c-expr-as-directed
+       (cond ((c-types-equal-p c-type 'obj)
+	      (make-c-indirect-selection-expr
+	        (make-c-cast-expr 
+		 (list 'pointer (struct-c-type-name class-info?)) c-struct)
+		c-accessor))
+	     ((c-pointer-type-p c-type)
+	      (make-c-indirect-selection-expr c-struct c-accessor))
+	     (t
+	      (make-c-direct-selection-expr c-struct c-accessor)))
+       get-slot-l-expr c-func c-body return-spec))))
+
+(def-l-expr-method translate-l-expr-into-c (set-slot-l-expr c-func c-body 
+							    return-spec)
+  (destructuring-bind (struct slot-name lisp-type c-type held-lisp held-c 
+		       new-value)
+		      (cons-cdr (l-expr-form set-slot-l-expr))
+    (declare (ignore held-lisp held-c))
+    (let ((class-info? (and (class-type-p lisp-type)
+			    (class-info lisp-type)))
+	  (c-accessor (or (and (stringp slot-name)
+			       slot-name)
+			  (and (symbolp slot-name)
+			       (class-type-p lisp-type)
+			       (get-c-name-for-class-and-slot 
+				lisp-type slot-name))
+			  (translation-error 
+			   "Cannot find C accessor: ~s"
+			   (l-expr-form set-slot-l-expr))))
+	  (c-struct (translate-l-expr-into-c struct c-func c-body :c-expr)))
+      (when (and class-info?
+		 (register-used-class
+		   (c-func-c-file c-func) lisp-type 
+		   (struct-c-type-name class-info?)
+		   (struct-c-type class-info?)))
+	(register-needed-class-typedef
+	  (c-func-c-file c-func)
+	  (struct-c-type-name class-info?)
+	  (struct-c-type class-info?)))
+      (emit-c-expr-as-directed
+       (make-c-infix-expr
+	 (cond ((c-types-equal-p c-type 'obj)
+		(make-c-indirect-selection-expr
+		  (make-c-cast-expr 
+		    (list 'pointer (struct-c-type-name class-info?)) c-struct)
+		  c-accessor))
+	       ((c-pointer-type-p c-type)
+		(make-c-indirect-selection-expr c-struct c-accessor))
+	       (t
+		(make-c-direct-selection-expr c-struct c-accessor)))
+	 "="
+	 (translate-l-expr-into-c new-value c-func c-body :c-expr))
+       set-slot-l-expr c-func c-body return-spec))))

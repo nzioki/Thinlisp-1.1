@@ -364,12 +364,7 @@
 (tl:declaim (special-form named-lambda))
 
 (defmacro named-lambda (name lambda-list &body decls-and-body)
-  `(progn
-     ,@(when (and *current-system-name* *current-module-name*)
-	 `((tl:declaim (function-home ,(cons *current-system-name*
-					     *current-module-name*)
-				      ,name))))
-     (defun ,name ,lambda-list ,@decls-and-body)))
+  `(defun ,name ,lambda-list ,@decls-and-body))
 
 
 
@@ -1824,6 +1819,67 @@
   `(tl:c-comment-form
      ,(second form)
      ,(tl:walk (third form) env walker required-type)))
+
+
+
+
+
+
+;;;; Defstruct forms
+
+
+
+
+;;; The special forms `malloc-class-instance', `get-slot', and `set-slot' are
+;;; primitives of defstruct for creating, accessing, and modifying structures.
+;;; During Lisp development, we use the underlying implementation of defstruct.
+
+(tl:declaim (special-form malloc-class-instance get-slot set-slot))
+
+(defmacro malloc-class-instance (class-or-struct-name raw-constructor)
+  (declare (ignore class-or-struct-name))
+  `(,raw-constructor))
+
+(def-special-form-walker malloc-class-instance (form env walker required-type)
+  (declare (ignore env walker required-type))
+  form)
+
+(defmacro get-slot (struct slot-name lisp-arg c-arg lisp-val c-val)
+  (if (and (symbolp slot-name) (class-type-p lisp-arg))
+      `(the ,lisp-val (,(struct-slot-dev-reader 
+			 (get-slot-for-class-and-slot-name 
+			  lisp-arg slot-name))
+		       ,struct))
+    `(error "Attempted to evaluate translation-time get-slot for ~s"
+	    (list 'get-slot ,struct ',slot-name ',lisp-arg ',c-arg 
+		  ',lisp-val ',c-val))))
+
+(def-special-form-walker get-slot (form env walker required-type)
+  (declare (ignore required-type))
+  `(get-slot ,(tl:walk (cons-second form) env walker (cons-fourth form))
+	     ,@(cons-cddr form)))
+
+(defmacro set-slot (struct slot-name struct-type struct-c-type
+		    value-type value-c-type new-value)
+  (if (and (symbolp slot-name) (class-type-p struct-type))
+      `(tl:setf (,(struct-slot-dev-reader
+		   (get-slot-for-class-and-slot-name struct-type slot-name))
+		 ,struct)
+	 (the ,value-type ,new-value))
+    `(error "Attempted to evaluate translation-time set-slot for ~s"
+	    (list 'set-slot ,struct ,slot-name ',struct-type ',struct-c-type
+		  ',value-type ',value-c-type ,new-value))))
+
+(def-special-form-walker set-slot (form env walker required-type)
+  (declare (ignore required-type))
+  (destructuring-bind (struct accessor-string struct-type struct-c-type
+			      value-type value-c-type new-value)
+		      (cons-cdr form)
+    `(set-slot ,(tl:walk struct env walker struct-type)
+	       ,accessor-string ,struct-type ,struct-c-type
+	       ,value-type ,value-c-type
+	       ,(tl:walk new-value env walker value-type))))
+
 
 
 

@@ -117,7 +117,9 @@
 ;;; the version numbers match, then the seconf form in the file, when evaluated,
 ;;; will return a `trans-data' structure.
 
-(defparameter trans-data-tlt-version 1)
+;; Changed the version to 2 when class typedefs were added.  -jallard 11/3/99
+
+(defparameter trans-data-tlt-version 2)
 
 (defstruct (trans-data
 	     (:constructor
@@ -130,7 +132,8 @@
 				used-functions
 				defined-functions
 				used-variables
-				defined-variables)))
+				defined-variables
+				used-class-typedefs)))
   used-symbols
   symbol-array-name
   defined-symbols
@@ -140,7 +143,8 @@
   used-functions
   defined-functions
   used-variables
-  defined-variables)
+  defined-variables
+  used-class-typedefs)
 
 
 
@@ -248,6 +252,9 @@
       (write-trans-data-hash-table
 	stream
 	"Defined variables" (c-file-defined-variables c-file))
+      (write-trans-data-hash-table
+	stream
+	"Used class typedefs." (c-file-used-class-typedefs c-file))
       (write-line "  )" stream))))
 
 (defvar trans-data-hash-table-entries nil)
@@ -407,6 +414,30 @@
 	  variable-name c-type current-c-type)
 	(return-from trans-data-indicates-retranslate-p t)))
 
+    ;; Check that the classes we used have the same identifiers and structure
+    ;; types.
+    (loop for (class-name c-name . c-struct-type)
+	      in (trans-data-used-class-typedefs trans-data)
+	  for current-c-name = (c-identifier-for-class
+				 class-name *global-c-namespace*
+				 *global-c-namespace*) 
+	  for class-info? = (class-info class-name)
+	  for current-c-struct-type 
+	      = (if class-info? (struct-c-type class-info?) nil)
+	  do
+      (when (not (string= c-name current-c-name))
+	(retranslate-warning
+	  verbose module
+	  "A C typedef name for a Lisp structure or class has changed:~%    ~a changed to ~a"
+	  class-name c-name current-c-name)
+	(return-from trans-data-indicates-retranslate-p t))
+      (when (not (c-types-equal-p c-struct-type current-c-struct-type))
+	(retranslate-warning
+	 verbose module
+	 "A C struct type for a Lisp structure or class has changed:~%    ~a changed to ~a"
+	 class-name c-struct-type current-c-struct-type)
+	(return-from trans-data-indicates-retranslate-p t)))
+
     ;; Check that the functions we define can get the same C names.  Note that
     ;; this attempt to look up the c-identifier-for-function will cause the
     ;; returned identifier to be established for that symbol.
@@ -513,8 +544,9 @@
 
 ;; The following two functions are unused for now.  Keeping them in case I
 ;; change my mind about leaving the trans-data structures cached in memory,
-;; rather than re-reading them time we consider translating a file, and allowing
-;; them to be garbage collected.  -jallard 10/22/97
+;; rather than the current behavior of re-reading them each time we consider
+;; translating a file, then allowing them to be garbage collected.  -jallard
+;; 10/22/97
 
 #+unused
 (defun set-trans-data-structure (system module structure)

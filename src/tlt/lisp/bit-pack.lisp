@@ -31,6 +31,31 @@
 ;;;   http://www.complang.tuwien.ac.at/andi/typecheck/
 ;;;
 
+;;; Stub
+
+(defun bucket-elements (bucket) 
+  (declare (ignore bucket))
+  nil)
+
+(defun set-bucket-elements (bucket new)
+  (declare (ignore bucket))
+  new)
+
+(defsetf bucket-elements set-bucket-elements)
+
+(defun bucket-joins (bucket)
+  (declare (ignore bucket))
+  nil)
+
+(defun set-bucket-joins (bucket new)
+  (declare (ignore bucket))
+  new)
+
+(defsetf bucket-joins set-bucket-joins)
+
+
+
+
 ;;; Its value should be something like (integer-length most-positive-fixnum).
 
 (defconstant bpe-word-size (integer-length most-positive-fixnum))

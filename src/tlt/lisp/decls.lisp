@@ -167,8 +167,14 @@
   (values
     :function
     (loop with type = (expand-type (cons-second decl-spec))
+	  with home = (if (and *current-system-name* *current-module-name*)
+			  (cons *current-system-name* *current-module-name*)
+			nil)
 	  for func in (cons-cddr decl-spec)
-	  collect (list func 'ftype type))))
+	  for ftype-spec = (list (list func 'ftype type))
+	  nconc (if home
+		    (cons (list func 'function-home home) ftype-spec)
+		  ftype-spec))))
 
 
 
@@ -686,12 +692,18 @@
 
 (define-declaration computed-ftype (decl-spec env)
   (declare (ignore env))
-  (tl:destructuring-bind-strict (nil type . names) decl-spec
-    (setq type (expand-type type))
+  (tl:destructuring-bind-strict (nil decl-type . names) decl-spec
     (values
       :function
-      (loop for name in names
-	    collect (list name 'computed-ftype type)))))
+      (loop with type = (expand-type decl-type)
+	    with home = (if (and *current-system-name* *current-module-name*)
+			    (cons *current-system-name* *current-module-name*)
+			  nil)
+	    for name in names
+	    for ftype-spec = (list (list name 'computed-ftype type))
+	    nconc (if home
+		      (cons (list name 'function-home home) ftype-spec)
+		    ftype-spec)))))
 
 
 
@@ -962,12 +974,36 @@
 
 
 
+;;; The declaration `class-name' is declared on every class and structure name.
+;;; It's expansion will also include class home information, if the current
+;;; global variable bindings for system names and modules names allow it.
+
+(define-declaration class-name (decl-spec env)
+  (declare (ignore env))
+  (values
+    :function
+    (loop with home = (if (and *current-system-name* *current-module-name*)
+			  (cons *current-system-name* *current-module-name*)
+			nil)
+	  for class-name in (cons-cdr decl-spec)
+	  for class-spec = (list (list class-name 'class-name t))
+	  nconc (if home
+		    (cons (list class-name 'class-home home) class-spec)
+		  class-spec))))
+
+
+
+
+
 ;;; The declaration `function-home' for functions is used to register which
 ;;; system and module a symbol is defined within.  This is used when reserving C
 ;;; name identifiers for systems during translations.  The format for this
-;;; declaration is (function-name (<system> . <module>) <function-name>...).
+;;; declaration is (function-home (<system> . <module>) <function-name>...).
 ;;; The system and modules names are symbols in the tl-user package.  The
 ;;; declaration `variable-home' is the same thing, but for global variables.
+;;; The declaration `class-home' is the same for names of defined classes and
+;;; structures.  The class-home declaration is stored in the
+;;; declaration space, not with variables or functions.
 
 (define-declaration function-home (decl-spec env)
   (declare (ignore env))
@@ -984,3 +1020,11 @@
     (loop with home = (second decl-spec)
 	  for variable in (cddr decl-spec)
 	  collect (list variable 'variable-home home))))
+
+(define-declaration class-home (decl-spec env)
+  (declare (ignore env))
+  (values
+   :function
+   (loop for home = (second decl-spec)
+	 for class in (cddr decl-spec)
+	 collect (list class 'class-home home))))

@@ -482,7 +482,7 @@
       (declare (ignore local?))
       (unless (eq func-type? :function)
 	(translation-error
-	  "Can't translate function ~s, no ftype or computed ftype declaration.~
+	  "Can't translate function ~s, no ftype or computed ftype declaration.  ~
            Perhaps this function wasn't loaded into this Lisp environment."
 	  name))
       (setf (named-lambda-l-expr-decls named-lambda-l-expr) decls)
@@ -1085,6 +1085,39 @@
 		       lisp-required-type c-required-type))
     (funcall function c-comment-form-l-expr
 	     lisp-required-type c-required-type)))
+
+(def-l-expr malloc-class-instance (40 nil)
+  (funcall function malloc-class-instance-l-expr 
+	   lisp-required-type c-required-type))
+
+(def-l-expr get-slot (41 nil)
+  (let ((arg-cons (cons-cdr (l-expr-form get-slot-l-expr))))
+    (destructuring-bind (struct name arg-lisp-type arg-c-type 
+				value-type value-c-type)
+			arg-cons
+      (declare (ignore name value-type value-c-type))
+      (setf (car arg-cons)
+	    (walk-l-expr struct function arg-lisp-type arg-c-type))
+      (funcall function get-slot-l-expr 
+	       lisp-required-type c-required-type))))
+
+(def-l-expr set-slot (42 nil)
+  (let ((arg-cons (cons-cdr (l-expr-form set-slot-l-expr))))
+    (destructuring-bind (struct name arg-lisp-type arg-c-type 
+				held-lisp-type held-c-type new-value)
+			arg-cons
+      (let ((slot-c-type (or held-c-type
+			     (and (symbolp name) 
+				  (class-type-p arg-lisp-type)
+				  (get-c-type-for-class-and-slot 
+				   arg-lisp-type name))
+			     'obj)))
+	(setf (car arg-cons)
+	      (walk-l-expr struct function arg-lisp-type arg-c-type))
+	(setf (car (last arg-cons))
+	      (walk-l-expr new-value function held-lisp-type slot-c-type))
+	(funcall function set-slot-l-expr
+		 lisp-required-type c-required-type)))))
 
 
 

@@ -4,7 +4,6 @@
 
 ;;; Copyright (c) 1999 The ThinLisp Group
 ;;; Copyright (c) 1995-1997 Gensym Corporation.
-;;; Copyright (c) 1999 Jim Allard
 ;;; All rights reserved.
 
 ;;; This file is part of ThinLisp.
