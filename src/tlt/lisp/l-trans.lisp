@@ -1144,12 +1144,10 @@
 			      quote-l-expr c-func c-body return-directive))
     ((and (fixnump value)
 	  (satisfies-c-required-type-p c-type 'obj))
-     (let ((fixed-value (+ (ash value 2) 1)))
-       (emit-c-expr-as-directed
-	 (make-c-line-comment-expr
-	   (make-c-cast-expr 'obj (make-c-literal-expr fixed-value))
-	   (format nil "~a = FIXNUM ~a" fixed-value value))
-	 quote-l-expr c-func c-body return-directive)))
+     (emit-c-expr-as-directed
+      (make-c-function-call-expr (make-c-name-expr "BOXFIX") 
+				 (list (make-c-literal-expr value)))
+      quote-l-expr c-func c-body return-directive))
     ((gl-typep value 'character)
      (let ((c-char-expr (make-c-literal-expr value)))
        (emit-c-expr-as-directed

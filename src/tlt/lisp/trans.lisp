@@ -544,20 +544,20 @@
 	  (open c-temporary-pathname :direction :output :if-exists :supersede))
     (unless debugging-translate
       (format (c-file-c-stream c-file)
-	      "/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- +
- + Module:      ~a
- +
- + Copyright (c) ~a Gensym Corporation.  All Rights Reserved.
- +
- + Author(s):   GLT Translator
- +
- + Description: Translation of ~a.
- +
- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/~%~%"
-	      (system-c-file system module)
+	      "/***
+ *
+ * Module:      ~a
+ *
+ * Copyright (c) ~a Gensym Corporation.  All Rights Reserved.
+ *
+ * Description: Translation of ~a.
+ *
+ */~%~%"
+	      (substitute #\/ #\\ (namestring (system-c-file system module))
+			  :test #'char=)
 	      current-year
-	      (system-lisp-file system module)))
+	      (substitute #\/ #\\ (namestring (system-lisp-file system module))
+			  :test #'char=)))
     ;; Emit includes for extra H files from all used systems, and then the H
     ;; file for this particular module.
     (loop for subsystem-name in (system-all-used-systems system)
@@ -577,20 +577,20 @@
 	   :final-pathname h-final-pathname))
     (unless debugging-translate
       (format (c-file-c-stream (c-file-h-file c-file))
-	      "/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- +
- + Module:      ~a
- +
- + Copyright (c) ~a Gensym Corporation.  All Rights Reserved.
- +
- + Author(s):   GLT Translator
- +
- + Description: Translated include file for ~a.
- +
- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/~%~%"
-	      (system-h-file system module)
+	      "/****
+ *
+ * Module:      ~a
+ *
+ * Copyright (c) ~a Gensym Corporation.  All Rights Reserved.
+ *
+ * Description: Translated include file for ~a.
+ *
+ */~%~%"
+	      (substitute #\/ #\\ (namestring (system-h-file system module))
+			  :test #'char=)
 	      current-year
-	      (system-lisp-file system module)))
+	      (substitute #\/ #\\ (namestring (system-lisp-file system module))
+			  :test #'char=)))
     (setf (c-file-trans-data-final-pathname c-file)
 	  glt-final-pathname)
     (setf (c-file-trans-data-stream c-file) nil)
