@@ -370,7 +370,6 @@
 
 (defun gli::generic-fill-pointer (vector)
   (declare (type t vector)
-	   (fixnum new-fill-pointer)
 	   (return-type fixnum))
   (typecase vector
     (string

@@ -313,9 +313,12 @@
 	   (fixnum string-hash)
 	   (package package))
   #-translator
+  (declare (ignore string-hash))
+  #-translator
   (return-from find-symbol-in-package
     (ab-lisp::find-symbol string package))
-  (let ((found-symbol
+  #+translator
+  (let ((found-symbol 
 	  (find-symbol-in-single-package string string-hash package)))
     (if (eql found-symbol 0)
 	(loop for used-package in (package-use-list package)
