@@ -776,14 +776,14 @@ unsigned char *write_char_into_string (unsigned char char_1, unsigned char *outp
   return output_string;
 }
 
-static const Str_5 str_const_10
-  = { 7, 3, 3, "1.0" };
+static const Str_9 str_const_10
+  = { 7, 5, 5, "1.0.1" };
 
 /* Translated from LISP-IMPLEMENTATION-VERSION() = STRING */
 
 unsigned char *lisp_implementation_version (void)
 {
-  return ((Str *)(&str_const_10))->body;        /* "1.0" */
+  return ((Str *)(&str_const_10))->body;        /* "1.0.1" */
 }
 
 static const Str_9 str_const_11
