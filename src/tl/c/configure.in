@@ -1,0 +1,8 @@
+dnl File created by ThinLisp
+dnl   autoconf input for TL
+AC_PREREQ(2.13)
+AC_INIT(tl.c)
+AC_PROG_CC
+AC_EXEEXT
+AC_OUTPUT(makefile)
+dnl End of file

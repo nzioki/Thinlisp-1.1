@@ -1,9 +1,9 @@
 #
-# TL Config Makefile
+# TL Autoconf Makefile
 #
-# Copyright (c) 2001 The ThinLisp Group
+# Copyright (c) 2002 The ThinLisp Group
 
-CC = @CC@
+CC = @CC@ -o
 
 CFLAGS =
 
@@ -32,9 +32,9 @@ clean :
 	-rm *.o
 	-( if [ -f libtl.a ] ; then rm libtl.a ; fi )
 
-libtl.a : makefile.config $(OBJECTS) $(LIBS)
+libtl.a : ../c/makefile $(OBJECTS) $(LIBS)
 	-( if [ -f libtl.a ] ; then rm libtl.a ; fi )
 	$(ARCHIVE) libtl.a $(OBJECTS)
 
-%.o : ../c/%.c ../c/%.h makefile.config ../c/tl.h
+%.o : ../c/%.c ../c/%.h ../c/makefile ../c/tl.h
 	$(CC) $@ $(CFLAGS) -I ../c $<
