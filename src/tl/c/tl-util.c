@@ -45,16 +45,12 @@ Obj pairlis (Obj new_keys, Obj new_data, Obj alist)
 Obj compute_new_plist (Obj plist, Obj property, Obj new_value)
 {
   Obj temp;
-  sint32 expected_top_of_stack;
+  Thread_state *ts;
   Obj cons_1;
 
-  expected_top_of_stack = Throw_stack_top;
+  ts = THREAD_STATE;
   temp = BOXFIX(0);
-  Throw_stack_top = (Throw_stack_top+3);
-  (Throw_stack[Throw_stack_top]) = 0;
-  (Throw_stack[Throw_stack_top-1]) = (Obj)(&current_region);
-  (Throw_stack[Throw_stack_top-2]) = current_region;
-  current_region = temp;
+  bind_global(&current_region,ts,temp);
   cons_1 = plist;
   while (cons_1!=NULL) {
     if (CAR(cons_1)==property) {
@@ -66,10 +62,7 @@ Obj compute_new_plist (Obj plist, Obj property, Obj new_value)
 
   plist = alloc_cons(property,alloc_cons(new_value,plist,0),0);
  exit_nil:
-  current_region = (Throw_stack[Throw_stack_top-2]);
-  Throw_stack_top = (Throw_stack_top-3);
-  if (expected_top_of_stack!=Throw_stack_top) 
-    error("Corrupted Throw_stack_top at let*.");
+  unbind_global(&current_region,ts);
   return plist;
 }
 
@@ -793,7 +786,7 @@ static const Str_45 str_const_5
 Obj copy_optimized_constant (Obj arg)
 {
   Obj temp;
-  sint32 expected_top_of_stack;
+  Thread_state *ts;
   Obj temp_1;
   sint32 temp_2;
   Obj new_list, copied_cons, next_consP, arg_temp, g;
@@ -813,13 +806,9 @@ Obj copy_optimized_constant (Obj arg)
   unsigned char *g_1;
   unsigned char *g_2;
 
-  expected_top_of_stack = Throw_stack_top;
+  ts = THREAD_STATE;
   temp = BOXFIX(0);
-  Throw_stack_top = (Throw_stack_top+3);
-  (Throw_stack[Throw_stack_top]) = 0;
-  (Throw_stack[Throw_stack_top-1]) = (Obj)(&current_region);
-  (Throw_stack[Throw_stack_top-2]) = current_region;
-  current_region = temp;
+  bind_global(&current_region,ts,temp);
   switch (TYPE_TAG(arg,temp_2)) {
    case 0:
     temp_1 = arg;
@@ -929,10 +918,7 @@ Obj copy_optimized_constant (Obj arg)
         arg);
     break;
   }
-  current_region = (Throw_stack[Throw_stack_top-2]);
-  Throw_stack_top = (Throw_stack_top-3);
-  if (expected_top_of_stack!=Throw_stack_top) 
-    error("Corrupted Throw_stack_top at let*.");
+  unbind_global(&current_region,ts);
   return temp_1;
 }
 
@@ -1043,11 +1029,12 @@ sint32 sxhash_double_float (double double_float)
 {
   sint32 hash, index;
 
-  memcpy(((Sa_uint16 *)Sdecompose_float_bufferS)->body,&double_float,sizeof(double));
+  memcpy(((Sa_uint16 *)GET_GLOBAL(Sdecompose_float_bufferS))->body,&double_float,
+      sizeof(double));
   hash = 0;
   index = 0;
   for (;!(index>3);index = (index+1)) 
-    hash = ((((hash<<4)&268435455)+(hash>>24))^(sint32)(((Sa_uint16 *)Sdecompose_float_bufferS)->body[index]));
+    hash = ((((hash<<4)&268435455)+(hash>>24))^(sint32)(((Sa_uint16 *)GET_GLOBAL(Sdecompose_float_bufferS))->body[index]));
   return hash;
 }
 

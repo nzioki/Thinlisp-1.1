@@ -42,7 +42,7 @@ Obj eval_feature (Obj feature_form)
   loop_var = (Obj)NULL;
   if ((feature_form!=NULL) && ((IMMED_TAG(feature_form)==0) && (STD_TAG(feature_form)
       ==11))) {                                 /* SYMBOL-P */
-    for (loop_var = SfeaturesS;loop_var!=NULL;loop_var = CDR(loop_var)) {
+    for (loop_var = GET_GLOBAL(SfeaturesS);loop_var!=NULL;loop_var = CDR(loop_var)) {
       if (CAR(loop_var)==feature_form) {
         Values_count = 1;
         return feature_form;
@@ -134,7 +134,7 @@ Obj get (Obj symbol, Obj property, Obj default_1)
   if (symbol!=NULL) 
     g = (((Sym *)symbol)->symbol_plist);
   else 
-    g = symbol_plist_of_nil;
+    g = GET_GLOBAL(symbol_plist_of_nil);
   for (;g!=NULL;g = CDR(CDR(g))) {
     if (CAR(g)==property) 
       return CAR(CDR(g));
@@ -163,15 +163,15 @@ Obj set_get (Obj symbol, Obj property, Obj new_value)
 ;
   }
   else {
-    plist_1 = symbol_plist_of_nil;
+    plist_1 = GET_GLOBAL(symbol_plist_of_nil);
     for (;plist_1!=NULL;plist_1 = CDR(CDR(plist_1))) {
       if (CAR(plist_1)==property) {
         CAR(CDR(plist_1)) = new_value;
         goto exit_nil_1;
       }
     }
-    symbol_plist_of_nil = alloc_cons(property,alloc_cons(new_value,symbol_plist_of_nil,
-        -1),-1);
+    SET_GLOBAL(symbol_plist_of_nil,alloc_cons(property,alloc_cons(new_value,
+        GET_GLOBAL(symbol_plist_of_nil),-1),-1));
    exit_nil_1:
 ;
   }

@@ -729,9 +729,12 @@
 			  return-directive c-func)
 		  (lexical-c-variable-identifier
 		    'temp c-func c-type-of-let temp-storage-classes)))
-	      ;; Rebind this to 3 when things settle down.  -jallard 8/4/97
+	      ;; Change this to 3 some day when we trust that stack handling has
+	      ;; settled down again.  -jallard 6/14/00
 	      (safety? (>= (tl:optimize-information 'safety inner-env)
 			   0))
+	      (thread-state-var (lexical-c-variable-identifier
+				 'ts c-func '(pointer thread-state) nil))
 	      (expected-tos
 		(when safety?
 		  (reusable-c-variable-identifier
@@ -740,7 +743,12 @@
 	   (emit-expr-to-compound-statement
 	     (make-c-infix-expr (make-c-name-expr expected-tos) "=" "Throw_stack_top")
 	     c-compound-statement))
-	 (rebind-globals-for-let specials-to-rebind c-compound-statement)
+	 (emit-expr-to-compound-statement
+	  (make-c-infix-expr
+	   (make-c-name-expr thread-state-var) "=" "THREAD_STATE")
+	  c-compound-statement)
+	 (rebind-globals-for-let 
+	  specials-to-rebind c-compound-statement thread-state-var)
 	 (when let-result?
 	   (push (cons let-result? (l-expr-c-return-type let-l-expr))
 		 temp-var-pairs))
@@ -749,7 +757,7 @@
 	   (if let-result? (list let-result?) :discard))
 	 (unbind-globals-for-let
 	   (loop for (global-var) in specials-to-rebind collect global-var)
-	   c-compound-statement)
+	   c-compound-statement thread-state-var)
 	 (reclaim-reusable-c-variables c-func temp-var-pairs)
 	 (when safety?
 	   (emit-statement-to-compound-statement
@@ -786,65 +794,6 @@
 	 (variable-binding-lisp-type (cons-second init-info?))
 	 lisp-type)))
 
-(defun bind-global-for-let
-    (global-identifier new-value-identifier c-compound-statement)
-  (emit-expr-to-compound-statement
-    (make-c-infix-expr
-      "Throw_stack_top" "=" (make-c-infix-expr "Throw_stack_top" "+" 3))
-    c-compound-statement)
-  (emit-expr-to-compound-statement
-    (make-c-infix-expr
-      (make-c-subscript-expr (make-c-name-expr "Throw_stack")
-			     (make-c-name-expr "Throw_stack_top"))
-      "=" 0)
-    c-compound-statement)
-  (emit-expr-to-compound-statement
-    (make-c-infix-expr
-      (make-c-subscript-expr
-	(make-c-name-expr "Throw_stack")
-	(make-c-infix-expr "Throw_stack_top" "-" 1))
-      "=" (make-c-cast-expr
-	    'obj (make-c-unary-expr
-		   #\& (make-c-name-expr global-identifier))))
-    c-compound-statement)
-  (emit-expr-to-compound-statement
-    (make-c-infix-expr
-      (make-c-subscript-expr
-	(make-c-name-expr "Throw_stack")
-	(make-c-infix-expr "Throw_stack_top" "-" 2))
-      "=" (make-c-name-expr global-identifier))
-    c-compound-statement)
-  (emit-expr-to-compound-statement
-    (make-c-infix-expr (make-c-name-expr global-identifier)
-		       "=" (make-c-name-expr new-value-identifier))
-    c-compound-statement))  
-
-(defun rebind-globals-for-let (specials-to-rebind c-compound-statement)
-  (loop for (global-var . new-value) in specials-to-rebind do
-    (bind-global-for-let global-var new-value c-compound-statement)))
-
-(defun unbind-globals-for-let (globals c-compound-statement)
-  (loop for index fixnum from 0
-	for global in (reverse globals)
-	do
-    (when (not (stringp global))
-      (translation-error "Unbinding global ~s, which was not a string" global))
-    (emit-expr-to-compound-statement
-      (make-c-infix-expr
-	(make-c-name-expr global)
-	"=" (make-c-subscript-expr
-	      (make-c-name-expr "Throw_stack")
-	      (make-c-infix-expr
-		"Throw_stack_top" "-" (make-c-literal-expr (+ (* index 3) 2)))))
-      c-compound-statement))
-  (emit-expr-to-compound-statement
-    (make-c-infix-expr
-      "Throw_stack_top"
-      "="
-      (make-c-infix-expr
-	"Throw_stack_top" "-" (make-c-literal-expr (* (length globals) 3))))
-    c-compound-statement))
-
 (def-l-expr-method translate-l-expr-into-c
     (let*-l-expr c-func c-compound-statement return-directive)
   (loop with form = (l-expr-form let*-l-expr)
@@ -852,6 +801,7 @@
 	with temp-storage-classes = (storage-classes-for-env inner-env)
 	with safety? = (>= (tl:optimize-information 'safety inner-env) 0)
 	with expected-tos = nil
+	with thread-state-var = nil
 	with bindings = (cons-second form)
 	with body = (cons-cddr form)
 	with c-file = (c-func-c-file c-func)
@@ -902,17 +852,27 @@
 	 (push (cons new-value c-type) temp-var-pairs)
 	 (setf (variable-binding-c-identifier struct) global-var)
 	 (setq specials-to-unbind (nconc specials-to-unbind (list global-var)))
+	 (when (null thread-state-var)
+	   (setq thread-state-var (lexical-c-variable-identifier
+				   'ts c-func '(pointer thread-state) nil))
+	   (emit-expr-to-compound-statement
+	    (make-c-infix-expr (make-c-name-expr thread-state-var)
+			       "=" "THREAD_STATE")
+	    c-compound-statement))
 	 (when (and safety? (null expected-tos))
 	   (setq expected-tos
 		 (reusable-c-variable-identifier
 		   'expected-top-of-stack c-func 'sint32 inner-env))
 	   (emit-expr-to-compound-statement
 	     (make-c-infix-expr
-	       (make-c-name-expr expected-tos) "=" "Throw_stack_top")
+	       (make-c-name-expr expected-tos) "=" 
+	       (make-c-indirect-selection-expr 
+		(make-c-name-expr thread-state-var) "throw_stack_top"))
 	     c-compound-statement))
 	 (translate-l-expr-into-c
 	   init-l-expr c-func c-compound-statement (list new-value))
-	 (bind-global-for-let global-var new-value c-compound-statement)))
+	 (bind-global-for-let global-var new-value c-compound-statement 
+			      thread-state-var)))
       (t
        (translation-error
 	 "Unknown binding type ~s for ~s." binding-variety var)))
@@ -930,7 +890,8 @@
 		(translate-progn-body
 		  body c-func c-compound-statement
 		  (if let*-result? (list let*-result?) :discard))
-		(unbind-globals-for-let specials-to-unbind c-compound-statement)
+		(unbind-globals-for-let specials-to-unbind
+					c-compound-statement thread-state-var)
 
 		;; Emit code to check that the top-of-stack has been restored to
 		;; the expected value.
@@ -939,7 +900,9 @@
 		    (make-c-conditional-statement
 		      (list (make-c-infix-expr
 			      (make-c-name-expr expected-tos)
-			      "!=" (make-c-name-expr "Throw_stack_top"))
+			      "!=" (make-c-indirect-selection-expr 
+				    (make-c-name-expr thread-state-var) 
+				    "throw_stack_top"))
 			    (make-c-expr-statement
 			      (make-c-function-call-expr
 				(make-c-name-expr "error")
@@ -978,6 +941,7 @@
 	 (c-return-type (l-expr-c-return-type multiple-value-bind-l-expr))
 	 (c-file (c-func-c-file c-func))
 	 (specials-and-inits nil)
+	 (thread-state-var nil)
 	 (non-object-vars-and-inits nil)
 	 (temp-var-pairs nil)
 	 (c-vars nil)
@@ -1048,8 +1012,17 @@
 	c-compound-statement))
 
     ;; Bind the global variables.
-    (loop for (global-var temp-var) in specials-and-inits do
-      (bind-global-for-let global-var temp-var c-compound-statement))
+    (when specials-and-inits
+      (setq thread-state-var (lexical-c-variable-identifier
+			      'ts c-func '(pointer thread-state) nil))
+      (emit-expr-to-compound-statement
+       (make-c-infix-expr (make-c-name-expr thread-state-var)
+			  "=" "THREAD_STATE")
+       c-compound-statement)
+      (rebind-globals-for-let 
+       (loop for (global-var temp-var) in specials-and-inits 
+	     collect (cons global-var temp-var))
+       c-compound-statement thread-state-var))
 
     ;; Evaluate the body, unbinding the globals we have any.
     (cond
@@ -1063,7 +1036,7 @@
 	 (translate-progn-body body c-func c-compound-statement (list result))
 	 (unbind-globals-for-let
 	   (loop for (global) in specials-and-inits collect global)
-	   c-compound-statement)
+	   c-compound-statement thread-state-var)
 	 (reclaim-reusable-c-variables c-func temp-var-pairs)
 	 (emit-c-expr-as-directed 
 	   (make-c-name-expr result)
@@ -1076,7 +1049,7 @@
 	 (when specials-and-inits
 	   (unbind-globals-for-let
 	     (loop for (global) in specials-and-inits collect global)
-	     c-compound-statement)))))))
+	     c-compound-statement thread-state-var)))))))
 
 (def-l-expr-method translate-l-expr-into-c
     (multiple-value-prog1-l-expr c-func c-body return-directive)
@@ -1807,12 +1780,13 @@
 
 
 ;;; The function `make-and-emit-obj-wrapper-function' will create and emit into
-;;; a C file a new wrapper function that takes and returns all Obj types.  It
-;;; wraps a function which does not take and return all obj types.  If we are
-;;; compiling safely, then lots of type checking will get emitted here, and if
-;;; the return type of the called function is void, then we will return the
-;;; Unbound-value as our bogus return.  This function returns the string that is
-;;; the C identifier for the new wrapper function.
+;;; a C file a new wrapper function that takes all arguments as type Obj and
+;;; returns all values as type Obj.  It wraps a function which does not take and
+;;; return all obj types.  If we are compiling safely, then lots of type
+;;; checking will get emitted here, and if the return type of the called
+;;; function is void, then we will return the Unbound-value as our bogus return.
+;;; This function returns the string that is the C identifier for the new
+;;; wrapper function.
 
 (defun make-and-emit-obj-wrapper-function
     (c-return-type c-func-identifier c-argument-types original-lisp-name ftype
@@ -2059,21 +2033,28 @@
 
 (defun emit-scope-exit-cleanups (cleanups c-compound-statement c-func)
   (loop with c-file = (c-func-c-file c-func)
+	with thread-state-var = nil
 	for cleanup-cons on cleanups
 	for cleanup = (cons-car cleanup-cons)
 	for cleanup-type = (cons-car cleanup)
 	do
+    (when (null thread-state-var)
+      (setq thread-state-var (lexical-c-variable-identifier
+			      'ts c-func '(pointer thread-state) nil))
+      (emit-expr-to-compound-statement
+       (make-c-infix-expr 
+	(make-c-name-expr thread-state-var) "=" "THREAD_STATE")
+       c-compound-statement))
     (cond ((eq cleanup-type 'catch)
 	   (emit-expr-to-compound-statement
 	     (make-c-infix-expr
-	       "Throw_stack_top" "="
-	       (make-c-infix-expr
-		 "Throw_stack_top" "-"
-		 (loop for count fixnum from 3 by 3
+	      (make-c-indirect-selection-expr
+	       (make-c-name-expr thread-state-var) "throw_stack_top") 
+	      "-=" (loop for count fixnum from 3 by 3
 		       while (eq (car (second cleanup-cons)) 'catch)
 		       do
 		   (setq cleanup-cons (cons-cdr cleanup-cons))
-		       finally (return count))))
+		       finally (return count)))
 	     c-compound-statement))
 	  ((eq cleanup-type 'global-variable-binding)
 	   (unbind-globals-for-let
@@ -2087,7 +2068,7 @@
 		 (register-needed-variable-extern
 		   c-file '("extern") 'obj c-name))
 		   collect c-name)
-	     c-compound-statement))
+	     c-compound-statement thread-state-var))
 	  (t
 	   (translation-error "Bad cleanup type ~s" cleanup-type)))))
 
@@ -2111,16 +2092,22 @@
 	     (c-file (c-func-c-file c-func)))
 	(when (and (null binding?)
 		   (not (memqp bind-type? '(:special :constant))))
+	  (setq bind-type? :special)
 	  (translation-warning "Free variable ~s assumed to be special."
 			       symbol))
 	(unless binding?
 	  (when (register-used-variable c-file symbol c-name c-type)
 	    (register-needed-variable-extern c-file '("extern") c-type c-name)))
 	(emit-c-expr-as-directed
-	  (make-c-infix-expr
+	 (if (eq bind-type? :special)
+	     (make-c-function-call-expr
+	      (make-c-name-expr "SET_GLOBAL")
+	      (list (make-c-name-expr c-name)
+		    (translate-l-expr-into-c value-l-expr c-func c-body :c-expr)))
+	   (make-c-infix-expr
 	    (make-c-name-expr c-name)
-	    "=" (translate-l-expr-into-c value-l-expr c-func c-body :c-expr))
-	  setq-l-expr c-func c-body return-directive)))))
+	    "=" (translate-l-expr-into-c value-l-expr c-func c-body :c-expr)))
+	 setq-l-expr c-func c-body return-directive)))))
 
 (def-l-expr-method translate-l-expr-into-c
     (tagbody-l-expr c-func c-body return-directive)
@@ -2662,11 +2649,15 @@
 		     'obj))
 	 (c-file (c-func-c-file c-func))
 	 (chosen-c-type-for-this-reference (l-expr-c-return-type isv)))
-    (when (and (null binding?) (not specl-const?))
-      (translation-warning "Free variable ~s assumed to be special." name))
     (when specl-const?
       (when (register-used-variable c-file name c-name c-type)
 	(register-needed-variable-extern c-file '("extern") c-type c-name)))
+    (when (and (null binding?) (not specl-const?))
+      (setq binding-type :special)
+      (translation-warning "Free variable ~s assumed to be special." name))
+    (when (eq binding-type :special)
+      (setq c-name-expr (make-c-function-call-expr
+			 (make-c-name-expr "GET_GLOBAL") (list c-name-expr))))
     ;; When the chosen C type is void, then this reference is being emitted only
     ;; to inhibit warnings from the C compiler that this variable is unused.
     ;; This arises in the case were Lisp warnings have been inhibited by making

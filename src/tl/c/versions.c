@@ -34,14 +34,15 @@ Obj normalize_system_name (Obj symbol)
   sint32 arg_temp_1;
   Obj temp;
 
-  if (((Sym *)symbol)->symbol_package!=tl_user_package) {
+  if (((Sym *)symbol)->symbol_package!=GET_GLOBAL(tl_user_package)) {
     if (symbol!=NULL) 
       g = (((Str *)(((Sym *)symbol)->symbol_name))->body);
     else 
       g = (((Str *)(&str_const_2))->body);      /* "NIL" */
     arg_temp = g;
     arg_temp_1 = sxhash_string(g);
-    tl_package_name = intern_string_in_package(arg_temp,arg_temp_1,find_package_or_error_1(tl_user_package));
+    tl_package_name = intern_string_in_package(arg_temp,arg_temp_1,find_package_or_error_1(
+        GET_GLOBAL(tl_user_package)));
   }
   else 
     tl_package_name = symbol;
@@ -60,14 +61,15 @@ Obj normalize_module_name (Obj symbol)
   unsigned char *arg_temp;
   sint32 arg_temp_1;
 
-  if (((Sym *)symbol)->symbol_package!=tl_user_package) {
+  if (((Sym *)symbol)->symbol_package!=GET_GLOBAL(tl_user_package)) {
     if (symbol!=NULL) 
       g = (((Str *)(((Sym *)symbol)->symbol_name))->body);
     else 
       g = (((Str *)(&str_const_2))->body);      /* "NIL" */
     arg_temp = g;
     arg_temp_1 = sxhash_string(g);
-    return intern_string_in_package(arg_temp,arg_temp_1,find_package_or_error_1(tl_user_package));
+    return intern_string_in_package(arg_temp,arg_temp_1,find_package_or_error_1(
+        GET_GLOBAL(tl_user_package)));
   }
   else 
     return symbol;
@@ -117,43 +119,29 @@ Obj collected_systems = (Obj)(&Unbound);
 Obj system_all_used_systems (Obj system_name)
 {
   Obj name, cached_listP, temp, temp_1;
-  sint32 expected_top_of_stack;
+  Thread_state *ts;
   Obj temp_2, new_collected_systems, temp_3;
-  sint32 expected_top_of_stack_1;
+  Thread_state *ts_1;
 
   name = normalize_system_name(system_name);
   cached_listP = get(name,(Obj)(tl_versions_symbols+2),     /* SYSTEM-ALL-USED-SYSTEMS */
       (Obj)NULL);
   temp = cached_listP;
   if (temp==NULL) {
-    expected_top_of_stack = Throw_stack_top;
+    ts = THREAD_STATE;
     temp_1 = BOXFIX(0);
-    Throw_stack_top = (Throw_stack_top+3);
-    (Throw_stack[Throw_stack_top]) = 0;
-    (Throw_stack[Throw_stack_top-1]) = (Obj)(&current_region);
-    (Throw_stack[Throw_stack_top-2]) = current_region;
-    current_region = temp_1;
+    bind_global(&current_region,ts,temp_1);
     new_collected_systems = (Obj)NULL;
-    expected_top_of_stack_1 = Throw_stack_top;
-    Throw_stack_top = (Throw_stack_top+3);
-    (Throw_stack[Throw_stack_top]) = 0;
-    (Throw_stack[Throw_stack_top-1]) = (Obj)(&collected_systems);
-    (Throw_stack[Throw_stack_top-2]) = collected_systems;
-    collected_systems = new_collected_systems;
+    ts_1 = THREAD_STATE;
+    bind_global(&collected_systems,ts_1,new_collected_systems);
     collect_all_used_systems(name);
-    collected_systems = nreverse(collected_systems);
+    SET_GLOBAL(collected_systems,nreverse(GET_GLOBAL(collected_systems)));
     set_get(name,(Obj)(tl_versions_symbols+2),  /* SYSTEM-ALL-USED-SYSTEMS */
-        collected_systems);
-    temp_3 = collected_systems;
-    collected_systems = (Throw_stack[Throw_stack_top-2]);
-    Throw_stack_top = (Throw_stack_top-3);
-    if (expected_top_of_stack_1!=Throw_stack_top) 
-      error("Corrupted Throw_stack_top in let");
+        GET_GLOBAL(collected_systems));
+    temp_3 = GET_GLOBAL(collected_systems);
+    unbind_global(&collected_systems,ts_1);
     temp_2 = temp_3;
-    current_region = (Throw_stack[Throw_stack_top-2]);
-    Throw_stack_top = (Throw_stack_top-3);
-    if (expected_top_of_stack!=Throw_stack_top) 
-      error("Corrupted Throw_stack_top at let*.");
+    unbind_global(&current_region,ts);
     temp = temp_2;
   }
   return temp;
@@ -174,11 +162,11 @@ void collect_all_used_systems (Obj name)
     collect_all_used_systems(sub_system);
   }
 
-  if (memq(name,collected_systems)!=NULL) 
-    if_result_temp = collected_systems;
+  if (memq(name,GET_GLOBAL(collected_systems))!=NULL) 
+    if_result_temp = GET_GLOBAL(collected_systems);
   else 
-    if_result_temp = alloc_cons(name,collected_systems,-1);
-  collected_systems = if_result_temp;
+    if_result_temp = alloc_cons(name,GET_GLOBAL(collected_systems),-1);
+  SET_GLOBAL(collected_systems,if_result_temp);
   return;
 }
 
@@ -337,14 +325,15 @@ static const Str_21 str_const_31
 
 Obj machine_model (void)
 {
-  Obj g, if_result_temp, temp;
+  Obj temp, g, if_result_temp, temp_1;
 
-  if (machine_model_var!=NULL) {
+  if (GET_GLOBAL(machine_model_var)!=NULL) {
+    temp = GET_GLOBAL(machine_model_var);
     Values_count = 1;
-    return machine_model_var;
+    return temp;
   }
   else {
-    g = g2_machine_type;
+    g = GET_GLOBAL(g2_machine_type);
     if (g==(Obj)(tl_versions_symbols+8))        /* AVIION */
       if_result_temp = (Obj)(&str_const_4);     /* " Data General AViiON" */
     else if (g==(Obj)(tl_versions_symbols+23))      /* MOTOROLA */
@@ -402,9 +391,9 @@ Obj machine_model (void)
       if_result_temp = (Obj)(&str_const_30);    /* " Windows 95" */
     else 
       if_result_temp = (Obj)(&str_const_31);    /* " Experimental Port" */
-    temp = (machine_model_var = if_result_temp);
+    temp_1 = SET_GLOBAL(machine_model_var,if_result_temp);
     Values_count = 1;
-    return temp;
+    return temp_1;
   }
 }
 

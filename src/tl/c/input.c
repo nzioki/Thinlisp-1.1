@@ -96,8 +96,8 @@ Obj read_line_from_file_stream (Obj file_stream, Obj eof_error_p, Obj eof_value)
   Str *string;
   Obj temp_1;
 
-  fgets_result = ObjStrHDR((unsigned char *)fgets((char *)(((Str *)Sinput_string_bufferS)->body),
-      (int)UNBOXFIX(Sinput_string_buffer_sizeS),((File_strm *)file_stream)->input));
+  fgets_result = ObjStrHDR((unsigned char *)fgets((char *)(((Str *)GET_GLOBAL(Sinput_string_bufferS))->body),
+      (int)UNBOXFIX(GET_GLOBAL(Sinput_string_buffer_sizeS)),((File_strm *)file_stream)->input));
   if (((Str *)fgets_result)->body==NULL) {
     temp = analyze_file_stream_error(file_stream,eof_error_p,eof_value);
     (Values_buffer[0]) = (Obj)(&T);
@@ -105,20 +105,20 @@ Obj read_line_from_file_stream (Obj file_stream, Obj eof_error_p, Obj eof_value)
     return temp;
   }
   else {
-    strlen_value = (sint32)strlen((char *)(((Str *)Sinput_string_bufferS)->body));
+    strlen_value = (sint32)strlen((char *)(((Str *)GET_GLOBAL(Sinput_string_bufferS))->body));
     missing_new_lineP = (Obj)(&T);
-    if (strlen_value>UNBOXFIX(Sinput_string_buffer_sizeS)) 
+    if (strlen_value>UNBOXFIX(GET_GLOBAL(Sinput_string_buffer_sizeS))) 
       error_one_arg((Obj)(&str_const_4),        /* "Input buffer overflow reading from ~s" */
           file_stream);
-    else if ((strlen_value>0) && ((((Str *)Sinput_string_bufferS)->body[strlen_value
+    else if ((strlen_value>0) && ((((Str *)GET_GLOBAL(Sinput_string_bufferS))->body[strlen_value
         -1])=='\n')) {
       missing_new_lineP = (Obj)NULL;
       strlen_value = (strlen_value-1);
     }
-    string = (Str *)Sinput_string_bufferS;
+    string = (Str *)GET_GLOBAL(Sinput_string_bufferS);
     (string->body[strlen_value]) = '\000';
     string->fill_length = strlen_value;
-    temp_1 = Sinput_string_bufferS;
+    temp_1 = GET_GLOBAL(Sinput_string_bufferS);
     (Values_buffer[0]) = missing_new_lineP;
     Values_count = 2;
     return temp_1;
@@ -139,18 +139,18 @@ Obj read_line_from_string_stream (Obj string_stream, Obj eof_error_p, Obj eof_va
   Obj temp;
 
   input_string = (((String_strm *)string_stream)->input_string);
-  final_result = (((Str *)Sinput_string_bufferS)->body);
+  final_result = (((Str *)GET_GLOBAL(Sinput_string_bufferS))->body);
   input_index_bounds = (((String_strm *)string_stream)->input_index_bounds);
   next_char = '\000';
   missing_newlineP = (Obj)(&T);
   input_index = (((String_strm *)string_stream)->input_index);
   buffer_index = 0;
   while (1) {
-    if (!(((input_index<input_index_bounds) && (buffer_index<UNBOXFIX(Sinput_string_buffer_sizeS)))
+    if (!(((input_index<input_index_bounds) && (buffer_index<UNBOXFIX(GET_GLOBAL(Sinput_string_buffer_sizeS))))
          && (missing_newlineP!=NULL))) 
       goto end_loop;
     next_char = (input_string[input_index]);
-    (((Str *)Sinput_string_bufferS)->body[buffer_index]) = next_char;
+    (((Str *)GET_GLOBAL(Sinput_string_bufferS))->body[buffer_index]) = next_char;
     missing_newlineP = ((next_char!='\n') ? ((Obj)(&T)) : (Obj)NULL);
     g = (input_index+1);
     g_1 = (buffer_index+1);
@@ -163,12 +163,12 @@ Obj read_line_from_string_stream (Obj string_stream, Obj eof_error_p, Obj eof_va
     buffer_index = (buffer_index-1);
   else if (buffer_index==0) 
     final_result = (((Str *)error_or_value(string_stream,eof_error_p,eof_value))->body);
-  else if ((buffer_index==UNBOXFIX(Sinput_string_buffer_sizeS)) && (input_index
-      !=input_index_bounds)) 
+  else if ((buffer_index==UNBOXFIX(GET_GLOBAL(Sinput_string_buffer_sizeS)))
+       && (input_index!=input_index_bounds)) 
     error_one_arg((Obj)(&str_const_4),          /* "Input buffer overflow reading from ~s" */
         string_stream);
   ((String_strm *)string_stream)->input_index = input_index;
-  string = (Str *)Sinput_string_bufferS;
+  string = (Str *)GET_GLOBAL(Sinput_string_bufferS);
   (string->body[buffer_index]) = '\000';
   string->fill_length = buffer_index;
   temp = ObjStrHDR(final_result);
@@ -225,7 +225,7 @@ Obj create_file (unsigned char *filename, Obj binaryP)
     g = ((temp==NULL) ? ((Obj)NULL) : alloc_file_strm(temp,temp,(char *)filename,
         (char *)(((Str *)(&str_const_6))->body),-1,16));    /* "ab" */
     g_1 = (Obj)NULL;
-    if (!((g==NULL) || (g==Sterminal_ioS))) {
+    if (!((g==NULL) || (g==GET_GLOBAL(Sterminal_ioS)))) {
       temp_1 = (sint32)fclose(((File_strm *)g)->input);
       if (g_1!=NULL) 
         delete_named_file(((File_strm *)g)->filename);
@@ -239,7 +239,7 @@ Obj create_file (unsigned char *filename, Obj binaryP)
         (char *)filename,(char *)(((Str *)(&str_const_7))->body),   /* "a" */
         -1,16));
     g_3 = (Obj)NULL;
-    if (!((g_2==NULL) || (g_2==Sterminal_ioS))) {
+    if (!((g_2==NULL) || (g_2==GET_GLOBAL(Sterminal_ioS)))) {
       temp_3 = (sint32)fclose(((File_strm *)g_2)->input);
       if (g_3!=NULL) 
         delete_named_file(((File_strm *)g_2)->filename);
@@ -679,7 +679,7 @@ Obj generic_close (Obj stream, Obj abort_1)
    case 0:
     break;
    case 16:
-    if (!((stream==NULL) || (stream==Sterminal_ioS))) {
+    if (!((stream==NULL) || (stream==GET_GLOBAL(Sterminal_ioS)))) {
       temp_1 = (sint32)fclose(((File_strm *)stream)->input);
       if (abort_1!=NULL) 
         delete_named_file(((File_strm *)stream)->filename);

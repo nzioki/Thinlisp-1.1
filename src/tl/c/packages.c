@@ -171,7 +171,7 @@ Obj all_packages = (Obj)(&Unbound);
 
 Obj list_all_packages (void)
 {
-  return all_packages;
+  return GET_GLOBAL(all_packages);
 }
 
 static const Str_5 str_const_2
@@ -193,7 +193,7 @@ Obj find_package_1 (Obj string_or_symbol_or_package)
    case 7:
     name = (((Str *)string_or_symbol_or_package)->body);
     package = (Obj)NULL;
-    tl_loop_list_ = all_packages;
+    tl_loop_list_ = GET_GLOBAL(all_packages);
     while (tl_loop_list_!=NULL) {
       package = CAR(tl_loop_list_);
       tl_loop_list_ = CDR(tl_loop_list_);
@@ -241,20 +241,16 @@ static const Str_101 str_const_5
 Obj make_package_1 (unsigned char *name, Obj use)
 {
   Obj temp;
-  sint32 expected_top_of_stack;
+  Thread_state *ts;
   Obj temp_1, name_to_use, use_list, used, tl_loop_list_, used_package, 
         tl_loopvar_, tl_loopvar__1, tl_loopvar__2, found_packageP, used_package_cons, 
         new_package_cons;
   int block_temp;
   Obj new_package;
 
-  expected_top_of_stack = Throw_stack_top;
+  ts = THREAD_STATE;
   temp = BOXFIX(0);
-  Throw_stack_top = (Throw_stack_top+3);
-  (Throw_stack[Throw_stack_top]) = 0;
-  (Throw_stack[Throw_stack_top-1]) = (Obj)(&current_region);
-  (Throw_stack[Throw_stack_top-2]) = current_region;
-  current_region = temp;
+  bind_global(&current_region,ts,temp);
   name_to_use = ObjStrHDR(string_upcase_function(name,0,(Obj)NULL));
   used = (Obj)NULL;
   tl_loop_list_ = use;
@@ -305,13 +301,11 @@ Obj make_package_1 (unsigned char *name, Obj use)
   }
   else {
     new_package = alloc_package(name_to_use,use_list,0,13);
-    all_packages = alloc_cons(new_package,all_packages,0);
+    SET_GLOBAL(all_packages,alloc_cons(new_package,GET_GLOBAL(all_packages),
+        0));
     temp_1 = new_package;
   }
-  current_region = (Throw_stack[Throw_stack_top-2]);
-  Throw_stack_top = (Throw_stack_top-3);
-  if (expected_top_of_stack!=Throw_stack_top) 
-    error("Corrupted Throw_stack_top at let*.");
+  unbind_global(&current_region,ts);
   return temp_1;
 }
 
@@ -367,7 +361,7 @@ Obj intern_string_in_package (unsigned char *string, sint32 hash_number,
         Obj package)
 {
   Obj symbol, foundP, temp, temp_1;
-  sint32 expected_top_of_stack;
+  Thread_state *ts;
   Obj temp_2, new_symbol, temp_3;
 
   symbol = find_symbol_in_package(string,hash_number,package);
@@ -379,13 +373,9 @@ Obj intern_string_in_package (unsigned char *string, sint32 hash_number,
     return temp;
   }
   else {
-    expected_top_of_stack = Throw_stack_top;
+    ts = THREAD_STATE;
     temp_1 = BOXFIX(0);
-    Throw_stack_top = (Throw_stack_top+3);
-    (Throw_stack[Throw_stack_top]) = 0;
-    (Throw_stack[Throw_stack_top-1]) = (Obj)(&current_region);
-    (Throw_stack[Throw_stack_top-2]) = current_region;
-    current_region = temp_1;
+    bind_global(&current_region,ts,temp_1);
     new_symbol = alloc_symbol(1,11);
     init_symbol(new_symbol,ObjStrHDR(string),hash_number);
     ((Sym *)new_symbol)->symbol_package = package;
@@ -394,10 +384,7 @@ Obj intern_string_in_package (unsigned char *string, sint32 hash_number,
     (Values_buffer[0]) = (Obj)(tl_packages_symbols+2);  /* INTERNAL */
     Values_count = 2;
     temp_2 = temp_3;
-    current_region = (Throw_stack[Throw_stack_top-2]);
-    Throw_stack_top = (Throw_stack_top-3);
-    if (expected_top_of_stack!=Throw_stack_top) 
-      error("Corrupted Throw_stack_top at let*.");
+    unbind_global(&current_region,ts);
     return temp_2;
   }
 }
@@ -410,20 +397,16 @@ static const Str_113 str_const_6
 Obj import (Obj symbol_or_symbol_list, Obj package_arg)
 {
   Obj temp;
-  sint32 expected_top_of_stack;
+  Thread_state *ts;
   Obj temp_1, symbol_list;
   Obj temp_list[2];
   Obj package, symbol, tl_loop_list_, symbol_name;
   sint32 symbol_hash;
   Obj found_symbol, foundP, import_symbol;
 
-  expected_top_of_stack = Throw_stack_top;
+  ts = THREAD_STATE;
   temp = BOXFIX(0);
-  Throw_stack_top = (Throw_stack_top+3);
-  (Throw_stack[Throw_stack_top]) = 0;
-  (Throw_stack[Throw_stack_top-1]) = (Obj)(&current_region);
-  (Throw_stack[Throw_stack_top-2]) = current_region;
-  current_region = temp;
+  bind_global(&current_region,ts,temp);
   if ((symbol_or_symbol_list==NULL) || (IMMED_TAG(symbol_or_symbol_list)
       ==2))                                     /* Consp */
     symbol_list = symbol_or_symbol_list;
@@ -461,10 +444,7 @@ Obj import (Obj symbol_or_symbol_list, Obj package_arg)
   }
 
   temp_1 = (Obj)(&T);
-  current_region = (Throw_stack[Throw_stack_top-2]);
-  Throw_stack_top = (Throw_stack_top-3);
-  if (expected_top_of_stack!=Throw_stack_top) 
-    error("Corrupted Throw_stack_top at let*.");
+  unbind_global(&current_region,ts);
   return temp_1;
 }
 
@@ -479,20 +459,16 @@ static const Str_57 str_const_8
 Obj export (Obj symbol_or_symbol_list, Obj package_arg)
 {
   Obj temp;
-  sint32 expected_top_of_stack;
+  Thread_state *ts;
   Obj temp_1, symbol_list;
   Obj temp_list[2];
   Obj package, symbol, tl_loop_list_, symbol_name;
   sint32 symbol_hash;
   Obj found_symbol, foundP, import_symbol;
 
-  expected_top_of_stack = Throw_stack_top;
+  ts = THREAD_STATE;
   temp = BOXFIX(0);
-  Throw_stack_top = (Throw_stack_top+3);
-  (Throw_stack[Throw_stack_top]) = 0;
-  (Throw_stack[Throw_stack_top-1]) = (Obj)(&current_region);
-  (Throw_stack[Throw_stack_top-2]) = current_region;
-  current_region = temp;
+  bind_global(&current_region,ts,temp);
   if ((symbol_or_symbol_list==NULL) || (IMMED_TAG(symbol_or_symbol_list)
       ==2))                                     /* Consp */
     symbol_list = symbol_or_symbol_list;
@@ -536,10 +512,7 @@ Obj export (Obj symbol_or_symbol_list, Obj package_arg)
   }
 
   temp_1 = (Obj)(&T);
-  current_region = (Throw_stack[Throw_stack_top-2]);
-  Throw_stack_top = (Throw_stack_top-3);
-  if (expected_top_of_stack!=Throw_stack_top) 
-    error("Corrupted Throw_stack_top at let*.");
+  unbind_global(&current_region,ts);
   return temp_1;
 }
 
@@ -563,7 +536,7 @@ Obj make_gensymed_symbol (Obj string_or_counterP)
   Obj prefix;
   sint32 counter;
   Obj temp;
-  sint32 expected_top_of_stack;
+  Thread_state *ts;
   Obj temp_1;
   sint32 counter_length;
   Obj new_name;
@@ -572,25 +545,21 @@ Obj make_gensymed_symbol (Obj string_or_counterP)
   Obj temp_list[6];
 
   prefix = (Obj)(&str_const_10);                /* "G" */
-  counter = UNBOXFIX(Sgensym_counterS);
+  counter = UNBOXFIX(GET_GLOBAL(Sgensym_counterS));
   if (IMMED_TAG(string_or_counterP)==1)         /* Fixnump */
     counter = UNBOXFIX(string_or_counterP);
   else if ((string_or_counterP!=NULL) && ((IMMED_TAG(string_or_counterP)
       ==0) && (STD_TAG(string_or_counterP)==7))) {  /* STRING-P */
     prefix = string_or_counterP;
-    Sgensym_counterS = (Obj)((((sint32)Sgensym_counterS)+(sint32)BOXFIX(1))
-        -1);                                    /* Fixnum add */
+    SET_GLOBAL(Sgensym_counterS,(Obj)((((sint32)GET_GLOBAL(Sgensym_counterS))
+        +(sint32)BOXFIX(1))-1));                /* Fixnum add */
   }
   else 
-    Sgensym_counterS = (Obj)((((sint32)Sgensym_counterS)+(sint32)BOXFIX(1))
-        -1);                                    /* Fixnum add */
-  expected_top_of_stack = Throw_stack_top;
+    SET_GLOBAL(Sgensym_counterS,(Obj)((((sint32)GET_GLOBAL(Sgensym_counterS))
+        +(sint32)BOXFIX(1))-1));                /* Fixnum add */
+  ts = THREAD_STATE;
   temp = BOXFIX(0);
-  Throw_stack_top = (Throw_stack_top+3);
-  (Throw_stack[Throw_stack_top]) = 0;
-  (Throw_stack[Throw_stack_top-1]) = (Obj)(&current_region);
-  (Throw_stack[Throw_stack_top-2]) = current_region;
-  current_region = temp;
+  bind_global(&current_region,ts,temp);
   counter_length = (((sint32)log10((double)counter))+1);
   g = (((Str *)alloc_string(counter_length+(sint32)(((Str *)prefix)->fill_length),
       0,7))->body);
@@ -606,10 +575,7 @@ Obj make_gensymed_symbol (Obj string_or_counterP)
       hook_up_cdrs(temp_list,3,NULL));
   arg_temp = alloc_symbol(1,11);
   temp_1 = init_symbol(arg_temp,new_name,sxhash_string(((Str *)new_name)->body));
-  current_region = (Throw_stack[Throw_stack_top-2]);
-  Throw_stack_top = (Throw_stack_top-3);
-  if (expected_top_of_stack!=Throw_stack_top) 
-    error("Corrupted Throw_stack_top at let*.");
+  unbind_global(&current_region,ts);
   return temp_1;
 }
 
@@ -652,18 +618,19 @@ void write_symbol (Obj symbol, Obj case_1, Obj streamP)
     name_string = (((Sym *)symbol)->symbol_name);
   else 
     name_string = (Obj)(&str_const_2);          /* "NIL" */
-  if (Sprint_escapeS!=NULL) {
+  if (GET_GLOBAL(Sprint_escapeS)!=NULL) {
     if ((((symbol!=NULL) && ((IMMED_TAG(symbol)==0) && (STD_TAG(symbol)
         ==11))) && (symbol!=NULL)) && (((Sym *)symbol)->symbol_package  /* SYMBOL-P */
-        ==Skeyword_packageS)) 
+        ==GET_GLOBAL(Skeyword_packageS))) 
       write_string_function(((Str *)(&str_const_12))->body,streamP,     /* ":" */
           0,(Obj)NULL);
     else {
       home_package = (((Sym *)symbol)->symbol_package);
-      if (home_package!=SpackageS) {
+      if (home_package!=GET_GLOBAL(SpackageS)) {
         arg_temp_1 = (((Str *)name_string)->body);
         arg_temp_2 = sxhash_string(((Str *)name_string)->body);
-        arg_temp = find_symbol_in_package(arg_temp_1,arg_temp_2,find_package_or_error_1(SpackageS));
+        arg_temp = find_symbol_in_package(arg_temp_1,arg_temp_2,find_package_or_error_1(
+            GET_GLOBAL(SpackageS)));
         temp = (arg_temp!=symbol);
       }
       else 
@@ -682,9 +649,9 @@ void write_symbol (Obj symbol, Obj case_1, Obj streamP)
    case 0:
    case 11:
     if (streamP==NULL) 
-      stream = Sstandard_outputS;
+      stream = GET_GLOBAL(Sstandard_outputS);
     else if (streamP==(Obj)(&T)) 
-      stream = Sterminal_ioS;
+      stream = GET_GLOBAL(Sterminal_ioS);
     else 
       stream = get_string_or_file_stream_for_output(streamP,length_1);
     break;

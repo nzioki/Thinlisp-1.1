@@ -52,8 +52,9 @@
 ;;;   Sa_double which is a structure holding double arrays (tag 0xA),
 ;;;   Sym which is a symbol structure (tag 0xB),
 ;;;   Func which is compiled-function structure (tag 0xC),
-;;;   Pkg which is a package structure (tag 0xD), and
-;;;   jmp_buf which is a jump buffer for setjmp and longjmp.
+;;;   Pkg which is a package structure (tag 0xD),
+;;;   jmp_buf which is a jump buffer for setjmp and longjmp, and
+;;;   Thread_state which is a structure holding Lisp thread info.
 
 ;;; C types can also be lists.  In these cases the car of the list must be one
 ;;; of the following symbols, with the format of the remainder of the list

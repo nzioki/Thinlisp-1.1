@@ -58,18 +58,24 @@ pthread_t default_thread_id = (pthread_t)0;
  * never called unless the macro PTHREAD is defined.  
  */
 
-Thread_state *new_thread_state(pthread_t new_id, int new_index) {
+Thread_state *new_thread_state(pthread_t new_id) {
   Thread_state *ts;
   Thread_state **new_array;
+  int new_index;
 
   ts = (Thread_state *)malloc(sizeof(Thread_state));
   ts->thread_id = new_id;
   ts->values_count = 0;
   ts->throw_stack_top = -1;
   ts->current_throw = NULL;
-  ts->global_bindings = NULL;
   ts->parent_thread_state = NULL;
-  if (new_index<0 || new_index>=thread_states_length) {
+
+  for (new_index = 0; new_index < thread_states_length; ++new_index) {
+    if (thread_states[new_index] == NULL) 
+      break;
+  }
+  
+  if (new_index>=thread_states_length) {
     /* If we get here, there were no empty slots, grow the array. */
     new_index = thread_states_length;
     thread_states_length += NEW_THREADS_INC;
@@ -88,19 +94,18 @@ Thread_state *new_thread_state(pthread_t new_id, int new_index) {
   return ts;
 }
 
-Thread_state *current_thread_state(void) {
+Thread_state *current_thread_state_if_any(void) {
   int i, earliest_null;
   Thread_state *ts;
   pthread_t current_thread_id = pthread_self();
 
   if (pthread_equal(default_thread_id, current_thread_id))
     return &default_thread_state;
-  
-  if (pthread_mutex_lock(&thread_states_mutex) != 0)
-    error("Thread states mutex corrupted.");
 
   earliest_null = -1;
   ts = NULL;
+  if (pthread_mutex_lock(&thread_states_mutex) != 0)
+    error("Thread states mutex corrupted.");
   for (i = 0; i < thread_states_length && ts == NULL; ++i) {
     ts = thread_states[i];
     if (ts == NULL) {
@@ -110,37 +115,32 @@ Thread_state *current_thread_state(void) {
       ts = NULL;
     }
   }
-  if (ts == NULL) 
-    ts = new_thread_state(current_thread_id, earliest_null);
-  
   if (pthread_mutex_unlock(&thread_states_mutex) != 0)
     error("Thread status mutex corrupted on unlock.");
   return ts;
 }
 
+Thread_state *current_thread_state(void) {
+  Thread_state *ts;
 
-Binding *make_binding(void) {
-  return (Binding *)malloc(sizeof(Binding));
-}
+  ts = current_thread_state_if_any();
 
-void reclaim_binding(Binding *b) {
-  free((void *)b);
+  if (ts == NULL) {
+    if (pthread_mutex_lock(&thread_states_mutex) != 0)
+      error("Thread states mutex corrupted.");
+    ts = new_thread_state(pthread_self());
+    if (pthread_mutex_unlock(&thread_states_mutex) != 0)
+      error("Thread status mutex corrupted on unlock.");
+  }
+  return ts;
 }
-  
 
 void delete_thread_state(Thread_state *condemned) {
-  Binding *b = condemned->global_bindings;
-  Binding *next;
   if (pthread_mutex_lock(&thread_states_mutex) != 0)
     error("Thread states mutex corrupted.");
   thread_states[condemned->thread_index] = NULL;
   if (pthread_mutex_unlock(&thread_states_mutex) != 0)
     error("Thread states mutex corrupted on unlock.");
-  while (b != NULL) {
-    next = b->next_binding;
-    reclaim_binding(b);
-    b = next;
-  }
   free((void *)condemned);
 }
 #endif
@@ -213,6 +213,89 @@ Obj retrieve_values_from_stack(void) {
   }
 }
 
+/**
+ * Special variable bindings.
+ *
+ * When a special variable is bound, the previous binding value is stored on the
+ * global stack.  The global value is stored in the C variable of the same name
+ * as the Lisp special variable symbol.  When a special varible is bound within
+ * a thread, the bound value is stored in a binding struct that is stored in the
+ * Thread_state for the current thread.  
+ */
+
+void bind_global(Obj *var_address, Thread_state *ts, Obj new_value) {
+  sint32 new_top = ts->throw_stack_top + 3;
+  /* Zero marks a variable binding on the stack. */
+  ts->throw_stack[new_top] = (Obj)BINDING_FRAME;
+  ts->throw_stack[new_top-1] = (Obj)var_address;
+# ifdef PTHREAD
+  ts->throw_stack[new_top-2] = new_value;
+# else
+  ts->throw_stack[new_top-2] = *var_address;
+  *var_address = new_value;
+# endif
+  ts->throw_stack_top = new_top;
+}
+
+void unbind_global(Obj *var_address, Thread_state *ts) {
+  sint32 old_top = ts->throw_stack_top;
+# ifndef PTHREAD
+  *var_address = ts->throw_stack[old_top-2];
+# else
+  (void)var_address;
+# endif
+  ts->throw_stack_top = old_top - 3;
+}
+
+#ifdef PTHREAD
+
+static Obj *get_binding_addr(Obj *global_addr, Thread_state *ts) {
+  sint32 index;
+  int stack_entry_type;
+
+  if (ts != NULL) {
+    index = ts->throw_stack_top;
+    while (index>=0) {
+      stack_entry_type = (int)(ts->throw_stack[index]);
+      switch (stack_entry_type) {
+      case BINDING_FRAME:
+	if (global_addr == (Obj *)(ts->throw_stack[index - 1]))
+	  return &(ts->throw_stack[index - 2]);
+	index -= 3;
+	break;
+      case VALUES_FRAME:
+	index = (index - 2) - (sint32)(ts->throw_stack[index - 1]);
+	break;
+      case UNWIND_PROTECT_FRAME:
+	index -= 2;
+	break;
+      case CATCH_FRAME:
+	index -= 3;
+	break;
+      default:
+	error("Bad throw stack marker in get_binding_addr()");
+      }
+    }
+  }
+
+  /* If the thread was null or no binding was found, return the given
+   * address. 
+   */
+  return global_addr;
+}    
+  
+
+Obj get_binding_value(Obj *global_addr, Thread_state *thread) {
+  return *get_binding_addr(global_addr, thread);
+}
+  
+Obj set_binding_value(Obj *global_addr, Thread_state *thread, Obj new_value) {
+  *get_binding_addr(global_addr, thread) = new_value;
+  return new_value;
+}
+
+#endif
+
 void throw_towards_catch_tag(Obj throw_tag, Obj first_value) {
   Thread_state *ts = THREAD_STATE;
   sint32 index = ts->throw_stack_top;
@@ -223,12 +306,12 @@ void throw_towards_catch_tag(Obj throw_tag, Obj first_value) {
     stack_entry_type = (int)(ts->throw_stack[index]);
     switch (stack_entry_type) {
       /* Global variable binding, unbind it and skip down three. */
-    case 0:
+    case BINDING_FRAME:
       *((Obj *)(ts->throw_stack[index - 1])) = ts->throw_stack[index - 2];
       index = index - 3;
       break;
       /* Cached values, skip down 2 + the number of values. */
-    case 1:
+    case VALUES_FRAME:
       index = (index - 2) - (sint32)(ts->throw_stack[index - 1]);
       break;
       /* An unwind-protect stands between us and the catch we want.  So, save
@@ -237,23 +320,23 @@ void throw_towards_catch_tag(Obj throw_tag, Obj first_value) {
 	 jump to the unwind-protect.  See "Once you have begun to catch a crab,
 	 you cannot rely on being able to catch your breath," CLtL 2,
 	 pp. 190-191.  -jra 1/24/96 */
-    case 3:
+    case UNWIND_PROTECT_FRAME:
       ts->current_throw = throw_tag;
       target_jmp_buf = (jmp_buf *)(ts->throw_stack[index - 1]);
       ts->throw_stack_top = index - 2;
       store_values_on_stack(first_value);
       while (index>=0) {
 	switch ((int)(ts->throw_stack[index])) {
-	case 0:
+	case BINDING_FRAME:
 	  index = index - 3;
 	  break;
-	case 1:
+	case VALUES_FRAME:
 	  index = (index - 2) - (sint32)(ts->throw_stack[index - 1]);
 	  break;
-	case 3:
+	case UNWIND_PROTECT_FRAME:
 	  index = index - 2;
 	  break;
-	case 4:
+	case CATCH_FRAME:
 	  if (throw_tag == ts->throw_stack[index - 1])
 	    index = -1;		/* This stops our current while loop. */
 	  else {
@@ -267,7 +350,7 @@ void throw_towards_catch_tag(Obj throw_tag, Obj first_value) {
       }
       longjmp(*target_jmp_buf, 1);
       /* Catch, jump to it if the catch tag is eq, else pop 3. */
-    case 4:
+    case CATCH_FRAME:
       if (throw_tag == ts->throw_stack[index - 1]) {
 	target_jmp_buf = (jmp_buf *)(ts->throw_stack[index - 2]);
 	ts->throw_stack_top = index - 3;

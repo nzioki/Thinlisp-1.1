@@ -136,6 +136,11 @@
       ("store_values_on_stack" function)
       ("retrieve_values_from_stack" function)
       ("throw_towards_catch_tag" function)
+      ("bind_global" function)
+      ("unbind_global" function)
+      ("get_binding_addr" function)
+      ("get_binding_value" function)
+      ("set_binding_value" function)
       
       ("malloc_block_into_region" function)
       ("region_number_bytes_size" function)

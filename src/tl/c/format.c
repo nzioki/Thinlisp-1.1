@@ -282,9 +282,9 @@ Obj get_string_or_file_stream_for_output (Obj stream_arg, sint32 needed_space)
    case 0:
    case 11:
     if (stream_arg==NULL) 
-      return Sstandard_outputS;
+      return GET_GLOBAL(Sstandard_outputS);
     else if (stream_arg==(Obj)(&T)) 
-      return Sterminal_ioS;
+      return GET_GLOBAL(Sterminal_ioS);
     else {
       bad_stream_error(stream_arg);
       return (Obj)NULL;
@@ -545,7 +545,7 @@ void write_fixnum_with_commas (sint32 fixnum, sint32 base, sint32 comma_interval
   unsigned char *arg_temp;
   sint32 arg_temp_1, g, g_1, index;
 
-  reversed_fixnum_with_commas = (((Str *)reversed_fixnum_with_commas_string)->body);
+  reversed_fixnum_with_commas = (((Str *)GET_GLOBAL(reversed_fixnum_with_commas_string))->body);
   if (fixnum<0) {
     write_char('-',stream);
     fixnum = (-fixnum);
@@ -606,9 +606,9 @@ sint32 write_fixnum (sint32 fixnum, sint32 base, sint32 width, Obj streamP)
    case 0:
    case 11:
     if (streamP==NULL) 
-      stream = Sstandard_outputS;
+      stream = GET_GLOBAL(Sstandard_outputS);
     else if (streamP==(Obj)(&T)) 
-      stream = Sterminal_ioS;
+      stream = GET_GLOBAL(Sterminal_ioS);
     else 
       stream = get_string_or_file_stream_for_output(streamP,g);
     break;
@@ -837,21 +837,15 @@ Obj write_function (Obj object, Obj stream, Obj case_1, Obj escape, sint32 base,
 Obj prin1 (Obj object, Obj streamP)
 {
   Obj new_Sprint_escapeS, temp;
-  sint32 expected_top_of_stack;
+  Thread_state *ts;
 
   new_Sprint_escapeS = (Obj)(&T);
-  expected_top_of_stack = Throw_stack_top;
-  Throw_stack_top = (Throw_stack_top+3);
-  (Throw_stack[Throw_stack_top]) = 0;
-  (Throw_stack[Throw_stack_top-1]) = (Obj)(&Sprint_escapeS);
-  (Throw_stack[Throw_stack_top-2]) = Sprint_escapeS;
-  Sprint_escapeS = new_Sprint_escapeS;
-  temp = write_function(object,streamP,Sprint_caseS,Sprint_escapeS,UNBOXFIX(Sprint_baseS),
-      Sprint_prettyS,Sprint_levelS,Sprint_lengthS,Sprint_circleS);
-  Sprint_escapeS = (Throw_stack[Throw_stack_top-2]);
-  Throw_stack_top = (Throw_stack_top-3);
-  if (expected_top_of_stack!=Throw_stack_top) 
-    error("Corrupted Throw_stack_top in let");
+  ts = THREAD_STATE;
+  bind_global(&Sprint_escapeS,ts,new_Sprint_escapeS);
+  temp = write_function(object,streamP,GET_GLOBAL(Sprint_caseS),GET_GLOBAL(Sprint_escapeS),
+      UNBOXFIX(GET_GLOBAL(Sprint_baseS)),GET_GLOBAL(Sprint_prettyS),GET_GLOBAL(Sprint_levelS),
+      GET_GLOBAL(Sprint_lengthS),GET_GLOBAL(Sprint_circleS));
+  unbind_global(&Sprint_escapeS,ts);
   return temp;
 }
 
@@ -860,21 +854,15 @@ Obj prin1 (Obj object, Obj streamP)
 Obj princ (Obj object, Obj streamP)
 {
   Obj new_Sprint_escapeS, temp;
-  sint32 expected_top_of_stack;
+  Thread_state *ts;
 
   new_Sprint_escapeS = (Obj)NULL;
-  expected_top_of_stack = Throw_stack_top;
-  Throw_stack_top = (Throw_stack_top+3);
-  (Throw_stack[Throw_stack_top]) = 0;
-  (Throw_stack[Throw_stack_top-1]) = (Obj)(&Sprint_escapeS);
-  (Throw_stack[Throw_stack_top-2]) = Sprint_escapeS;
-  Sprint_escapeS = new_Sprint_escapeS;
-  temp = write_function(object,streamP,Sprint_caseS,Sprint_escapeS,UNBOXFIX(Sprint_baseS),
-      Sprint_prettyS,Sprint_levelS,Sprint_lengthS,Sprint_circleS);
-  Sprint_escapeS = (Throw_stack[Throw_stack_top-2]);
-  Throw_stack_top = (Throw_stack_top-3);
-  if (expected_top_of_stack!=Throw_stack_top) 
-    error("Corrupted Throw_stack_top in let");
+  ts = THREAD_STATE;
+  bind_global(&Sprint_escapeS,ts,new_Sprint_escapeS);
+  temp = write_function(object,streamP,GET_GLOBAL(Sprint_caseS),GET_GLOBAL(Sprint_escapeS),
+      UNBOXFIX(GET_GLOBAL(Sprint_baseS)),GET_GLOBAL(Sprint_prettyS),GET_GLOBAL(Sprint_levelS),
+      GET_GLOBAL(Sprint_lengthS),GET_GLOBAL(Sprint_circleS));
+  unbind_global(&Sprint_escapeS,ts);
   return temp;
 }
 
@@ -919,23 +907,26 @@ Obj write_list (Obj cons_1, Obj streamP)
   current_car = CAR(current_cons);
   next_cons = CDR(current_cons);
   while (IMMED_TAG(next_cons)==2) {             /* Consp */
-    write_function(current_car,streamP,Sprint_caseS,Sprint_escapeS,UNBOXFIX(Sprint_baseS),
-        Sprint_prettyS,Sprint_levelS,Sprint_lengthS,Sprint_circleS);
+    write_function(current_car,streamP,GET_GLOBAL(Sprint_caseS),GET_GLOBAL(Sprint_escapeS),
+        UNBOXFIX(GET_GLOBAL(Sprint_baseS)),GET_GLOBAL(Sprint_prettyS),GET_GLOBAL(Sprint_levelS),
+        GET_GLOBAL(Sprint_lengthS),GET_GLOBAL(Sprint_circleS));
     write_char(' ',streamP);
     current_cons = next_cons;
     current_car = CAR(current_cons);
     next_cons = CDR(current_cons);
   }
 
-  write_function(current_car,streamP,Sprint_caseS,Sprint_escapeS,UNBOXFIX(Sprint_baseS),
-      Sprint_prettyS,Sprint_levelS,Sprint_lengthS,Sprint_circleS);
+  write_function(current_car,streamP,GET_GLOBAL(Sprint_caseS),GET_GLOBAL(Sprint_escapeS),
+      UNBOXFIX(GET_GLOBAL(Sprint_baseS)),GET_GLOBAL(Sprint_prettyS),GET_GLOBAL(Sprint_levelS),
+      GET_GLOBAL(Sprint_lengthS),GET_GLOBAL(Sprint_circleS));
   if (next_cons==NULL) 
     write_char(')',streamP);
   else {
     write_string_function(((Str *)(&str_const_25))->body,streamP,   /* " . " */
         0,(Obj)NULL);
-    write_function(next_cons,streamP,Sprint_caseS,Sprint_escapeS,UNBOXFIX(Sprint_baseS),
-        Sprint_prettyS,Sprint_levelS,Sprint_lengthS,Sprint_circleS);
+    write_function(next_cons,streamP,GET_GLOBAL(Sprint_caseS),GET_GLOBAL(Sprint_escapeS),
+        UNBOXFIX(GET_GLOBAL(Sprint_baseS)),GET_GLOBAL(Sprint_prettyS),GET_GLOBAL(Sprint_levelS),
+        GET_GLOBAL(Sprint_lengthS),GET_GLOBAL(Sprint_circleS));
     write_char(')',streamP);
   }
   goto exit_nil;
@@ -956,7 +947,7 @@ Obj alloc_field_width_string (void)
   Str *string;
   sint32 fill_1;
 
-  this_cons = field_width_string_list;
+  this_cons = GET_GLOBAL(field_width_string_list);
   this_string = CAR(this_cons);
   next_consP = CDR(this_cons);
   if (next_consP==NULL) {
@@ -966,7 +957,7 @@ Obj alloc_field_width_string (void)
     next_consP = alloc_cons(ObjStrHDR(g),(Obj)NULL,0);
     CDR(this_cons) = next_consP;
   }
-  field_width_string_list = next_consP;
+  SET_GLOBAL(field_width_string_list,next_consP);
   string = (Str *)this_string;
   fill_1 = 0;
   (string->body[fill_1]) = '\000';
@@ -1002,8 +993,9 @@ Obj write_with_arglist (Obj stream, Obj object, Obj arglist, Obj atsign_modifier
         : (((Str *)(&str_const_10))->body),current_stream,  /* "nil" */
         0,(Obj)NULL);
   else 
-    write_function(object,current_stream,Sprint_caseS,Sprint_escapeS,UNBOXFIX(Sprint_baseS),
-        Sprint_prettyS,Sprint_levelS,Sprint_lengthS,Sprint_circleS);
+    write_function(object,current_stream,GET_GLOBAL(Sprint_caseS),GET_GLOBAL(Sprint_escapeS),
+        UNBOXFIX(GET_GLOBAL(Sprint_baseS)),GET_GLOBAL(Sprint_prettyS),GET_GLOBAL(Sprint_levelS),
+        GET_GLOBAL(Sprint_lengthS),GET_GLOBAL(Sprint_circleS));
   if (arglist!=NULL) {
     g = arglist;
     mincol_arg = CAR(g);
@@ -1114,10 +1106,10 @@ void write_fixnum_with_arglist (Obj stream, sint32 fixnum, Obj arglist,
     temp_3 = BOXFIX(3);
   comma_interval = UNBOXFIX(temp_3);
   if (colon_modifierP!=NULL) 
-    write_fixnum_with_commas(fixnum,UNBOXFIX(Sprint_baseS),comma_interval,
-        comma_char,current_stream);
+    write_fixnum_with_commas(fixnum,UNBOXFIX(GET_GLOBAL(Sprint_baseS)),
+        comma_interval,comma_char,current_stream);
   else 
-    write_fixnum(fixnum,UNBOXFIX(Sprint_baseS),0,current_stream);
+    write_fixnum(fixnum,UNBOXFIX(GET_GLOBAL(Sprint_baseS)),0,current_stream);
   if (mincol_arg!=NULL) {
     g_1 = (mincol-(sint32)(((Str *)current_stream)->fill_length));
     x = 0;
@@ -1161,7 +1153,7 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
         iteration_cached_args, iteration_uses_sublistsP, iteration_sublists;
   sint32 control_string_length;
   Obj new_field_width_string_list, temp_1;
-  sint32 expected_top_of_stack;
+  Thread_state *ts;
   unsigned char next_char;
   Obj arglist_pool;
   Obj temp_list[14];
@@ -1173,9 +1165,9 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
   sint32 g_2;
   unsigned char down_char;
   Obj new_Sprint_escapeS;
-  sint32 expected_top_of_stack_1;
+  Thread_state *ts_1;
   Obj arg_temp_1, arg_temp_2, g_3, arg_temp_3, g_4, object, g_5, new_Sprint_baseS;
-  sint32 expected_top_of_stack_2;
+  Thread_state *ts_2;
   Obj new_cdr, list, block_temp, arg_temp_4;
   sint32 x;
   Obj temp_2;
@@ -1212,13 +1204,9 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
   iteration_uses_sublistsP = (Obj)NULL;
   iteration_sublists = (Obj)NULL;
   control_string_length = (sint32)(StrHDR(control_string)->fill_length);
-  new_field_width_string_list = field_width_string_list;
-  expected_top_of_stack = Throw_stack_top;
-  Throw_stack_top = (Throw_stack_top+3);
-  (Throw_stack[Throw_stack_top]) = 0;
-  (Throw_stack[Throw_stack_top-1]) = (Obj)(&field_width_string_list);
-  (Throw_stack[Throw_stack_top-2]) = field_width_string_list;
-  field_width_string_list = new_field_width_string_list;
+  new_field_width_string_list = GET_GLOBAL(field_width_string_list);
+  ts = THREAD_STATE;
+  bind_global(&field_width_string_list,ts,new_field_width_string_list);
   while (!(index>=control_string_length)) {
     next_char = (control_string[index]);
     index = (index+1);
@@ -1324,30 +1312,23 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
        case 97:
        case 115:
         new_Sprint_escapeS = ((down_char=='s') ? ((Obj)(&T)) : (Obj)NULL);
-        expected_top_of_stack_1 = Throw_stack_top;
-        Throw_stack_top = (Throw_stack_top+3);
-        (Throw_stack[Throw_stack_top]) = 0;
-        (Throw_stack[Throw_stack_top-1]) = (Obj)(&Sprint_escapeS);
-        (Throw_stack[Throw_stack_top-2]) = Sprint_escapeS;
-        Sprint_escapeS = new_Sprint_escapeS;
+        ts_1 = THREAD_STATE;
+        bind_global(&Sprint_escapeS,ts_1,new_Sprint_escapeS);
         arg_temp_1 = stream;
         g_3 = ((args!=NULL) ? CAR(args) : (Obj)NULL);
         args = ((args!=NULL) ? CDR(args) : (Obj)NULL);
         arg_temp_2 = g_3;
         write_with_arglist(arg_temp_1,arg_temp_2,arglist,atsign_modifierP,
             colon_modifierP);
-        Sprint_escapeS = (Throw_stack[Throw_stack_top-2]);
-        Throw_stack_top = (Throw_stack_top-3);
-        if (expected_top_of_stack_1!=Throw_stack_top) 
-          error("Corrupted Throw_stack_top in let");
+        unbind_global(&Sprint_escapeS,ts_1);
         break;
        case 99:
         g_4 = ((args!=NULL) ? CAR(args) : (Obj)NULL);
         args = ((args!=NULL) ? CDR(args) : (Obj)NULL);
         arg_temp_3 = g_4;
-        write_function(arg_temp_3,stream,Sprint_caseS,atsign_modifierP,
-            UNBOXFIX(Sprint_baseS),Sprint_prettyS,Sprint_levelS,Sprint_lengthS,
-            Sprint_circleS);
+        write_function(arg_temp_3,stream,GET_GLOBAL(Sprint_caseS),atsign_modifierP,
+            UNBOXFIX(GET_GLOBAL(Sprint_baseS)),GET_GLOBAL(Sprint_prettyS),
+            GET_GLOBAL(Sprint_levelS),GET_GLOBAL(Sprint_lengthS),GET_GLOBAL(Sprint_circleS));
         break;
        case 100:
        case 120:
@@ -1371,17 +1352,9 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
           new_Sprint_baseS = BOXFIX(10);
           break;
         }
-        expected_top_of_stack_2 = Throw_stack_top;
-        Throw_stack_top = (Throw_stack_top+3);
-        (Throw_stack[Throw_stack_top]) = 0;
-        (Throw_stack[Throw_stack_top-1]) = (Obj)(&Sprint_baseS);
-        (Throw_stack[Throw_stack_top-2]) = Sprint_baseS;
-        Sprint_baseS = new_Sprint_baseS;
-        Throw_stack_top = (Throw_stack_top+3);
-        (Throw_stack[Throw_stack_top]) = 0;
-        (Throw_stack[Throw_stack_top-1]) = (Obj)(&Sprint_escapeS);
-        (Throw_stack[Throw_stack_top-2]) = Sprint_escapeS;
-        Sprint_escapeS = new_Sprint_escapeS;
+        ts_2 = THREAD_STATE;
+        bind_global(&Sprint_baseS,ts_2,new_Sprint_baseS);
+        bind_global(&Sprint_escapeS,ts_2,new_Sprint_escapeS);
         if (IMMED_TAG(object)==1)               /* Fixnump */
           write_fixnum_with_arglist(stream,UNBOXFIX(object),arglist,atsign_modifierP,
               colon_modifierP);
@@ -1422,11 +1395,8 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
           }
           write_with_arglist(stream,object,arglist,atsign_modifierP,colon_modifierP);
         }
-        Sprint_escapeS = (Throw_stack[Throw_stack_top-2]);
-        Sprint_baseS = (Throw_stack[Throw_stack_top-5]);
-        Throw_stack_top = (Throw_stack_top-6);
-        if (expected_top_of_stack_2!=Throw_stack_top) 
-          error("Corrupted Throw_stack_top in let");
+        unbind_global(&Sprint_escapeS,ts_2);
+        unbind_global(&Sprint_baseS,ts_2);
         break;
        case 38:
         if (BOXCHAR('\n')!=last_stream_charP(stream)) 
@@ -1711,10 +1681,7 @@ Obj format_function (Obj stream_arg, unsigned char *control_string, Obj args)
   }
   else 
     temp_1 = (Obj)NULL;
-  field_width_string_list = (Throw_stack[Throw_stack_top-2]);
-  Throw_stack_top = (Throw_stack_top-3);
-  if (expected_top_of_stack!=Throw_stack_top) 
-    error("Corrupted Throw_stack_top in let");
+  unbind_global(&field_width_string_list,ts);
   return temp_1;
 }
 
@@ -1800,26 +1767,19 @@ sint32 find_end_of_conditional (unsigned char *control_string, sint32 conditiona
 Obj error_one_arg (Obj control_string, Obj arg)
 {
   Obj temp;
-  sint32 expected_top_of_stack;
+  Thread_state *ts;
   unsigned char *arg_temp;
   Obj temp_list[2];
 
-  expected_top_of_stack = Throw_stack_top;
+  ts = THREAD_STATE;
   temp = BOXFIX(0);
-  Throw_stack_top = (Throw_stack_top+3);
-  (Throw_stack[Throw_stack_top]) = 0;
-  (Throw_stack[Throw_stack_top-1]) = (Obj)(&current_region);
-  (Throw_stack[Throw_stack_top-2]) = current_region;
-  current_region = temp;
+  bind_global(&current_region,ts,temp);
   arg_temp = (((Str *)control_string)->body);
   (temp_list[0]) = arg;
   (temp_list[1]) = (Obj)NULL;
   error((char *)(((Str *)format_function((Obj)NULL,arg_temp,(Obj)(((uint32)temp_list)
       +2)))->body));
-  current_region = (Throw_stack[Throw_stack_top-2]);
-  Throw_stack_top = (Throw_stack_top-3);
-  if (expected_top_of_stack!=Throw_stack_top) 
-    error("Corrupted Throw_stack_top at let*.");
+  unbind_global(&current_region,ts);
   return (Obj)NULL;
 }
 
@@ -1828,26 +1788,19 @@ Obj error_one_arg (Obj control_string, Obj arg)
 Obj error_two_args (Obj control_string, Obj arg1, Obj arg2)
 {
   Obj temp;
-  sint32 expected_top_of_stack;
+  Thread_state *ts;
   unsigned char *arg_temp;
   Obj temp_list[4];
 
-  expected_top_of_stack = Throw_stack_top;
+  ts = THREAD_STATE;
   temp = BOXFIX(0);
-  Throw_stack_top = (Throw_stack_top+3);
-  (Throw_stack[Throw_stack_top]) = 0;
-  (Throw_stack[Throw_stack_top-1]) = (Obj)(&current_region);
-  (Throw_stack[Throw_stack_top-2]) = current_region;
-  current_region = temp;
+  bind_global(&current_region,ts,temp);
   arg_temp = (((Str *)control_string)->body);
   (temp_list[0]) = arg1;
   (temp_list[2]) = arg2;
   error((char *)(((Str *)format_function((Obj)NULL,arg_temp,hook_up_cdrs(temp_list,
       2,NULL)))->body));
-  current_region = (Throw_stack[Throw_stack_top-2]);
-  Throw_stack_top = (Throw_stack_top-3);
-  if (expected_top_of_stack!=Throw_stack_top) 
-    error("Corrupted Throw_stack_top at let*.");
+  unbind_global(&current_region,ts);
   return (Obj)NULL;
 }
 
@@ -1856,27 +1809,20 @@ Obj error_two_args (Obj control_string, Obj arg1, Obj arg2)
 Obj error_three_args (Obj control_string, Obj arg1, Obj arg2, Obj arg3)
 {
   Obj temp;
-  sint32 expected_top_of_stack;
+  Thread_state *ts;
   unsigned char *arg_temp;
   Obj temp_list[6];
 
-  expected_top_of_stack = Throw_stack_top;
+  ts = THREAD_STATE;
   temp = BOXFIX(0);
-  Throw_stack_top = (Throw_stack_top+3);
-  (Throw_stack[Throw_stack_top]) = 0;
-  (Throw_stack[Throw_stack_top-1]) = (Obj)(&current_region);
-  (Throw_stack[Throw_stack_top-2]) = current_region;
-  current_region = temp;
+  bind_global(&current_region,ts,temp);
   arg_temp = (((Str *)control_string)->body);
   (temp_list[0]) = arg1;
   (temp_list[2]) = arg2;
   (temp_list[4]) = arg3;
   error((char *)(((Str *)format_function((Obj)NULL,arg_temp,hook_up_cdrs(temp_list,
       3,NULL)))->body));
-  current_region = (Throw_stack[Throw_stack_top-2]);
-  Throw_stack_top = (Throw_stack_top-3);
-  if (expected_top_of_stack!=Throw_stack_top) 
-    error("Corrupted Throw_stack_top at let*.");
+  unbind_global(&current_region,ts);
   return (Obj)NULL;
 }
 
@@ -2040,17 +1986,17 @@ void init_tl_format (void)
   if (Sterminal_ioS==(Obj)(&Unbound)) 
     Sterminal_ioS = alloc_file_strm(stdin,stdout,NULL,NULL,0,16);
   if (Sstandard_inputS==(Obj)(&Unbound)) 
-    Sstandard_inputS = Sterminal_ioS;
+    Sstandard_inputS = GET_GLOBAL(Sterminal_ioS);
   if (Sstandard_outputS==(Obj)(&Unbound)) 
-    Sstandard_outputS = Sterminal_ioS;
+    Sstandard_outputS = GET_GLOBAL(Sterminal_ioS);
   if (Serror_outputS==(Obj)(&Unbound)) 
     Serror_outputS = alloc_file_strm(NULL,stderr,NULL,NULL,0,16);
   if (Squery_ioS==(Obj)(&Unbound)) 
-    Squery_ioS = Sterminal_ioS;
+    Squery_ioS = GET_GLOBAL(Sterminal_ioS);
   if (Sdebug_ioS==(Obj)(&Unbound)) 
-    Sdebug_ioS = Sterminal_ioS;
+    Sdebug_ioS = GET_GLOBAL(Sterminal_ioS);
   if (Strace_outputS==(Obj)(&Unbound)) 
-    Strace_outputS = Serror_outputS;
+    Strace_outputS = GET_GLOBAL(Serror_outputS);
   if (Sprint_caseS==(Obj)(&Unbound)) 
     Sprint_caseS = (Obj)(tl_format_symbols+0);  /* UPCASE */
   if (Sprint_baseS==(Obj)(&Unbound)) 

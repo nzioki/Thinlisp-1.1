@@ -36,7 +36,7 @@ Obj internal_time_units_per_second = (Obj)(&Unbound);
 
 Obj sleep_1 (double seconds)
 {
-  sleep_ticks((long)(sint32)floor(seconds*(double)UNBOXFIX(internal_time_units_per_second)));
+  sleep_ticks((long)(sint32)floor(seconds*(double)UNBOXFIX(GET_GLOBAL(internal_time_units_per_second))));
   return (Obj)NULL;
 }
 

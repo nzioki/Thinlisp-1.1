@@ -94,6 +94,7 @@
     trandata
     l-expr
     l-const
+    l-stack
     l-trans
     symbols
     l-top

@@ -81,9 +81,9 @@ void init_lecho_boot (void)
   if (find_package_1((Obj)(&str_const_1))==NULL)    /* "LECHO" */
     make_package_1(((Str *)(&str_const_1))->body,(Obj)((    /* "LECHO" */
         (uint32)(&(cons_const[0])))+2));
-  current_system_being_loaded = (Obj)(lecho_boot_symbols+0);    /* LECHO */
-  all_systems = alloc_cons((Obj)(lecho_boot_symbols+0),all_systems,     /* LECHO */
-      0);
+  SET_GLOBAL(current_system_being_loaded,(Obj)(lecho_boot_symbols+0));  /* LECHO */
+  SET_GLOBAL(all_systems,alloc_cons((Obj)(lecho_boot_symbols+0),    /* LECHO */
+      GET_GLOBAL(all_systems),0));
   set_get((Obj)(lecho_boot_symbols+0),(Obj)(tl_boot_symbols     /* LECHO */
       +1),(Obj)NULL);                           /* SYSTEM-NICKNAMES */
 #if defined(NO_ADDRESS_CONSTANTS)

@@ -171,14 +171,15 @@ static const Str_113 str_const_5
 
 Obj validate_fixnum_assumptions (void)
 {
-  if (((sint32)BOXFIX(536870911))!=(sint32)compile_time_most_positive_fixnum) 
+  if (((sint32)BOXFIX(536870911))!=(sint32)GET_GLOBAL(compile_time_most_positive_fixnum)) 
     error((char *)(((Str *)(&str_const_3))->body));     /* "The following problem has been detected:  Compile ..." */
-  if ((UNBOXFIX(negative_fifty_million)>>8)!=(-195313)) 
+  if ((UNBOXFIX(GET_GLOBAL(negative_fifty_million))>>8)!=(-195313)) 
     error((char *)(((Str *)(&str_const_4))->body));     /* "The following problem has been detected:  Right sh..." */
-  if (!((((((sint32)(((Ldouble *)float_test_value)->body/1.0))==13) && ((
-      (sint32)((-(((Ldouble *)float_test_value)->body))/1.0))==(-13))) && ((
-      (sint32)(((Ldouble *)float_test_value)->body/-1.0))==(-13))) && ((
-      (sint32)((-(((Ldouble *)float_test_value)->body))/-1.0))==13))) 
+  if (!((((((sint32)(((Ldouble *)GET_GLOBAL(float_test_value))->body/1.0))
+      ==13) && (((sint32)((-(((Ldouble *)GET_GLOBAL(float_test_value))->body))
+      /1.0))==(-13))) && (((sint32)(((Ldouble *)GET_GLOBAL(float_test_value))->body
+      /-1.0))==(-13))) && (((sint32)((-(((Ldouble *)GET_GLOBAL(float_test_value))->body))
+      /-1.0))==13))) 
     error((char *)(((Str *)(&str_const_5))->body));     /* "The following problem has been detected:  Casting ..." */
   return (Obj)NULL;
 }

@@ -489,6 +489,8 @@
 
 (def-c-type jmp-buf "jmp_buf" "jmp_buf *" nil nil)
 
+(def-c-type thread-state "Thread_state" "Thread_state *" nil nil)
+
 (def-c-type c-function "ERROR" "Obj (*)(Obj)" nil nil)
 
 (def-c-type char-pointer "char *" "char **" nil nil)

@@ -41,6 +41,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/**
+ * Lisp Stack Markers
+ *
+ * The Lisp stack has frames that are marked using the following enumeration.
+ */
+
+enum Stack_frames {
+  BINDING_FRAME, 
+  VALUES_FRAME,
+  UNUSED_FRAME,
+  UNWIND_PROTECT_FRAME,
+  CATCH_FRAME
+};
+  
+
 
 /**
  * Integer types in TL translated code will always refer to the following types,
@@ -420,18 +435,12 @@ typedef struct {
  *
  * For each thread, there is a certain amount of global state that must be
  * maintained.  These are a Values_buffer, Values_count, Throw_stack,
- * Throw_stack_top, Current_throw, and Current_bindings.  These are encapsulated
- * into a Thread_state structure.  These structures are maintained within a
- * linked global list, where the first element of the list is guaranteed to be
- * the structure for the "main" thread of this process.  For definitions of each
- * of these values, see their corresponding "get" functions below.
+ * Throw_stack_top, and Current_throw.  These are encapsulated into a
+ * Thread_state structure.  These structures are maintained within a linked
+ * global list, where the first element of the list is guaranteed to be the
+ * structure for the "main" thread of this process.  For definitions of each of
+ * these values, see their corresponding "get" functions below.  
  */
-
-typedef struct binding_type {
-  Obj                 *global_address;
-  Obj                 thread_value;
-  struct binding_type *next_binding;
-} Binding;
 
 #define THROW_STACK_MAX 2048
 
@@ -461,12 +470,6 @@ typedef struct thread_state_type {
   Obj     throw_stack[THROW_STACK_MAX];
   sint32  throw_stack_top;
   Obj     current_throw;
-  /* When global variables are bound, we need to allocate some memory to store
-   * the current value of the global variable for that thread.  The values of
-   * the global bindings of global variables are stored in the global C
-   * variable.  The values of bindings for threads are stored in linked lists in
-   * this global_bindings slot. */
-  Binding *global_bindings;
   /* A pointer to the parent thread for this thread, if any. */
   struct thread_state_type *parent_thread_state;
 } Thread_state;
@@ -498,6 +501,10 @@ extern Thread_state **thread_states;
 #define Current_throw (THREAD_STATE->current_throw)
 
 extern Hdr Unbound;
+
+extern void bind_global(Obj *var_address, Thread_state *ts, Obj new_value);
+
+extern void unbind_global(Obj *var_address, Thread_state *ts);
 
 extern void store_values_on_stack(Obj first_value);
 
@@ -683,6 +690,7 @@ extern int unlink(char *filename);
 #if defined(PTHREAD)
 
 extern Thread_state *current_thread_state(void);
+extern Thread_state *current_thread_state_if_any(void);
 #define THREAD_STATE (current_thread_state())
 
 #else
@@ -693,9 +701,34 @@ extern Thread_state *current_thread_state(void);
 
 
 /**
- * The macro TYPE_TAG takes a Lisp Obj and an sint32 temporary variable, and
- * returns its int type tag.  
+ * The macros GET_GLOBAL, SET_GLOBAL, GET_THREAD_GLOBAL, and SET_THREAD_GLOBAL
+ * are used to access and modify the values of special variables, given
+ * identifier for the C global variable holding the address of the global.
  */
+
+#if defined(PTHREAD)
+
+extern Obj get_binding_value(Obj *global_addr, Thread_state *thread);
+extern Obj set_binding_value(Obj *global_addr, Thread_state *thread, Obj new_value);
+
+#define GET_GLOBAL(global) GET_THREAD_GLOBAL(global, current_thread_state_if_any())
+#define SET_GLOBAL(global,new_value) SET_THREAD_GLOBAL(global, current_thread_state_if_any(), new_value)
+#define GET_THREAD_GLOBAL(global,thread) get_binding_value(&global, thread)
+#define SET_THREAD_GLOBAL(global,thread,new_value) set_binding_value(&global, thread, new_value)
+
+#else
+
+#define GET_GLOBAL(global) global
+#define SET_GLOBAL(global,new_value) (global = (new_value))
+#define GET_THREAD_GLOBAL(global,thread) global
+#define SET_THREAD_GLOBAL(global,thread,new_value) (global = (new_value))
+
+#endif
+
+
+/**
+ * The macro TYPE_TAG takes a Lisp Obj and an sint32 temporary variable, and
+ * returns its int type tag.  */
 
 #define CLASS_HDR_TAG 17
 

@@ -199,9 +199,9 @@ void syms_tl_boot (void)
 void init_tl_boot (void)
 {
   SpackageS = find_package_1((Obj)(&str_const));    /* "TL" */
-  current_system_being_loaded = (Obj)(tl_boot_symbols+0);   /* TL */
-  all_systems = alloc_cons((Obj)(tl_boot_symbols+0),all_systems,    /* TL */
-      0);
+  SET_GLOBAL(current_system_being_loaded,(Obj)(tl_boot_symbols+0));     /* TL */
+  SET_GLOBAL(all_systems,alloc_cons((Obj)(tl_boot_symbols+0),   /* TL */
+      GET_GLOBAL(all_systems),0));
   set_get((Obj)(tl_boot_symbols+0),(Obj)(tl_boot_symbols+1),    /* TL, SYSTEM-NICKNAMES */
       (Obj)NULL);
   set_get((Obj)(tl_boot_symbols+0),(Obj)(tl_boot_symbols+2),    /* TL, SYSTEM-USED-SYSTEMS */
