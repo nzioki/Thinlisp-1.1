@@ -154,6 +154,7 @@
 (defconstant intelnt-code     25)
 (defconstant ncr-code         26)
 (defconstant windows95-code   27)
+(defconstant freebsd-code     28)
 
 
 
@@ -195,6 +196,7 @@
       ((= platform-code intelnt-code)      'win32)
       ((= platform-code ncr-code)          'unix)
       ((= platform-code windows95-code)    'win32)
+      ((= platform-code freebsd-code)      'unix)
 
       ;; jh per jra, 8/26/93.  Made the "otherwise" clause more forgiving for
       ;; new ports.  Instead of an error, we assume that all new ports will be
@@ -240,6 +242,7 @@
       ((= platform-code intelnt-code)      'intelnt)
       ((= platform-code ncr-code)          'ncr)
       ((= platform-code windows95-code)    'windows95)
+      ((= platform-code freebsd-code)      'freebsd)
       ;; jh per jra, 8/26/93.  Made the "otherwise" clause more forgiving for
       ;; new ports.  Instead of an error, we return a special symbol.
       (t                                   'experimental-port))))
