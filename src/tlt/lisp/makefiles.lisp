@@ -85,6 +85,10 @@
      (exe-postfix . "")
      (system-libs . "-lm"))
 
+    (("linux-pthreads" "linux")
+     (cc-flags    . "-D_REENTRANT -DPTHREAD -O2 -ansi -pedantic -W -Wall -fomit-frame-pointer -c")
+     (debug-flags . "-D_REENTRANT -DPTHREAD -ggdb3 -ansi -pedantic -W -Wall -c"))
+
     (("freebsd" "linux"))
 
     (("config")

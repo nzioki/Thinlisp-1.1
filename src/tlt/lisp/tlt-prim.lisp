@@ -1180,6 +1180,24 @@
 		 'file-stream)))
 	   (make-c-literal-expr (c-type-tag 'file-strm))))))
 
+(def-c-translation make-error-output-file-stream ()
+  ((lisp-specs :ftype (() file-stream))
+   '*terminal-io*)
+  ((trans-specs :c-type (() obj))
+   (make-c-function-call-expr
+     (make-c-name-expr "alloc_file_strm")
+     (list (make-c-name-expr "NULL")
+	   (make-c-name-expr "stderr")
+	   (make-c-name-expr "NULL")
+	   (make-c-name-expr "NULL")
+	   (make-c-literal-expr
+	     (region-number-for-type-and-area
+	       'file-stream
+	       (declared-area-name
+		 (l-expr-env function-call-l-expr)
+		 'file-stream)))
+	   (make-c-literal-expr (c-type-tag 'file-strm))))))
+
 
 
 
