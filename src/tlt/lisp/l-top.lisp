@@ -143,7 +143,8 @@
     ;; Emit statements to prevent unused variable warnings from the C compiler
     ;; for ignored arguments.
 
-    (loop for info in lisp-parameter-info do
+    (loop with *print-pretty* = nil
+	  for info in lisp-parameter-info do
       (when (cdr (assq 'ignore (cons-fifth info)))
 	(emit-expr-to-compound-statement
 	  (make-c-line-comment-expr

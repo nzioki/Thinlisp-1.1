@@ -709,7 +709,14 @@
 	       (values 'null 'obj))
 	      (symbol
 	       (values 'symbol 'obj))
-	      (fixnum
+	      (integer
+	       ;; Note that the underlying Lisp fixnums and TL fixnums may have
+	       ;; different sizes (for example in CLISP).  Use fixnump, which
+	       ;; returns whether it would be a TL fixnum.  -jallard 5/28/01
+	       (when (not (fixnump value))
+		 (translation-warning
+		  "Constant ~a isn't a fixnum in TL, TL doesn't support bignums."
+		  value))
 	       (if (tl-subtypep lisp-type '(c-type "long"))
 		   (values '(c-type "long") 'long)
 		   (values 'fixnum

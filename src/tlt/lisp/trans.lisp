@@ -188,8 +188,9 @@
 (defun translate-module (system module &key (verbose t) (print nil)
 				(module-number 0) (total-modules 0))
   (when verbose
-    (format t "~%Translating ~40a    [~3d/~3d] "
-	    (system-c-file system module) module-number total-modules)
+    (write-string
+      (format nil "~%Translating ~40a    [~3d/~3d] "
+	      (system-c-file system module) module-number total-modules))
     (force-output))
   (let ((*package* *package*)
 	(*readtable* *readtable*)
@@ -707,22 +708,23 @@
     (when (c-file-c-stream c-file)
       (close (c-file-c-stream c-file) :abort abort)
       (unless abort
+	;; The following assumes that the tmp-path and final-path point to the
+	;; same directory.  Rename insists on taking its defaults from the first
+	;; argument, messing the relative pathname we give as the second
+	;; argument.  So, just pull the name and type out of the target path and
+	;; make a new pathname containing only those elements.  -jallard 7/23/97
 	(let* ((c-path (c-file-final-pathname c-file))
-	       (tmp-path (c-file-temporary-pathname c-file)))
-	  (if (or (not (probe-file c-path))
-		  (not (file-contents-equal c-path tmp-path)))
-	      ;; The following assumes that the tmp-path and final-path point to
-	      ;; the same directory.  Rename insists on taking its defaults from
-	      ;; the first argument, messing the relative pathname we give as the
-	      ;; second argument.  So, just pull the name and type out of the
-	      ;; target path and make a new pathname containing only those
-	      ;; elements.  -jallard 7/23/97
-	      (rename-file
-		tmp-path
-		(make-pathname
-		  :name (pathname-name c-path)
-		  :type (pathname-type c-path)))
-	      (delete-file tmp-path)))))
+	       (tmp-path (c-file-temporary-pathname c-file))
+	       (new-c-path (make-pathname
+			    :name (pathname-name c-path)
+			    :type (pathname-type c-path))))
+	  (cond ((not (probe-file c-path))
+		 (rename-file tmp-path new-c-path))
+		((not (file-contents-equal c-path tmp-path))
+		 (delete-file c-path)
+		 (rename-file tmp-path new-c-path))
+		(t
+		 (delete-file tmp-path))))))
     (when (c-file-h-file c-file)
       (let ((h-file (c-file-h-file c-file))
 	    (last-symbol-defn? (c-file-last-symbol-definition? c-file))

@@ -413,6 +413,23 @@
 
 
 
+;;; The following prevents a CLISP features of compile-time evaluating calls to
+;;; package operations with constant arguments.  I.e., the default setting of
+;;; this variable would create a package at compile time for the following code.
+;;;
+;;;   (defun never-call-me ()
+;;;     (when (hell-freezes-over)
+;;;        (make-package "PACKAGE-OF-THE-APOCALYPSE")))
+;;;
+;;; I'll turn off this switch.  -jallard 5/28/01
+
+#+clisp
+(setq custom:*package-tasks-treat-specially* nil)
+
+
+
+
+
 ;;; The following sets up the standard printer debugger settings for Lucid.
 
 #+lucid

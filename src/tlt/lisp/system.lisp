@@ -624,8 +624,9 @@
 	do
     (unless (eql loaded-date? write-date)
       (when verbose
-	(format t "~%Loading     ~40a      [~3d/~3d] "
-		binary-file module-count total-modules)
+	(write-string
+	 (format nil "~%Loading     ~40a      [~3d/~3d] "
+		 binary-file module-count total-modules))
 	(force-output))
       (load binary-file :verbose print)
       (setf (loaded-system-lisp-binary-write-date system module) write-date))
@@ -710,7 +711,7 @@
 	  (setq from nil)
 	  (when (probe-file binary-file)
 	    (when verbose
-	      (format t "~%Deleting    ~40a" binary-file))
+	      (write-string (format nil "~%Deleting    ~40a" binary-file)))
 	    (delete-file binary-file)))
 	    until (eq module to)
 	    finally
@@ -751,9 +752,10 @@
 			  (<= binary-write-date? 
 			      user::exports-file-write-date))))
 	(when verbose
-	  (format t "~%Compiling   ~40a    [~3d/~3d] ~a"
-		  lisp-file module-count total-modules
-		  (if development? " (development)" ""))
+	  (write-string
+	    (format nil "~%Compiling   ~40a    [~3d/~3d] ~a"
+		    lisp-file module-count total-modules
+		    (if development? " (development)" "")))
 	  (force-output))
 	(compile-file lisp-file
 		      :output-file relative-binary-file
@@ -762,9 +764,10 @@
 	(setq binary-write-date? (file-write-date binary-file)))
       (unless (eql loaded-date? binary-write-date?)
 	(when verbose
-	  (format t "~%Loading     ~40a    [~3d/~3d] ~a"
-		  binary-file module-count total-modules
-		  (if development? " (development)" ""))
+	  (write-string
+	    (format nil "~%Loading     ~40a    [~3d/~3d] ~a"
+		    binary-file module-count total-modules
+		    (if development? " (development)" "")))
 	  (force-output))
 	(load binary-file :verbose print :print print)
 	(setf (loaded-system-lisp-binary-write-date system module)

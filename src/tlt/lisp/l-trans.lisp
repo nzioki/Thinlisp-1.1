@@ -1238,7 +1238,8 @@
 	  (t
 	   (make-c-cast-expr
 	    'obj (make-c-unary-expr #\& (make-c-name-expr string-var)))))
-	 (let ((length (length value)))
+	 (let ((*print-pretty* nil)
+	       (length (length value)))
 	   (declare (fixnum length))
 	   (if (> length comment-string-max-length)
 	       (format nil "\"~a...\"" (subseq value 0 comment-string-max-length))
@@ -1656,7 +1657,8 @@
 		     (make-c-name-expr (cons-car compiled-func-reference?))
 		     (make-c-line-comment-expr
 		       (make-c-literal-expr (cons-cdr compiled-func-reference?))
-		       (format nil "#'~a" compiled-function-name)))))
+		       (let ((*print-pretty* nil))
+			 (format nil "#'~a" compiled-function-name))))))
       l-expr? c-func c-body return-directive)))
 
 (defun make-and-initialize-new-compiled-function-reference
@@ -2787,7 +2789,8 @@
     ((tl-subtypep required-lisp-type 'character)
      (translate-immediate-tag-test c-expr 3))
     (t
-     (let ((type-tag? (lisp-type-tag required-lisp-type)))
+     (let ((type-tag? (lisp-type-tag required-lisp-type))
+	   (*print-pretty* nil))
        (cond (type-tag?
 	      (make-c-line-comment-expr
 	        (translate-tag-test c-expr type-tag?)

@@ -200,6 +200,7 @@
     (let ((system (c-file-system c-file))
 	  (module (c-file-module c-file))
 	  (*package* *tli-package*)
+	  (*print-pretty* nil)
 	  (symbol-array-name (car (c-file-last-symbol-definition? c-file)))
 	  (compiled-function-array-name
 	    (car (c-file-last-compiled-function-definition? c-file))))

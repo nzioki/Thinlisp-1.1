@@ -206,10 +206,13 @@
 	      (not (typep object 'lcl:string-output-stream))))
 	;; If we run on a non-30-bit fixnum implementation, comment this in.
 	;; -jra 3/4/96
-;	((eq type 'fixnum)
-;	 (and (typep object 'integer)
-;	       (<= object most-positive-tl-fixnum)
-;	       (>= object most-negative-tl-fixnum)))
+	;; CLISP is one such implementation.  -jallard 5/28/01
+	#+clisp
+	((eq type 'fixnum)
+	 (or (typep object 'fixnum)
+	     (and (typep object 'integer)
+		  (<= object most-positive-tl-fixnum)
+		  (>= object most-negative-tl-fixnum))))
 	((and (consp type)
 	      (eq (cons-car type) 'values)
 	      (= (length type) 2))
@@ -229,7 +232,14 @@
   `(tl-typep ,x 'fixnum))
 
 (defmacro tl-type-of (object)
-  `(type-of ,object))
+  (let ((ob (gensym))
+	(type (gensym)))
+    `(let* ((,ob ,object)
+	    (,type (type-of ,ob)))
+       (if (and (or (eq ,type 'integer) (eq ,type 'bignum))
+		(fixnump ,ob))
+	   'fixnum
+	 ,type))))
 
 
 
