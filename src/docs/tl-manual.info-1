@@ -71,11 +71,11 @@ small, efficient executable image.
 not a traditional Lisp environment.  It purposefully does not contain a
 garbage collector.  ThinLisp produces compile time warnings for uses of
 inherently slow Lisp operations, for consing operations, and for code
-that cannnot be optimized due to a lack of sufficient type
-declarations.  These warnings can be suppressed by improving the code,
-or through use of lexical declarations acknowledging that the code is
-only of prototype quality.  Code meeting the stringent requirements
-imposed by ThinLisp cannot by sped up by rewriting it in C.
+that cannot be optimized due to a lack of sufficient type declarations.
+These warnings can be suppressed by improving the code, or through use
+of lexical declarations acknowledging that the code is only of
+prototype quality.  Code meeting the stringent requirements imposed by
+ThinLisp cannot by sped up by rewriting it in C.
 
    The ThinLisp home is <http://www.thinlisp.org/>.  The newest source
 distributions of TL and this manual can be found here.  Bugs should be
@@ -166,7 +166,7 @@ Lisp in Action
 ==============
 
    In any case, throughout the 1980's the bulk of the research labs and
-companies that attempted to commercialize AI technologies used Common
+companies that attempted to commerciallize AI technologies used Common
 Lisp to implement their products.  The most broadly deployed AI-based
 technique was expert systems, also called rule-based systems.  (1)
 Early results were encouraging.  In the lab, sometimes on specialized
@@ -219,16 +219,16 @@ system and never restarted it again.
    The G2 system is a real-time supervisory level control system built
 by Gensym Corporation.  It's source code was written in Lisp, and for
 approximately 3 years was released as a world-saved image made from
-tranditional Lisp environments on UNIX workstation class machines.  In
-1990, Gensym ported its system to Ibuki Common Lisp, which was a
-Lisp-to-C translator descended from Kyoto Common Lisp.  By translating
-to C and discarding those parts of Common Lisp that we didn't use, we
-were able to decrease the size of our shipped product by 25%, a fact
-that was greatly appreciated by a customber base tired of constantly
-having to buy more memory for computers.  In 1993 Gensym changed again
-to a different Lisp to C translator made by Chestnut Software.  This
+Lucid Lisp environments on UNIX workstation class machines.  In 1990,
+Gensym ported its system to Ibuki Common Lisp, which was a Lisp-to-C
+translator descended from Kyoto Common Lisp.  By translating to C and
+discarding those parts of Common Lisp that we didn't use, we were able
+to decrease the size of our shipped product by 25%, a fact that was
+greatly appreciated by a customer base tired of constantly having to
+buy more memory for computers.  In 1993 Gensym changed again to a
+different Lisp to C translator made by Chestnut Software.  This
 produced an additional 40% decrease in size, and a significant
-improvement in performance.  The ThinLisp translator is a philisophical
+improvement in performance.  The ThinLisp translator is a philosophical
 descendent of the Chestnut translator, though ThinLisp was written from
 scratch.  One of the factors cited by the head of sales of G2 was that
 once we used a Lisp to C translator, he could say that the product was
@@ -236,9 +236,9 @@ once we used a Lisp to C translator, he could say that the product was
 significant downside to our system in the eyes of many potential
 customers.
 
-   The BoreRat is an autonomous robotic device that travels through the
-piping installed in oil wells.  Built by IS Robotics, it is capable of
-travelling 2 miles straight down into a well, perform maintenance and
+   The Bore Rat is an autonomous robotic device that travels through
+the piping installed in oil wells.  Built by IS Robotics, it is capable
+of traveling 2 miles straight down into a well, perform maintenance and
 data logging tasks, and then return to the surface, all under its own
 power and control.  The software for this system was written in L, a
 Lisp subset made for embedded processors, in this case a Motorola

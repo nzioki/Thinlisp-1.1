@@ -55,11 +55,43 @@ array become somewhat too large.
 
    The type tags in headers should not conflict with any of the
 immediate type tags, so that type-case can turn into a fixnum-case of
-the type values.
+the type values.  Given these set ups, type tests against built-in
+types are at worst a null test, a mask and an integer equality test, a
+character byte fetch, and another integer equality test.
 
-   Given these set ups, type tests against straight types are at worst
-a null test, a mask and an integer equality test, a character byte
-fetch, and another integer equality test.
+   Types for structures and classes are somewhat more complicated.  For
+these types there is a special tag value in the type location of a Hdr,
+but the actual type tag is then stored within the remaining 24 bits of
+the the Hdr word.  This can be fetched using the extended_type slot of
+the Class_hdr struct.  The type tags stored in the extended_type field
+of a Class_hdr are guaranteed to be larger in magnitude and disjoint
+from both the immediate type tags and the built-in type tags.
+Basically, all type tags for instances of structure-object and
+standard-object (and their subclasses) will be stored as extended type
+tags.
+
+   The following C function shows how to fetch the type tag for an Obj.
+This is actually implemented in the TYPE_TAG macro defined in
+`tl/c/tl.h'.
+
+     sint32 type_tag (Obj object) {
+       sint32 tag_temp;
+     
+       if (object==NULL) {
+         return 0;
+       } else {
+         tag_temp = ((sint32)object) & 3;
+         if (tag_temp != 0) {
+           return tag_temp;
+         } else {
+           tag_temp = ((Hdr *)object)->type;
+           if (tag_temp != CLASS_HDR_TAG)
+             return tag_temp;
+           else
+             return ((Class_hdr *)object)->extended_type;
+         }
+       }
+     }
 
    In C, the implemetation type for object should be an unsigned
 integer type 32 bits long.  There are several advantages to this.  All
@@ -81,33 +113,40 @@ production systems, we could check for double reclamation of data
 structures.  Note that this is not possible for heap allocated data
 structures that use an immediate type tag.
 
+   The type for structures is the type value stored in the 8 bit type
+tag location of standard headers.  Structures also have an additional
+type value that is stored in the remainder 24 bits of the initial
+header word which further differentiates between structure types.  The
+same is true for class instances.  (5)
+
    The type tags for heap allocated data structures have no special
 issues, except that these values should not collide with any immediate
 type tags (i.e. be greater than 3), and be able to quickly determine if
-a data structure is reclaimed (i.e. use bit 7 as a flag). (5)
+a data structure is reclaimed (i.e. use bit 7 as a flag). (6)
 
    So the type tag table is as follows:
 
-     Tag Value							Reclaimed Tag
-     Dec     Hex	Lisp Type		C Type & Conv		Dec    Hex
-     -------------	---------		-------------		-------------
-     0	00	immed pointer (or nil)	(Header *)Obj
-     1	01	immed fixnum		((sint32)Obj)>>2
-     2	02	cons			(Obj *)(Obj-2)
-     3	03	immed character		(unsigned char)(Obj>>2)
-     4	04	managed-float		(Mdouble *)Obj		132	84
-     5	05	double-float		(Ldouble *)Obj		133	85
-     6	06	simple-vector		(Sv *)Obj	 	134	86
-     7	07	string (w/fill ptr)	(Str *)Obj	 	135	87
-     8	08	(simple-array ubyte 8)	(Sa_uint8 *)Obj	 	136	88
-     9	09	(simple-array ubyte 16)	(Sa_uint16 *)Obj 	137	89
-     10	0A	(simple-array double)	(Sa_double *)Obj 	138	8A
-     11	0B	symbol			(Sym *)Obj	 	139	8B
-     12	0C	compiled-function	(Func *)Obj	 	140	8C
-     13	0D	package			(Package *)Obj	 	141	8D
+     Dec     Hex     Lisp Type               C Type & Conv
+     -------------   ---------               -------------
+     0       00      immed pointer (or nil)  (Header *)Obj
+     1       01      immed fixnum            ((sint32)Obj)>>2
+     2       02      cons                    (Obj *)(Obj-2)
+     3       03      immed character         (unsigned char)(Obj>>2)
+     4       04      managed-float           (Mdouble *)Obj
+     5       05      double-float            (Ldouble *)Obj
+     6       06      simple-vector           (Sv *)Obj
+     7       07      string (w/fill ptr)     (Str *)Obj
+     8       08      (simple-array ubyte 8)  (Sa_uint8 *)Obj
+     9       09      (simple-array ubyte 16) (Sa_uint16 *)Obj
+     10      0A      (simple-array double)   (Sa_double *)Obj
+     11      0B      symbol                  (Sym *)Obj
+     12      0C      compiled-function       (Func *)Obj
+     13      0D      package                 (Package *)Obj
      14      0E      unbound                 (Hdr *)Obj
      15      0F      string-stream           (String_strm *)Obj
-     16      10      file-stream		(File_strm *)Obj
+     16      10      file-stream             (File_strm *)Obj
+     17      11      (or structure-object    (Hdr_struct *)Obj
+                         standard-object)
 
    The table above can be verified with the implementation by calling
 `(tli::print-type-tags)'.  Each of the data structures are described
@@ -394,7 +433,7 @@ dismissed this approach since it would require pointer arithmatic to be
 done to fetch the type tag of an object.  However, since most
 processors have a single instruction that can fetch from an address
 plus offset, this becomes a moot point.  For now, the existing scheme
-carries the day due to inertia.
+carries the day due to inertia.  -jallard, 10/31/99
 
    (3) The Alpha OSF has since been renamed DEC UNIX.
 
@@ -403,7 +442,10 @@ example, we could put immediate floats into odd-indexed simple vector
 locations, and those floats would consume 2 elements.  For structures
 and frames, this could provide significant savings.  -jra 8/30/95
 
-   (5) This latter idea of having a "reclaimed flag" has never been
+   (5) This note about classes is being written in anticipation of their
+implementation.  -jallard 10/29/99
+
+   (6) This latter idea of having a "reclaimed flag" has never been
 implemented.  -jallard 10/12/99
 
 

@@ -101,7 +101,7 @@ produce a small, efficient executable image.
 Originally designed for real-time control applications, ThinLisp is not a
 traditional Lisp environment.  It purposefully does not contain a garbage
 collector.  ThinLisp produces compile time warnings for uses of inherently slow
-Lisp operations, for consing operations, and for code that cannnot be optimized
+Lisp operations, for consing operations, and for code that cannot be optimized
 due to a lack of sufficient type declarations.  These warnings can be suppressed
 by improving the code, or through use of lexical declarations acknowledging that
 the code is only of prototype quality.  Code meeting the stringent requirements
@@ -186,7 +186,7 @@ today, at least in the U.S.
 @section Lisp in Action
 
 In any case, throughout the 1980's the bulk of the research labs and companies
-that attempted to commercialize AI technologies used Common Lisp to implement
+that attempted to commerciallize AI technologies used Common Lisp to implement
 their products.  The most broadly deployed AI-based technique was expert
 systems, also called rule-based systems.  @footnote{Of course this is ignoring
 other, more broadly applicable developments, such as multi-tasking operating
@@ -235,24 +235,24 @@ system and never restarted it again.
 
 The G2 system is a real-time supervisory level control system built by Gensym
 Corporation.  It's source code was written in Lisp, and for approximately 3
-years was released as a world-saved image made from tranditional Lisp
+years was released as a world-saved image made from Lucid Lisp
 environments on UNIX workstation class machines.  In 1990, Gensym ported its
 system to Ibuki Common Lisp, which was a Lisp-to-C translator descended from
 Kyoto Common Lisp.  By translating to C and discarding those parts of Common Lisp
 that we didn't use, we were able to decrease the size of our shipped product by
-25%, a fact that was greatly appreciated by a customber base tired of constantly
+25%, a fact that was greatly appreciated by a customer base tired of constantly
 having to buy more memory for computers.  In 1993 Gensym changed again to a
 different Lisp to C translator made by Chestnut Software.  This produced an
 additional 40% decrease in size, and a significant improvement in performance.
-The ThinLisp translator is a philisophical descendent of the Chestnut
+The ThinLisp translator is a philosophical descendent of the Chestnut
 translator, though ThinLisp was written from scratch.  One of the factors cited
 by the head of sales of G2 was that once we used a Lisp to C translator, he
 could say that the product was "deployed in C", thereby side-stepping the Lisp
 issue, which had been a significant downside to our system in the eyes of many
 potential customers.
 
-The BoreRat is an autonomous robotic device that travels through the piping
-installed in oil wells.  Built by IS Robotics, it is capable of travelling 2
+The Bore Rat is an autonomous robotic device that travels through the piping
+installed in oil wells.  Built by IS Robotics, it is capable of traveling 2
 miles straight down into a well, perform maintenance and data logging tasks, and
 then return to the surface, all under its own power and control.  The software
 for this system was written in L, a Lisp subset made for embedded processors, in
@@ -1279,7 +1279,7 @@ fixnum numeric operations.  I had originally dismissed this approach since it
 would require pointer arithmatic to be done to fetch the type tag of an object.
 However, since most processors have a single instruction that can fetch from an
 address plus offset, this becomes a moot point.  For now, the existing scheme
-carries the day due to inertia.}
+carries the day due to inertia.  -jallard, 10/31/99}
 
 Characters could be either immediate or remote, though there is some performance
 benefit to characters being immediate.  We could have a preallocated array of
@@ -1289,11 +1289,46 @@ are thinking hard about UNICODE characters, which require 16 bits and so make a
 pre-allocated array become somewhat too large.
 
 The type tags in headers should not conflict with any of the immediate type
-tags, so that type-case can turn into a fixnum-case of the type values.
-
-Given these set ups, type tests against straight types are at worst a null test,
-a mask and an integer equality test, a character byte fetch, and another integer
+tags, so that type-case can turn into a fixnum-case of the type values.  Given
+these set ups, type tests against built-in types are at worst a null test, a
+mask and an integer equality test, a character byte fetch, and another integer
 equality test.
+
+Types for structures and classes are somewhat more complicated.  For these types
+there is a special tag value in the type location of a Hdr, but the actual type
+tag is then stored within the remaining 24 bits of the the Hdr word.  This can
+be fetched using the extended_type slot of the Class_hdr struct.  The type tags
+stored in the extended_type field of a Class_hdr are guaranteed to be larger in
+magnitude and disjoint from both the immediate type tags and the built-in type
+tags.  Basically, all type tags for instances of structure-object and
+standard-object (and their subclasses) will be stored as extended type tags.
+
+The following C function shows how to fetch the type tag for an Obj.  This is
+actually implemented in the TYPE_TAG macro defined in @code{tl/c/tl.h}.
+
+@example
+@group
+sint32 type_tag (Obj object) @{
+  sint32 tag_temp;
+
+  if (object==NULL) @{
+    return 0;
+  @} else @{
+    tag_temp = ((sint32)object) & 3;
+    if (tag_temp != 0) @{
+      return tag_temp;
+    @} else @{
+      tag_temp = ((Hdr *)object)->type;
+      if (tag_temp != CLASS_HDR_TAG)
+        return tag_temp;
+      else
+        return ((Class_hdr *)object)->extended_type;
+    @}
+  @}
+@}
+@end group
+@end example
+  
 
 In C, the implemetation type for object should be an unsigned integer type 32
 bits long.  There are several advantages to this.  All architectures (including
@@ -1317,6 +1352,13 @@ Even in production systems, we could check for double reclamation of data
 structures.  Note that this is not possible for heap allocated data structures
 that use an immediate type tag.
 
+The type for structures is the type value stored in the 8 bit type tag location
+of standard headers.  Structures also have an additional type value that is
+stored in the remainder 24 bits of the initial header word which further
+differentiates between structure types.  The same is true for class instances.
+@footnote{This note about classes is being written in anticipation of their
+implementation.  -jallard 10/29/99}
+
 The type tags for heap allocated data structures have no special issues, except
 that these values should not collide with any immediate type tags (i.e. be
 greater than 3), and be able to quickly determine if a data structure is
@@ -1327,26 +1369,27 @@ So the type tag table is as follows:
 
 @example
 @group
-Tag Value							Reclaimed Tag
-Dec     Hex	Lisp Type		C Type & Conv		Dec    Hex
--------------	---------		-------------		-------------
-0	00	immed pointer (or nil)	(Header *)Obj
-1	01	immed fixnum		((sint32)Obj)>>2
-2	02	cons			(Obj *)(Obj-2)
-3	03	immed character		(unsigned char)(Obj>>2)
-4	04	managed-float		(Mdouble *)Obj		132	84
-5	05	double-float		(Ldouble *)Obj		133	85
-6	06	simple-vector		(Sv *)Obj	 	134	86
-7	07	string (w/fill ptr)	(Str *)Obj	 	135	87
-8	08	(simple-array ubyte 8)	(Sa_uint8 *)Obj	 	136	88
-9	09	(simple-array ubyte 16)	(Sa_uint16 *)Obj 	137	89
-10	0A	(simple-array double)	(Sa_double *)Obj 	138	8A
-11	0B	symbol			(Sym *)Obj	 	139	8B
-12	0C	compiled-function	(Func *)Obj	 	140	8C
-13	0D	package			(Package *)Obj	 	141	8D
+Dec     Hex     Lisp Type               C Type & Conv
+-------------   ---------               -------------
+0       00      immed pointer (or nil)  (Header *)Obj
+1       01      immed fixnum            ((sint32)Obj)>>2
+2       02      cons                    (Obj *)(Obj-2)
+3       03      immed character         (unsigned char)(Obj>>2)
+4       04      managed-float           (Mdouble *)Obj
+5       05      double-float            (Ldouble *)Obj
+6       06      simple-vector           (Sv *)Obj
+7       07      string (w/fill ptr)     (Str *)Obj
+8       08      (simple-array ubyte 8)  (Sa_uint8 *)Obj
+9       09      (simple-array ubyte 16) (Sa_uint16 *)Obj
+10      0A      (simple-array double)   (Sa_double *)Obj
+11      0B      symbol                  (Sym *)Obj
+12      0C      compiled-function       (Func *)Obj
+13      0D      package                 (Package *)Obj
 14      0E      unbound                 (Hdr *)Obj
 15      0F      string-stream           (String_strm *)Obj
-16      10      file-stream		(File_strm *)Obj
+16      10      file-stream             (File_strm *)Obj
+17      11      (or structure-object    (Hdr_struct *)Obj
+                    standard-object)
 @end group
 @end example
 
