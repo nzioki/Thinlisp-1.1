@@ -36,12 +36,16 @@
 ;;; of "--help" or "?" and print out a usage banner, then exit.
 
 (defun gl-user::main (args)
-  (when (and args (string= (car args) "--help"))
+  (pop args) ;; discard program name.
+  (cond
+   ((and args (string= (car args) "--help"))
     (format t "Usage: lecho [arg] ...~%  all arguments will be echoed to stdout~%")
-    (return-from gl-user::main -1))
-  (loop for arg-cons on (cdr args) do
-    (when (not (eq arg-cons args))
-      (write-char #\space))
-    (write-string (car arg-cons)))
-  (terpri)
-  0)
+    -1)
+   (t
+    (loop
+      finally (terpri)
+      for first? = t then nil
+      for arg in args
+      unless first? do (write-char #\space)
+      do (write-string arg))
+    0)))
