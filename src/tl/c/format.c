@@ -2044,13 +2044,13 @@ void init_tl_format (void)
   if (Sstandard_outputS==(Obj)(&Unbound)) 
     Sstandard_outputS = Sterminal_ioS;
   if (Serror_outputS==(Obj)(&Unbound)) 
-    Serror_outputS = Sterminal_ioS;
+    Serror_outputS = alloc_file_strm(NULL,stderr,NULL,NULL,0,16);
   if (Squery_ioS==(Obj)(&Unbound)) 
     Squery_ioS = Sterminal_ioS;
   if (Sdebug_ioS==(Obj)(&Unbound)) 
     Sdebug_ioS = Sterminal_ioS;
   if (Strace_outputS==(Obj)(&Unbound)) 
-    Strace_outputS = Sterminal_ioS;
+    Strace_outputS = Serror_outputS;
   if (Sprint_caseS==(Obj)(&Unbound)) 
     Sprint_caseS = (Obj)(tl_format_symbols+0);  /* UPCASE */
   if (Sprint_baseS==(Obj)(&Unbound)) 
