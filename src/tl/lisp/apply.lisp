@@ -53,6 +53,7 @@
 	 (actual-arg-count
 	   (gli::compiled-function-arg-count compiled-function)))
     (declare (fixnum rest-length given-arg-count actual-arg-count))
+;    #+nil
     (when (/= given-arg-count actual-arg-count)
       (if (and (< given-arg-count actual-arg-count)
 	       (>= (+ given-arg-count
@@ -129,23 +130,3 @@
 				,lambda-parameters-limit)))))))
       (dispatch-to-apply-primitive
 	function-args actual-arg-count compiled-function))))
-
-#+nil
-(defun distilled-trouble ()
-  (loop repeat lambda-parameters-limit collect nil))
-
-;"ILISP: Type-error in KERNEL::OBJECT-NOT-TYPE-ERROR-HANDLER:
-;          #S(GLI::GL-STRING-STREAM
-;               :STRINGS (\"GL-LOOP-REPEAT-20\")
-;               :INPUT-STRING NIL
-;               :INPUT-INDEX NIL
-;               :INPUT-INDEX-BOUNDS NIL) is not of type (OR
-;                                                        COMMON-LISP::STRING-OUTPUT-STREAM
-;                                                        COMMON-LISP::FILL-POINTER-OUTPUT-STREAM
-;                                                        COMMON-LISP::STRING-INPUT-STREAM)"
-
-;; Even more concisely
-#+nil
-(gl:format nil "boo")
-
-;; So ...  (see warnings upon compiling format.lisp).
