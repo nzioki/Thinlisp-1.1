@@ -29,7 +29,7 @@
 (defparameter makefile-element-alist
     '((cc          . "gcc -o")
       (cc-flags    . "-O2 -ansi -pedantic -W -Wall -fomit-frame-pointer -c")
-      (debug-flags . "-g -ansi -pedantic -W -Wall -c")
+      (debug-flags . "-ggdb3 -ansi -pedantic -W -Wall -c")
       (wild        . "%")
       (stem        . "$*")
       (target      . "$@")
