@@ -1532,3 +1532,26 @@
   (if (eval-feature :translator)
       `(print ,object ,@(if stream `(,stream) nil))
       `(lisp::pprint ,object ,@(if stream `(,stream) nil))))
+
+
+
+
+
+
+;;;; Assert
+
+
+
+
+;;; Common Lisp assert signals a continuable error, with the continuation
+;;; restart handler assigning values into the generalized variables given in the
+;;; places argument.  ThinLisp does not have restartable errors, so assert
+;;; simply calls error when the test fails.
+
+(defmacro assert (test places format-string &rest format-args)
+  `(unless ,test
+     (error ,(if (stringp format-string)
+		 (format nil "Within ~s: ~s"
+			 places format-string)
+	       format-string)
+	    ,@format-args)))

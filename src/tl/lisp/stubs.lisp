@@ -104,8 +104,11 @@
 (defmacro multiple-value-list (&rest args)
   `(lisp:multiple-value-list ,@args))
 
-(defmacro coerce (&rest args)
-  `(lisp:coerce ,@args))
+(defmacro coerce (object result-type)
+  (if (and (constantp result-type)
+	   (tli::tl-subtypep (lisp:eval result-type) 'tli::double-float))
+      `(coerce-to-double-float ,object)
+    `(lisp:coerce ,object ,result-type)))
 
 (defmacro pathnamep (object)
   `(lisp:pathnamep ,object))
@@ -183,9 +186,6 @@
 (defmacro type-of (object)
   `(tli::tl-type-of ,object))
 
-(defmacro functionp (object)
-  `(lisp:functionp ,object))
-
 
 (defvar c-native-clock-ticks-per-second 60)
 (defvar maximum-backtrace-depth 50)
@@ -252,9 +252,6 @@
 
 (defmacro encode-universal-time (&rest args)
   `(lisp:encode-universal-time ,@args))
-
-(defmacro assert (&rest args)
-  `(lisp:assert ,@args))
 
 (defmacro subseq (sequence start &optional end)
   `(lisp:subseq ,sequence ,start ,@(if end `(,end) nil)))

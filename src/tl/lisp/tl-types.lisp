@@ -109,6 +109,12 @@
 
 (deftype float () 'tli::double-float)
 
+(deftype single-float () 'tli::double-float)
+
+(deftype short-float () 'tli::double-float)
+
+(deftype long-float () 'tli::double-float)
+
 ; (deftype managed-float () 'tli::managed-float)
 
 (deftype double-float () 'tli::double-float)
@@ -151,6 +157,17 @@
 (deftype compiled-function () 'tli::compiled-function)
 
 (defmacro compiled-function-p (object)
+  `(typep ,object 'tli::compiled-function))
+
+;; ThinLisp does not have interpreted functions, so all functions are
+;; compiled-functions.  Having a deftype for function is problematic since
+;; tl:function is eq to cl:function.  The fact that the readtable generates this
+;; symbol is a partial cause of this problem, since TL doesn't redefine the
+;; readtable.  Punt for now.  -jallard 6/7/01
+
+;; (deftype function () 'tli::compiled-function)
+
+(defmacro functionp (object)
   `(typep ,object 'tli::compiled-function))
 
 (deftype stream () 'tli::stream)
