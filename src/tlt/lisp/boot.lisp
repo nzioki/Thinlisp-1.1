@@ -305,6 +305,15 @@
 
 
 
+;;; Set the print-case to :upcase.  This is supposed to be the default value,
+;;; but ACL Win 3.02 defaults it to :downcase, which breaks many of my symbol
+;;; generating macros.
+
+(setq *print-case* :upcase)
+
+
+
+
  ;;; For Lucid, we suppress messages about every file being read or created with
 ;;; the :file-messages option.  We suppress the messages about which compiler is
 ;;; being used with the :optimize-message option.  All other options are left at
