@@ -40,47 +40,73 @@
 
 #include "tl.h"
 
-/**
- * Threads Support
- *
- * For each thread, there is a certain amount of global state that must be
- * maintained.  These are a Values_buffer, Values_count, Throw_stack,
- * Throw_stack_top, Current_throw, and Current_bindings.  These are encapsulated
- * into a Thread_state structure.  These structures are maintained within a
- * linked global list, where the first element of the list is guaranteed to be
- * the structure for the "main" thread of this process.  For definitions of each
- * of these values, see their corresponding "get" functions below.
+
+Thread_state default_thread_state;
+
+uint32 default_thread_id = 0;
+
+int thread_states_length = 0;
+
+Thread_state *thread_states = NULL;
+
+/** 
+ * The function current_thread_state looks up and returns the thread_state in
+ * effect for this thread.  Note that thread_states are created lazily, since
+ * many short-lived threads will never need one.  Note that all calls to this
+ * function should originate from the macro THREAD_STATE in tl.h, and that it is
+ * never called unless the macro PTHREAD is defined.  
  */
 
-typedef struct binding_type {
-  Obj                 *global_address;
-  Obj                 thread_address;
-  struct binding_type *next_binding;
-} Binding;
+#ifdef PTHREAD
+#define NEW_THREADS_INC 20
+Thread_state *new_thread_state(uint32 new_id, int new_index) {
+  Thread_state *ts;
+  Thread_state *new_array;
 
-typedef struct thread_state_type {
-  sint32  values_count;
-  Obj     values_buffer[20];
-  Obj     throw_stack[THROW_STACK_MAX];
-  sint32  throw_stack_top;
-  Obj     current_throw;
-  Binding *global_bindings;
-} Thread_state;
+  ts = (Thread_state *)malloc(sizeof(Thread_state));
+  ts->thread_id = new_id;
+  ts->values_count = 0;
+  ts->throw_stack_top = -1;
+  ts->current_throw = NULL;
+  ts->global_bindings = NULL;
+  ts->parent_thread_state = NULL;
+  if (new_index == -1) {
+    new_index = thread_states_length;
+    thread_states_length += NEW_THREADS_INC;
+    new_array = (Thread_state *)malloc(thread_states_length * 
+				       sizeof(Thread_state *));
+    if (new_index != 0) {
+      memcpy((void *)new_array, (void *)thread_states,
+	     new_index * sizeof(Thread_state *));
+      free(thread_states);
+    }
+  }
+  thread_states[new_index] = ts;
+  return ts;
+}
+Thread_state *current_thread_state(void) {
+  int i, earliest_null;
+  Thread_state *ts;
+  uint32 current_thread_id = (uint32)pthread_self();
 
-/**
- * Multiple Values Support
- *
- * The global variables Values_count and Values_buffer are defined here. When a
- * Lisp functon returns multiple values, the first value is always returned on
- * the C stack, and all additional values are stored into the global Obj array
- * Values_buffer.  The number of values cached into Values_buffer is cached into
- * the global sint32 variable Values_count. The translator emits code that sets
- * and references these global variables.  The size of Values_buffer is
- * determined by tl:multiple-values-limit, defined in tlt/lisp/special.lisp.  */
-
-sint32 Values_count = 0;
-
-Obj Values_buffer[20];
+  if (default_thread_id == current_thread_id) {
+    return &default_thread_state;
+  } else {
+    earliest_null = -1;
+    for (i = 0; i < thread_states_length; ++i) {
+      ts = thread_states[i];
+      if (ts == NULL) {
+	if (earliest_null == -1)
+	  earliest_null = i;
+      } else if (ts->thread_id == current_thread_id) {
+	return ts;
+      }
+    }
+    /* If we get here, no thread_state was found, create one. */
+    return new_thread_state(earliest_null);
+  }
+}
+#endif
 
 
 /**
@@ -90,8 +116,7 @@ Obj Values_buffer[20];
  * unbound.  That will be represented in TL tranlated code as a pointer to the
  * unbound value.  This section implements the global C variable that will
  * contain the unbound value.  It is implemented as a Hdr struct that has the
- * type tag 14, which is reserved for the special type of unbound value.
- */
+ * type tag 14, which is reserved for the special type of unbound value.  */
 
 Hdr Unbound = {14, 0};
 
@@ -110,12 +135,6 @@ Hdr Unbound = {14, 0};
  * bottom.  This is needed so that throws can unwind scopes as they search
  * for applicable catch targets.
  */
-
-Obj Throw_stack[THROW_STACK_MAX];
-
-sint32 Throw_stack_top = -1;
-
-Obj Current_throw = NULL;
 
 extern void store_values_on_stack (Obj first_value) {
   sint32 new_top, values;

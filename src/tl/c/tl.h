@@ -411,22 +411,76 @@ typedef struct {
 
 
 /**
- * Externs for the hand-written C utilities in tl.c
+ * Threads Support
+ *
+ * For each thread, there is a certain amount of global state that must be
+ * maintained.  These are a Values_buffer, Values_count, Throw_stack,
+ * Throw_stack_top, Current_throw, and Current_bindings.  These are encapsulated
+ * into a Thread_state structure.  These structures are maintained within a
+ * linked global list, where the first element of the list is guaranteed to be
+ * the structure for the "main" thread of this process.  For definitions of each
+ * of these values, see their corresponding "get" functions below.
  */
 
-extern sint32 Values_count;
-
-extern Obj Values_buffer[20];
-
-extern Hdr Unbound;
+typedef struct binding_type {
+  Obj                 *global_address;
+  Obj                 thread_address;
+  struct binding_type *next_binding;
+} Binding;
 
 #define THROW_STACK_MAX 2048
 
-extern Obj Throw_stack[THROW_STACK_MAX];
+typedef struct thread_state_type {
+  uint32  thread_id;
+  /* When a Lisp function returns multiple values, the first value is always
+   * returned on the C stack, and all additional values are stored into the
+   * global Obj array Values_buffer.  The number of values cached into
+   * Values_buffer is cached into the global sint32 variable Values_count. The
+   * translator emits code that sets and references these global variables.  The
+   * size of Values_buffer is determined by tl:multiple-values-limit, defined in
+   * tlt/lisp/special.lisp.  */
+  sint32  values_count;
+  Obj     values_buffer[20];
+  /* See store_values_on_stack for descriptions of the throw stack, somewhat
+   * misnamed since it also holds values of global values that must be
+   * unwound. */
+  Obj     throw_stack[THROW_STACK_MAX];
+  sint32  throw_stack_top;
+  Obj     current_throw;
+  /* When global variables are bound, we need to allocate some memory to store
+   * the current value of the global variable for that thread.  The values of
+   * the global bindings of global variables are stored in the global C
+   * variable.  The values of bindings for threads are stored in linked lists in
+   * this global_bindings slot. */
+  Binding *global_bindings;
+  /* A pointer to the parent thread for this thread, if any. */
+  struct thread_state_type *parent_thread_state;
+} Thread_state;
 
-extern sint32 Throw_stack_top;
 
-extern Obj Current_throw;
+/**
+ * Externs for the hand-written C utilities in tl.c
+ */
+
+extern Thread_state default_thread_state;
+
+extern uint32 default_thread_id;
+
+extern int thread_states_length;
+
+extern Thread_state *thread_states;
+
+#define Values_count (THREAD_STATE->values_count)
+
+#define Values_buffer (THREAD_STATE->values_buffer)
+
+#define Throw_stack (THREAD_STATE->throw_stack)
+
+#define Throw_stack_top (THREAD_STATE->throw_stack_top)
+
+#define Current_throw (THREAD_STATE->current_throw)
+
+extern Hdr Unbound;
 
 extern void store_values_on_stack(Obj first_value);
 
@@ -538,20 +592,6 @@ extern int unlink(char *filename);
 
 
 /**
- * This section contains a few defines used by the translator.  The number of
- * defines has purposefully been kept to a minimum in order to keep it clear to
- * the reader of translated C code what the cost is of various operations.
- * However, for a few operations, such as CAR and CDR, there are single machine
- * instruction macros that greatly improve the clarity of the translated code.
- */
-
-#define CAR(cons_as_obj) (((Cons *)((uint32)(cons_as_obj)-2))->car)
-#define CDR(cons_as_obj) (((Cons *)((uint32)(cons_as_obj)-2))->cdr)
-
-
-
-/**
-
  * When defining list or simple-vector constants, initialized C Obj arrays are
  * used for constant sub-elements so that the linker can initialize these data
  * structures rather than having it occur at process launch time.  This works
@@ -577,10 +617,23 @@ extern int unlink(char *filename);
  */
 
 /**
+ * This section contains a few defines used by the translator.  The number of
+ * defines has purposefully been kept to a minimum in order to keep it clear to
+ * the reader of translated C code what the cost is of various operations.
+ * However, for a few operations, such as CAR and CDR, there are single machine
+ * instruction macros that greatly improve the clarity of the translated code.
+ */
+
+#define CAR(cons_as_obj) (((Cons *)((uint32)(cons_as_obj)-2))->car)
+#define CDR(cons_as_obj) (((Cons *)((uint32)(cons_as_obj)-2))->cdr)
+
+
+/**
  * The macro BOXFIX takes sint32 values and convert them to fixnum format (left
  * shift by 2 and add the immediate type tag 1).  The macro UNBOXFIX does the
  * inverse transform.  The macro BOXCHAR and UNBOXCHAR do the same for unsigned
- * char and Lisp characters (immediate type tag of 3).  */
+ * char and Lisp characters (immediate type tag of 3).  
+ */
 
 #define BOXFIX(any_int) (Obj)(((uint32)(any_int)<<2)+1)
 #define UNBOXFIX(fixnum_int) ((sint32)(fixnum_int)>>2)
@@ -604,6 +657,23 @@ extern int unlink(char *filename);
 
 
 
+/**
+ * The macro THREAD_STATE returns a pointer to the Thread_state structure in
+ * effect for the current thread.  If multiple threads are not in use, it always
+ * returns the Thread_state found in the default_thread_state static variable.
+ */
+
+#if defined(PTHREAD)
+
+extern Thread_state *current_thread_state(void);
+#define THREAD_STATE (current_thread_state())
+
+#else
+
+#define THREAD_STATE (&default_thread_state)
+
+#endif
+
 
 /**
  * The macro TYPE_TAG takes a Lisp Obj and an sint32 temporary variable, and
@@ -622,3 +692,6 @@ extern int unlink(char *filename);
   (temp_var = IMMED_TAG(object)) != 0 ?  temp_var : \
   (temp_var = STD_TAG(object)) != CLASS_HDR_TAG ? temp_var : \
   EXTENDED_TAG(object))
+
+
+     
