@@ -340,6 +340,9 @@
 #+cmu
 (setq *GC-VERBOSE* nil)
 
+#+allegro
+(setq comp:*cltl1-compile-file-toplevel-compatibility-p* nil)
+
 
 
 
@@ -350,6 +353,10 @@
       *print-length* nil
       lcl:*debug-print-level* 5
       lcl:*debug-print-length* 20)
+
+#-lucid
+(setq *print-level* nil
+      *print-length* nil)
 
 
 

@@ -191,20 +191,6 @@
 
 
 
-;;; Several different operations will be implemented for l-expr structures, so
-;;; this section implements a means of defining methods for specific types of
-;;; l-expr structures (and no, I still don't want to use CLOS for this).
-
-;;; The macro `l-expr-method-table-var-name' takes a l-expr method name and
-;;; returns the symbol naming the global variable that holds the dispatch table
-;;; for that method.
-
-(defmacro l-expr-method-table-var-name (method-name)
-  `(intern (format nil "~a-METHOD-TABLE" ,method-name)))
-
-
-
-
 ;;; The macro `def-l-expr-generic-method' takes a method name, an argument list,
 ;;; and a default implementation of that method.  It defines a macro of the
 ;;; given method name that can very efficiently dispatch to the appropriate

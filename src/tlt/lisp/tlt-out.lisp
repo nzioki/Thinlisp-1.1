@@ -130,7 +130,7 @@
 	     (make-c-cast-expr '(pointer file-strm) file-stream)
 	     "output")))))
 
-(def-c-translation simple-error (string)
+(def-c-translation gli-simple-error (string)
   ((lisp-specs :ftype ((string) void))
    `(error "~a" ,string))
   ((trans-specs :c-type (((pointer unsigned-char)) void))

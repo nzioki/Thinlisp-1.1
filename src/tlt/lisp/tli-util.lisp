@@ -201,7 +201,29 @@
 	    always (or (eq file1-line file2-line)
 		       (and file1-line file2-line
 			    (string= file1-line file2-line)))
-	    while (and file1-line file2-line)))))
+	  while (and file1-line file2-line)))))
+
+
+
+
+
+
+;;;; Home-Grown Method Dispatch
+
+
+
+
+;;; Several different operations will be implemented for l-expr structures, so
+;;; this section implements a means of defining methods for specific types of
+;;; l-expr structures (and no, I still don't want to use CLOS for this).
+
+;;; The macro `l-expr-method-table-var-name' takes a l-expr method name and
+;;; returns the symbol naming the global variable that holds the dispatch table
+;;; for that method.
+
+(defmacro l-expr-method-table-var-name (method-name)
+  `(intern (format nil "~a-METHOD-TABLE" ,method-name)))
+
 
 
 

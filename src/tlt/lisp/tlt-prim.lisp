@@ -697,7 +697,7 @@
   (cons
     'progn
     (loop for (lisp-op c-op) in lisp-and-c-op-pairs
-	  for lisp-sym = (intern (format nil "CHAR~a" lisp-op) *lisp-package*)
+	  for lisp-sym = (intern (symbol-name lisp-op) *lisp-package*)
 	  for gl-sym = (intern (format nil "TWO-ARG-~a" (symbol-name lisp-sym)))
 	  append
 	  `((gl:declaim (gl:functional ,gl-sym))
@@ -712,12 +712,12 @@
 	     ((trans-specs :c-type ((obj obj) boolean))
 	      (make-c-infix-expr char1 ,c-op char2)))))))
 
-(def-char-comparitors (("="  "==")
-		       ("/=" "!=")
-		       ("<"  "<")
-		       ("<=" "<=")
-		       (">"  ">")
-		       (">=" ">=")))
+(def-char-comparitors ((char=  "==")
+		       (char/= "!=")
+		       (char<  "<")
+		       (char<= "<=")
+		       (char>  ">")
+		       (char>= ">=")))
 
 (def-c-translation make-simple-vector (length)
   ((lisp-specs :ftype ((fixnum) simple-vector))
@@ -1462,7 +1462,7 @@
 	   (not (eq (gl:variable-information list-place env) :symbol-macro)))
       `(gl:setf ,list-place (gl:cons ,item ,list-place))
       (multiple-value-bind (temps vals stores store-form access-form)
-	  (gl:get-setf-method list-place env)
+	  (gl:get-setf-expansion list-place env)
 	(let ((item-var (gensym)))
 	  `(gl:let*
 	       ,(cons (list item-var item)
@@ -1478,7 +1478,7 @@
       `(gl:prog1 (gl:car ,list-place)
 	 (gl:setq ,list-place (gl:cdr ,list-place)))
       (multiple-value-bind (temps vals stores store-form access-form)
-	  (gl:get-setf-method list-place env)
+	  (gl:get-setf-expansion list-place env)
 	`(gl:let* ,(loop for var in (append temps stores)
 			 for val in (append vals `((gl:cdr ,access-form)))
 			 collect (list var val))

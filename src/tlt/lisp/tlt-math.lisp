@@ -464,7 +464,7 @@
 (def-c-translation decompose-float (float uint16-array)
   ((lisp-specs :ftype ((double-float (array (unsigned-byte 16)))
 		       void))
-   `(error "No LISP implementation of DECOMPOSE-FLOAT.  Args = ~s, ~s"
+   `(error "No LISP implementation of (DECOMPOSE-FLOAT ~s ~s)" 
 	   ,float ,uint16-array))
   ((trans-specs :c-type ((double (array uint16)) void))
    (make-c-function-call-expr
@@ -501,8 +501,8 @@
   (cons
     'progn
     (loop for (name op-string identity) in name-op-identity-tuples
-	  for gl-name = (intern (format nil "LOG~a" name) *gl-package*)
-	  for lisp-name = (intern (format nil "LOG~a" name) *lisp-package*)
+	  for gl-name = (intern (symbol-name name) *gl-package*)
+	  for lisp-name = (intern (symbol-name name) *lisp-package*)
 	  for c-trans-name = (intern (format nil "~a-TWO-ARG" lisp-name))
 	  append
 	  `((def-gl-macro ,gl-name (&rest numbers)
@@ -530,9 +530,9 @@
 
 ;; Here are the (implicit) definitions for LOGAND, LOGXOR, and LOGIOR:
 
-(def-log-operators (("IOR" "|" 0)
-		    ("XOR" "^" 0)
-		    ("AND" "&" -1)))
+(def-log-operators ((logior "|" 0)
+		    (logxor "^" 0)
+		    (logand "&" -1)))
 
 (gl:declaim (gl:functional gl:lognot))
 

@@ -72,7 +72,7 @@
 	 ((and (consp place)
 	       (eq (cons-car place) 'gl:the))
 	  (multiple-value-bind (vars vals stores store-form access-form)
-	      (gl:get-setf-method (cons-third place) ,env)
+	      (gl:get-setf-expansion (cons-third place) ,env)
 	    `(gl:let* ,(loop for var in (append vars stores)
 			     for value
 				 in (append
@@ -87,7 +87,7 @@
 	       ,store-form)))
 	 (t
 	  (multiple-value-bind (vars vals stores store-form access-form)
-	      (gl:get-setf-method place ,env)
+	      (gl:get-setf-expansion place ,env)
 	    `(gl:let* ,(loop for var in (append vars stores)
 			     for value
 				 in (append
@@ -201,22 +201,25 @@
 
 
 
-;;; See setf and get-setf-method documentation in CLtL2, p. 140.
+;;; See setf and get-setf-expansion documentation in CLtL2, p. 140.
 
 (defun gl:get-setf-method (place &optional env)
+  (gl:get-setf-expansion place env))
+
+(defun gl:get-setf-expansion (place &optional env)
   (cond
     ((symbolp place)
      (multiple-value-bind (binding-type local-binding)
 	 (gl:variable-information place env)
        (cond ((eq binding-type :symbol-macro)
-	      (gl:get-setf-method local-binding env))
+	      (gl:get-setf-expansion local-binding env))
 	     (t
 	      (let ((new-value (gensym)))
 		(values nil nil (list new-value)
 			`(gl:setq ,place ,new-value)
 			place))))))
     ((or (not (consp place)) (not (symbolp (cons-car place))))
-     (error "GET-SETF-METHOD place ~s was not a valid form." place))
+     (error "GET-SETF-EXPANSION place ~s was not a valid form." place))
     (t
      (let* ((op (cons-car place))
 	    (simple-update? (simple-setf-update-fn op))
@@ -239,11 +242,11 @@
 	      (gl:macroexpand-1 place env)
 	    (cond
 	      (expanded?
-	       (gl:get-setf-method new-place env))
+	       (gl:get-setf-expansion new-place env))
 	      ((not (eval-feature :translator))
 	       ;; When we are not translating, let the underlying Lisp
 	       ;; implementation have a shot at the expansion.
-	       (get-setf-method place))
+	       (get-setf-expansion place))
 	      (t
-	       (error "GET-SETF-METHOD cannot find a setter for ~s" place))))))))))
+	       (error "GET-SETF-EXPANSION cannot find a setter for ~s" place))))))))))
 
