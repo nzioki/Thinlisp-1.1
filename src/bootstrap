@@ -3,8 +3,12 @@
 ### A script to compile those parts of the system
 ### that have changed since last time.
 
-# Invoke our lisp in batch mode (tested in: CMU Lisp)
-lisp -batch <<EOF
+if [ -x /usr/local/bin/clisp ] ; then
+  clisp -x "(load \"boot.lisp\")"
+else
+
+  # Invoke our lisp in batch mode (tested in: CMU Lisp)
+  lisp -batch <<EOF
 
 ;;; All this just keeps this batch job from
 ;;; trying to fall back on the debugger.
@@ -25,6 +29,8 @@ lisp -batch <<EOF
 
 
 EOF
+
+fi
 
 ### Notes: 
 ###  This does not do a full recompile.

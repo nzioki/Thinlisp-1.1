@@ -34,6 +34,10 @@ clean :
 	rm -rf lecho/c/*.tlt tl/c/*.tlt
 	cd docs && $(MAKE) clean
 
+lisp-clean :
+	csh -f -c 'rm -rf {tlt,tl,lecho}/{dev,macro,bin,opt} dist src'
+	rm -rf lecho/c/*.tlt tl/c/*.tlt
+
 tarballs : 
 	if [ -d dist ] ; then rm -rf dist ; fi
 	if [ ! -d src ] ; then echo Must export an SRC before making distribution ; exit 1 ; fi
