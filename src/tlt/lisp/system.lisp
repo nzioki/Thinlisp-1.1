@@ -31,7 +31,9 @@
   extra-h-files
   main-function
   modules
-  module-properties-alist)
+  module-properties-alist
+  alias
+  properties)
 
 
 
@@ -163,7 +165,8 @@
 				   (c-dir nil)
 				   (extra-c-files nil)
 				   (extra-h-files nil)
-				   (alias nil))
+				   (alias nil)
+				   (properties nil))
 			     &rest modules)
   
   (setq name (normalize-system-name name))
@@ -219,7 +222,7 @@
 		      (make-new-system
 			',name ',nicknames ,library ',main-function
 			',used-systems ,lisp-dir ,c-dir ',extra-c-files
-			',extra-h-files ',modules))))
+			',extra-h-files ',modules ',alias ',properties))))
        ,@(unless (eq name 'gl:debug)
 	   `((gl:setq gl:current-system-being-loaded ',name)
 	     (gl:setq gl:all-systems (gl:cons ',name gl:all-systems))
@@ -242,7 +245,7 @@
 
 (defun make-new-system
     (name nicknames library main-function used-systems lisp-dir c-dir
-	  extra-c-files extra-h-files modules)
+	  extra-c-files extra-h-files modules alias properties)
   (make-system
     :name name
     :nicknames nicknames
@@ -271,7 +274,10 @@
 			       mod))
     :module-properties-alist (loop for mod in modules
 				   when (consp mod)
-				     collect mod)))
+				     collect mod)
+    :alias alias
+    :properties properties))
+
 
 
 
@@ -365,7 +371,11 @@
 (defun system-makefile (system &optional port-name)
   (make-system-file-pathname
    (if port-name 
-       (intern (format nil "makefile-~a" port-name))
+       (intern (format nil "makefile~a~a"
+		       (if (string= port-name "config")
+			   "."
+			 "-")
+		       port-name))
      'makefile)
    nil nil (system-c-dir system)))
 

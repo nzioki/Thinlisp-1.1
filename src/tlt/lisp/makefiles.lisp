@@ -74,6 +74,12 @@
 
     (("freebsd" "linux"))
 
+    (("config")
+     (cc          . "@CC@")
+     (cc-flags    . "@CFLAGS@ -ansi -pedantic -W -Wall -fomit-frame-pointer -c")
+     (debug-flags . "@CFLAGS@ -ggdb3 -ansi -pedantic -W -Wall -c")
+     )
+
     ))
 
 (defvar makefile-elements nil)
@@ -125,7 +131,7 @@
 			  (makeup 'exe-postfix))))
 	(obj (makeup 'obj-postfix))
 	(pattern (makeup 'wild))
-	(files-per-line 7))
+	(files-per-line 5))
     (with-open-file (output temp-path :direction :output :if-exists :supersede)
       (format output "#~%# ~a ~a Makefile~%#~%# Copyright (c) ~a Jim Allard~%~%"
 	      (system-name system) (string-capitalize port-name) current-year)
@@ -151,7 +157,7 @@
       (loop for file-count = 1 then (1+ file-count)
 	  for file-name in (system-extra-c-files system) do
 	(when (= (mod file-count files-per-line) 0)
-	  (format output " \\~%       "))
+	  (format output " \\~%        "))
 	(format output " ~a~a" file-name obj))
       (loop with file-count = (length (system-extra-c-files system))
 	  for module in (system-modules system)
