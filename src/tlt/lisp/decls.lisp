@@ -853,20 +853,27 @@
 ;;; area within a scope.  Note that this declaration does not change the consing
 ;;; area, it only makes it apparent within a lexical scope what the expected
 ;;; dynamic consing scope will be.  Either this declaration or an actaul
-;;; with-permanent-area or with-temporary-area area required around all
-;;; translated consing operations.  The format of this declaration is
-;;; (tl:consing-area {tl:permanent | tl:temporary).  Forms compiled at top level
-;;; by default are in the permanent consing area.  The translation of DEFUN sets
-;;; the consing area to NIL so that forms within DEFUN must perform their own
-;;; declaration.
+;;; with-permanent-area or with-temporary-area declaration is required around
+;;; all translated consing operations.  The format of this declaration is
+;;; (tl:consing-area {tl:permanent | tl:temporary | tl:either).  The value
+;;; tl:either should be declared within defun forms that define a function that
+;;; can be called from either a permanent or temporary consing scope.  This
+;;; declaration will prevent compile-time warnings from the body of the declared
+;;; function, and it will declare this function as a tl:conser, implying that
+;;; the call to this function must itself be wrapped in a permanent, temporary,
+;;; or either consing scope.  Forms compiled at top level by default are in the
+;;; permanent consing area.  The translation of DEFUN sets the consing area to
+;;; NIL so that forms within DEFUN must perform their own declaration, unless
+;;; the function is declared a tl:conser, in which case the consing area
+;;; defaults to tl:either.
 
 (define-declaration tl:consing-area (decl-spec env)
   (declare (ignore env))
   (tl:destructuring-bind-strict (nil type)
     decl-spec
-    (unless (memqp type '(tl:permanent tl:temporary nil))
+    (unless (memqp type '(tl:permanent tl:temporary tl:either nil))
       (error "The consing-area declaration received the type ~s.~
-                The type must be either permanent or temporary."
+              The type must be either permanent, temporary, or either."
 	     type))
     (values :declare (cons 'tl:consing-area type))))
 
@@ -874,6 +881,23 @@
 
 ;; If the consing complaints get to be too much for you, comment back in the
 ;; line above to set the global default.  -jallard 8/28/99
+
+
+
+
+;;; The declaration `tl:conser' is used declare that a named function will
+;;; perform consing, and so must be called from a scope that has a lexically
+;;; apparent tl:consing-area declaration.  Note that declaring the consing-area
+;;; of either at the outermost scope of a function implies that the function is
+;;; a conser.  The format for this declaration is (tl:conser <function-name>...).
+
+(define-declaration tl:conser (decl-spec env)
+  (declare (ignore env))
+  (values
+   :function
+   (loop for function in (cons-cdr decl-spec)
+       collect `(,function tl:conser t))))
+
 
 
 

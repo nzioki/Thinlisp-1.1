@@ -94,47 +94,6 @@
 
 
 
-
-
-;;;; Default Directories and File Types
-
-
-
-
-;;; The function `change-default-directory' is used to set the default
-;;; directory.  In some systems this is other than just setq'ing
-;;; *default-pathname-defaults*.  The function `default-directory' returns
-;;; what the system thinks is the default directory, when that it is
-;;; different from *default-pathname-defaults*.
-
-(defun change-default-directory (string-or-pathname)
-  (setq *default-pathname-defaults* (probe-file (pathname string-or-pathname)))
-  #+lucid
-  (lcl:cd *default-pathname-defaults*)
-  #+allegro
-  (excl:chdir *default-pathname-defaults*)
-  #+cmu
-  (unix:unix-chdir *default-pathname-defaults*)
-
-  *default-pathname-defaults*)
-
-(defun default-directory ()
-  #+lucid
-  (lcl::pwd)
-  #+allegro
-  (excl:current-directory)
-  #+cmu
-  (multiple-value-bind (a b)
-      (unix:unix-current-directory)
-    (declare (ignore a))
-    b)
-  #-(or lucid allegro cmu)
-  *default-pathname-defaults*
-  )
-
-
-
-
 ;;; The constants `lisp-file-type', `lisp-binary-file-type', `c-file-type',
 ;;; `h-file-type', and `trans-data-file-type' hold strings containing the types
 ;;; for the different types of files manipulated by the translator.  The

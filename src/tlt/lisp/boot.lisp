@@ -243,13 +243,13 @@
 			    :type lisp-file-type)))
 	 (bin-file 
 	  (finalize-pathname (make-pathname
-			      :directory '(:relative "tlt" "lisp" "dev")
+			      :directory '(:relative "tlt" "dev")
 			      :name file-name
 			      :type binary-file-type)))
 	 (relative-bin-file 
 	  #+lucid
 	  (finalize-pathname (make-pathname
-			      :directory '(:relative "dev")
+			      :directory '(:relative :up "dev")
 			      :name file-name
 			      :type binary-file-type))
 	  #-lucid
@@ -260,6 +260,7 @@
     (when (null lisp-date)
       (warn "Module ~a does not have a corresponding lisp file ~a."
 	    module lisp-file))
+    (ensure-directories-exist bin-file :verbose nil)
     (when (eq module 'exports)
       (setq exports-file-write-date lisp-date))
     (when (or force-recompile?
@@ -455,6 +456,52 @@
 #+(and allegro ignore)
 (setq comp:*cltl1-compile-file-toplevel-compatibility-p* nil)
 
+
+
+
+
+
+;;;; Default Directories and File Types
+
+
+
+
+;;; The function `change-default-directory' is used to set the default
+;;; directory.  In some systems this is other than just setq'ing
+;;; *default-pathname-defaults*.  The function `default-directory' returns
+;;; what the system thinks is the default directory, when that it is
+;;; different from *default-pathname-defaults*.
+
+(defun change-default-directory (string-or-pathname)
+  (setq *default-pathname-defaults* (probe-file (pathname string-or-pathname)))
+  #+lucid
+  (lcl:cd *default-pathname-defaults*)
+  #+allegro
+  (excl:chdir *default-pathname-defaults*)
+  #+cmu
+  (unix:unix-chdir *default-pathname-defaults*)
+
+  *default-pathname-defaults*)
+
+(defun default-directory ()
+  #+lucid
+  (lcl::pwd)
+  #+allegro
+  (excl:current-directory)
+  #+cmu
+  (multiple-value-bind (a b)
+      (unix:unix-current-directory)
+    (declare (ignore a))
+    b)
+  #-(or lucid allegro cmu)
+  *default-pathname-defaults*
+  )
+
+(defun cd (string-or-pathname)
+  (change-default-directory string-or-pathname))
+
+(defun pwd ()
+  (default-directory))
 
 
 

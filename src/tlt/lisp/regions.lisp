@@ -36,7 +36,8 @@
 ;;; The function `region-number-for-type-and-area' takes a Lisp type and an area
 ;;; name, one of either tl:permannent or tl:temporary.  This function returns an
 ;;; integer that is the region number for creating the given type in the given
-;;; area.
+;;; area.  Note that this number is only used for error checking at runtime to
+;;; verify that the consing area is what the declaration said it should be.
 
 (defun region-number-for-type-and-area (lisp-type area)
   (cond ((eq area 'tl:temporary)
@@ -48,7 +49,9 @@
 	((eq area 'tl:permanent)
 	 (if (eq lisp-type 'symbol)
 	     1
-	     0))
+	   0))
+	((eq area 'tl:either)
+	 -1)
 	(t
 	 (translation-error "Bad area name ~s." area))))
 
@@ -62,12 +65,18 @@
 
 (defun declared-area-name (env type-to-allocate)
   (let ((area? (tl:declaration-information 'tl:consing-area env)))
-    (unless area?
-      (translation-warning
-	"Consing a ~s with no surrounding consing-area declaration."
-	type-to-allocate)
-      (setq area? 'tl:permanent))
-    area?))
+    (if area?
+	area?
+      (let ((enclosing-function? (tl:declaration-information 'scope-name env)))
+	(cond ((null enclosing-function?)
+	       'tl:permanent)
+	      ((function-decl enclosing-function? 'tl:conser)
+	       'tl:either)
+	      (t
+	       (translation-warning
+		"Consing a ~s with no surrounding consing-area declaration."
+		type-to-allocate)
+	       'tl:permanent))))))
 
 
 

@@ -116,13 +116,13 @@
 ;;; files.  Systems are presumed to lie within a subdirectory of a sandbox that
 ;;; has the same name as the system, i.e. a directory of the form
 ;;; "/gensym/bt/<sandbox-name>/<system-name>".  Within this directory, there
-;;; should be lisp, c, opt, o, and o-pg directories.  These default directories
-;;; can be overridden using the :lisp-dir options to change the Lisp directory,
-;;; and the :c-dir option to change the location of the c, opt, o, and o-pg
-;;; directories.  The overrides should be of the form of relative directory
-;;; names within a sandbox, but if the first character of these directories are
-;;; either forward or backward slash, then they are taken as absolute directory
-;;; names.
+;;; should be lisp, dev, macro, c, opt, o, and o-pg directories.  These default
+;;; directories can be overridden using the :lisp-dir options to change the
+;;; lisp, dev, and macro directories, and the :c-dir option to change the
+;;; location of the c, opt, o, and o-pg directories.  The overrides should be of
+;;; the form of relative directory names within a sandbox, but if the first
+;;; character of these directories are either forward or backward slash, then
+;;; they are taken as absolute directory names.
 
 ;;; If there are extra, hand-written C files included in the C directory for a
 ;;; system, include them in the :extra-c-files argument, as a list of file name
@@ -320,18 +320,30 @@
 
 (defun system-lisp-file (system module-name-symbol)
   (make-system-file-pathname
-    module-name-symbol lisp-file-type nil (system-lisp-dir system)))
+   module-name-symbol lisp-file-type nil (system-lisp-dir system)))
+
+
+
+
+;;; The function `system-lisp-binary-dir' returns a pathname pointing to the
+;;; directory where binaries from the hosting Lisp environment should be placed.
+;;; This directory will always be a direct sibling to the Lisp directory where
+;;; sources are kept.
+
+(defun system-lisp-binary-dir (system)
+  (let ((lisp-dir (system-lisp-dir system)))
+    (make-pathname 
+     :directory (append (butlast (pathname-directory lisp-dir))
+			(if (eval-feature :development)
+			    (list lisp-dev-binary-directory-name)
+			  (list lisp-macro-binary-directory-name))))))
 
 (defun system-lisp-binary-file (system module-name-symbol)
   (make-system-file-pathname
     module-name-symbol
     lisp-binary-file-type
-    (list
-      :relative
-      (if (eval-feature :development)
-	  lisp-dev-binary-directory-name
-	  lisp-macro-binary-directory-name))
-    (system-lisp-dir system)))
+    nil
+    (system-lisp-binary-dir system)))
 
 (defun system-lisp-relative-binary-file (system module-name-symbol)
   #+lucid
@@ -341,6 +353,7 @@
     :name (string-downcase (symbol-name module-name-symbol))
     :type lisp-binary-file-type
     :directory (list :relative
+		     :up
 		     (if (eval-feature :development)
 			 lisp-dev-binary-directory-name
 		       lisp-macro-binary-directory-name)))
@@ -705,6 +718,7 @@
 	   (loaded-date? (loaded-system-lisp-binary-write-date system module))
 	   (*current-system-name* (system-name system))
 	   (*current-module-name* module))
+      (ensure-directories-exist binary-file :verbose nil)
       (when (and lisp-write-date
 		 (or (null binary-write-date?)
 		     (<= binary-write-date? lisp-write-date)

@@ -157,7 +157,11 @@
 		   `((optional-arg-default-values
 		       ,(loop for arg in (cdr (memq '&optional lambda-list))
 			      collect (if (symbolp arg) nil (second arg)))
-		       ,name))))
+		       ,name)))
+	       ,@(when (eq (tl:declaration-information 
+			    'tl:consing-area inner-env)
+			   'tl:either)
+		   `((tl:conser ,name))))
 	local-functions-queue)
       form))
     (t form)))
@@ -235,6 +239,8 @@
 		    `(list ',func-name ,@func-lambda-list)))
 	     ,@(when (eq (function-decl name 'inline) 'inline)
 		 `((tl:declaim (inline ,func-name))))
+	     ,@(when (function-decl name 'tl:conser)
+		 `((tl:declaim (tl:conser ,func-name))))
 	     (tl:defun ,func-name ,func-lambda-list
 	       ,@decls
 	       (tl:block ,name

@@ -703,9 +703,11 @@
 ;     "*TRACE-OUTPUT*"
 
      ;; Areas and consing
+     "CONSER"
      "CONSING-AREA"
      "PERMANENT"
      "TEMPORARY"
+     "EITHER"
      "WITH-PERMANENT-AREA"
      "WITH-TEMPORARY-AREA"
      "EXPAND-DEVELOPMENT-MEMORY"
