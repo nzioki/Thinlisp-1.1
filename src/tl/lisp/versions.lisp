@@ -155,6 +155,7 @@
 (defconstant ncr-code         26)
 (defconstant windows95-code   27)
 (defconstant freebsd-code     28)
+(defconstant linux386-code    29)
 
 
 
@@ -197,6 +198,7 @@
       ((= platform-code ncr-code)          'unix)
       ((= platform-code windows95-code)    'win32)
       ((= platform-code freebsd-code)      'unix)
+      ((= platform-code linux386-code)     'unix)
 
       ;; jh per jra, 8/26/93.  Made the "otherwise" clause more forgiving for
       ;; new ports.  Instead of an error, we assume that all new ports will be
