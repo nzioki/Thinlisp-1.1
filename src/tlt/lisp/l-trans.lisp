@@ -426,7 +426,8 @@
 	      "it is Lisp function, but it has no C translation")
 	     ((or (eq function-type :macro) (macro-function name))
 	      "it is a macro, not a function")
-	     ((or (eq function-type :special-form) (special-form-p name))
+	     ((or (eq function-type :special-form) 
+		  (lisp-special-operator-p name))
 	      "it is a special-form, not a function")
 	     (t "it is not a defined function")))
 	 (emit-c-expr-as-directed

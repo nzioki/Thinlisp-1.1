@@ -274,13 +274,15 @@
     `(loop with ,key = ,symbol
 	   with ,this-env = ,env
 	   with ,default-value = ,default
+	   with ,local-env
+	   with ,found-value
 	   while ,this-env
-	   for ,local-env = (,env-accessor ,this-env)
-	   for ,found-value = (if (hash-table-p ,local-env)
-				  (gethash ,key ,local-env ,default-value)
-				  (or (cdr (assq ,symbol ,local-env))
-				      ,default-value))
 	   do
+       (setq ,local-env (,env-accessor ,this-env))
+       (setq ,found-value (if (hash-table-p ,local-env)
+			      (gethash ,key ,local-env ,default-value)
+			    (or (cdr (assq ,symbol ,local-env))
+				,default-value)))
        (cond ((eq ,found-value ,default-value)
 	      (setq ,this-env (environment-next-env? ,this-env)))
 	     (t

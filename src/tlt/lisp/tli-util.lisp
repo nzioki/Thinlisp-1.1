@@ -872,10 +872,11 @@
   (if (consp decl-and-body)
       (loop with decls = nil
 	    with docs = nil
+	    with first-form = nil
 	    for subbody = decl-and-body then (cons-cdr subbody)
 	    until (not (consp subbody))
-	    for first-form = (cons-car subbody)
 	    do
+	(setq first-form (cons-car subbody))
 	(cond ((and (consp first-form)
 		    (eq (car first-form) 'declare))
 	       (push first-form decls))
@@ -922,9 +923,11 @@
 ;;; The special-form-p function has been removed from ANSI Common Lisp.
 ;;; Define it for those Lisp systems that haven't given us a replacement.
 
-#+ansi-cl
-(defun special-form-p (symbol)
-  (special-operator-p symbol))
+(defun lisp-special-operator-p (symbol)
+  #+(or ansi-cl clisp)
+  (special-operator-p symbol)
+  #-(or ansi-cl clisp)
+  (special-form-p symbol))
 
 
 

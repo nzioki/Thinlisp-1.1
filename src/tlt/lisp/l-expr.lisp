@@ -316,8 +316,7 @@
 ;;; used as a utility function for those walkers that need to walk a progn body.
 
 (defun walk-l-expr-subforms (subforms function lisp-required-type c-required-type)
-  (loop for subform-cons = subforms then next-subform-cons
-	while subform-cons
+  (loop for subform-cons on subforms
 	for next-subform-cons = (cons-cdr subform-cons)
 	for subform = (cons-car subform-cons)
 	for last-form? = (null next-subform-cons)
@@ -711,14 +710,13 @@
     ;; First, walk the body eliminating all dead code between unconditional go
     ;; statements and the next tag where processing could start again.
     (loop with form-cons = (cons-cdr form)
-	  while form-cons
-	  for subform = (cons-car form-cons)
-	  do
-      (if (and (or (go-l-expr-p subform)
-		   (return-from-l-expr-p subform))
-	       (l-expr-p (car (cons-cdr form-cons))))
-	  (setf (cdr form-cons) (cons-cddr form-cons))
-	  (setq form-cons (cons-cdr form-cons))))
+	  while form-cons do
+      (let ((subform (cons-car form-cons)))
+	(if (and (or (go-l-expr-p subform)
+		     (return-from-l-expr-p subform))
+		 (l-expr-p (car (cons-cdr form-cons))))
+	    (setf (cdr form-cons) (cons-cddr form-cons))
+	  (setq form-cons (cons-cdr form-cons)))))
     ;; Next, walk all the non-tag subforms.
     (loop for form-cons on (cons-cdr form)
 	  for subform = (cons-car form-cons)
@@ -828,7 +826,7 @@
 	((macro-function name)
 	 (translation-error
 	   "Can't translate a call to ~s, it is a macro." name))
-	((special-form-p name)
+	((lisp-special-operator-p name)
 	 (translation-error
 	   "Can't translate a call to ~s, which is a Lisp special form."
 	   name))
@@ -1035,10 +1033,8 @@
 
 (def-l-expr tl:and (35 nil)
   (loop with test-only? = (satisfies-c-required-type-p c-required-type 'boolean)
-	for arg-cons = (cons-cdr (l-expr-form and-l-expr)) then next-cons?
-	while arg-cons
-	for next-cons? = (cons-cdr arg-cons)
-	for test-arg? = (or test-only? next-cons?)
+	for arg-cons on (cons-cdr (l-expr-form and-l-expr))
+	for test-arg? = (or test-only? (cons-cdr arg-cons))
 	do
     (setf (car arg-cons)
 	  (walk-l-expr (cons-car arg-cons) function
@@ -1048,13 +1044,12 @@
 
 (def-l-expr tl:or (36 nil)
   (loop with test-only? = (satisfies-c-required-type-p c-required-type 'boolean)
-	for arg-cons = (cons-cdr (l-expr-form or-l-expr)) then next-cons?
-	while arg-cons
-	for next-cons? = (cons-cdr arg-cons)
+	for arg-cons on (cons-cdr (l-expr-form or-l-expr))
+	for test-arg? = (or test-only? (cons-cdr arg-cons))
 	do
     (setf (car arg-cons)
 	  (walk-l-expr (cons-car arg-cons) function
-		       (if (or test-only? next-cons?) t lisp-required-type)
+		       (if test-arg? t lisp-required-type)
 		       (if test-only? 'boolean 'obj))))
   (funcall function or-l-expr lisp-required-type c-required-type))
 

@@ -347,10 +347,11 @@
 	with last-cons = form
 	with all-args-side-effect-free? = t
 	with last-maybe-side-effecting-arg-cons = form
+	with arg = nil
 	for arg-cons = (cons-cdr last-cons)
 	while arg-cons
-	for arg = (cons-car arg-cons)
 	do
+    (setq arg (cons-car arg-cons))
     (cond ((l-expr-constant-p arg)	
 	   (if (l-expr-constant-value arg)  ; value is non-NIL
 	       (if (null (cons-cdr arg-cons)) ; If this is last arg of form
@@ -406,10 +407,11 @@
   (setf (l-expr-functional-p or-l-expr) t)
   (loop with form = (l-expr-form or-l-expr)
 	with last-cons = form
+	with arg = nil
 	for arg-cons = (cons-cdr last-cons)
 	while arg-cons
-	for arg = (cons-car arg-cons)
 	do
+    (setq arg (cons-car arg-cons))
     (if (l-expr-constant-p arg)
 	(if (l-expr-constant-value arg)	; constant value is non-NIL
 	    (setf (cdr arg-cons) nil	; discard any remaining args
