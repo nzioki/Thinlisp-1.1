@@ -33,8 +33,39 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <time.h>
+
+#ifdef PTHREAD
+#include <pthread.h>
+#endif
+
 #include "tl.h"
 
+/**
+ * Threads Support
+ *
+ * For each thread, there is a certain amount of global state that must be
+ * maintained.  These are a Values_buffer, Values_count, Throw_stack,
+ * Throw_stack_top, Current_throw, and Current_bindings.  These are encapsulated
+ * into a Thread_state structure.  These structures are maintained within a
+ * linked global list, where the first element of the list is guaranteed to be
+ * the structure for the "main" thread of this process.  For definitions of each
+ * of these values, see their corresponding "get" functions below.
+ */
+
+typedef struct binding_type {
+  Obj                 *global_address;
+  Obj                 thread_address;
+  struct binding_type *next_binding;
+} Binding;
+
+typedef struct thread_state_type {
+  sint32  values_count;
+  Obj     values_buffer[20];
+  Obj     throw_stack[THROW_STACK_MAX];
+  sint32  throw_stack_top;
+  Obj     current_throw;
+  Binding *global_bindings;
+} Thread_state;
 
 /**
  * Multiple Values Support
@@ -45,8 +76,7 @@
  * Values_buffer.  The number of values cached into Values_buffer is cached into
  * the global sint32 variable Values_count. The translator emits code that sets
  * and references these global variables.  The size of Values_buffer is
- * determined by tl:multiple-values-limit, defined in tlt/lisp/special.lisp.
- */
+ * determined by tl:multiple-values-limit, defined in tlt/lisp/special.lisp.  */
 
 sint32 Values_count = 0;
 
