@@ -605,12 +605,14 @@
 	do
     (unless (eql loaded-date? write-date)
       (when verbose
-	(format t "~%Loading ~14a      [~3d/~3d] "
-		module module-count total-modules)
+	(format t "~%Loading     ~40a      [~3d/~3d] "
+		binary-file module-count total-modules)
 	(force-output))
       (load binary-file :verbose print)
       (setf (loaded-system-lisp-binary-write-date system module) write-date))
-	until (eq module to)))
+	until (eq module to))
+  (when verbose
+    (terpri)))
 
 
 
@@ -689,13 +691,15 @@
 	  (setq from nil)
 	  (when (probe-file binary-file)
 	    (when verbose
-	      (format t "~%Deleting ~a" binary-file))
+	      (format t "~%Deleting    ~40a" binary-file))
 	    (delete-file binary-file)))
 	    until (eq module to)
 	    finally
 	      (when from
 		(format t "~%Warning: Module ~a not found in ~a"
-			from (system-name system))))))
+			from (system-name system))))
+      (when verbose
+	(terpri))))
   (when verbose
     (format t "~%Compiling and Loading System ~a" (system-name system))
     (force-output))
@@ -726,8 +730,8 @@
 			  (<= binary-write-date? 
 			      user::exports-file-write-date))))
 	(when verbose
-	  (format t "~%Compiling ~14a    [~3d/~3d] ~a"
-		  module module-count total-modules
+	  (format t "~%Compiling   ~40a    [~3d/~3d] ~a"
+		  binary-file module-count total-modules
 		  (if development? " (development)" ""))
 	  (force-output))
 	(compile-file lisp-file
@@ -737,15 +741,17 @@
 	(setq binary-write-date? (file-write-date binary-file)))
       (unless (eql loaded-date? binary-write-date?)
 	(when verbose
-	  (format t "~%Loading ~14a      [~3d/~3d] ~a"
-		  module module-count total-modules
+	  (format t "~%Loading     ~40a    [~3d/~3d] ~a"
+		  binary-file module-count total-modules
 		  (if development? " (development)" ""))
 	  (force-output))
 	(load binary-file :verbose print :print print)
 	(setf (loaded-system-lisp-binary-write-date system module)
 	  binary-write-date?)))
     (gc-a-little)
-	until (eq module to)))
+	until (eq module to))
+  (when verbose
+    (terpri)))
 
 
 
@@ -757,12 +763,12 @@
 
 
 
-;;; The following macro emits macros of the form load-g2, compile-g2, and
-;;; translate-g2 for all of the systems listed below.  These expand into calls
+;;; The following macro emits macros of the form load-tl, compile-tl, and
+;;; translate-tl for all of the systems listed below.  These expand into calls
 ;;; to tl:load-system, tl:compile-system, and tl:translate-system and are here
 ;;; purely for convenience.
 
-(defmacro def-system-convenience-forms (&rest system-names)
+(defmacro user::def-system-convenience-forms (&rest system-names)
   (cons
     'progn
     (loop for system in system-names
@@ -841,5 +847,3 @@
   (let ((symbols (loop for name in name-strings
 		       collect (intern name *tl-package*))))
     (export symbols *tl-package*)))
-
-(def-system-convenience-forms tl lecho)

@@ -125,7 +125,9 @@
 	      (when verbose
 		(format t "~%Deleting ~a" trans-data))
 	      (delete-file trans-data))))
-	    until (eq module to))))
+	    until (eq module to))
+      (when verbose
+	(terpri))))
   (let ((*system-top-level-c-file* nil
 ;	  (if (system-is-library-p system) (make-top-level-c-file system) nil)
 	  ))
@@ -181,8 +183,8 @@
 (defun translate-module (system module &key (verbose t) (print nil)
 				(module-number 0) (total-modules 0))
   (when verbose
-    (format t "~%TRANSLATING ~14a  [~3d/~3d]"
-	    module module-number total-modules)
+    (format t "~%Translating ~40a    [~3d/~3d]"
+	    (system-c-file system module) module-number total-modules)
     (force-output))
   (let ((*package* *package*)
 	(*readtable* *readtable*)

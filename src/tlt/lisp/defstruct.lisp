@@ -57,5 +57,35 @@
 	       (if (symbolp slot)
 		   (list slot nil)
 		 slot)))
-	())
+	(constructor
+	 (get-defstruct-option
+	  options :constructor (intern (format nil "MAKE-~a" name))))
+	(copier 
+	 (get-defstruct-option
+	  options :copier (intern (format nil "COPY-~a" name))))
+	(predicate
+	 (get-defstruct-option
+	  options :predicate (intern (format nil "~a-P" name))))
+	
+
+	)
     nil))
+
+
+(defun get-defstruct-option (options name default)
+  (loop for option-cons = options then (cdr option-cons)
+	while option-cons
+	for elt = (car option-cons)
+	do
+    (cond ((eq elt name)
+	   (return nil))
+	  ((and (consp elt) (eq (car elt) name))
+	   (return (cdr elt))))
+        finally (return default)))
+
+;;; The `structure-info' structure type is used to hold structure type
+;;; information during Lisp development time.
+
+(defstruct (structure-info :print-function print-structure-info)
+  name
+  

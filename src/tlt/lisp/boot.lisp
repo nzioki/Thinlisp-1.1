@@ -275,13 +275,13 @@
 		   (<= bin-date? lisp-date))
 	      (and exports-file-write-date
 		   (<= bin-date? exports-file-write-date)))
-      (format t "Compiling ~40a  [~3d/~3d] ~%" lisp-file count total)
+      (format t "Compiling   ~40a    [~3d/~3d] ~%" lisp-file count total)
       (force-output)
       (compile-file lisp-file :output-file relative-bin-file)
       (setq bin-date? (file-write-date bin-file)))
     (when (or (null load-date?)
 	      (/= load-date? bin-date?))
-      (format t "Loading   ~40a  [~3d/~3d] ~%" bin-file count total)
+      (format t "Loading     ~40a    [~3d/~3d] ~%" bin-file count total)
       (force-output)
       (load bin-file)
       (setf (get module :tlt-load-date) bin-date?))))
@@ -442,12 +442,15 @@
       ;; attempt to get lots of garbage reclaimed here.  This is double the
       ;; default sizes.  -jra 1/6/92
       (lcl:egc-options :level-sizes '(16 20 20)))
-    #-lucid
-    nil
+
+    #+cmu
+    (progn 
+      (setq ext:*bytes-consed-between-gcs* bytes)
+      (setq ext:*gc-verbose* t))
 
     (setq memory-expanded-limit bytes)))
 
-(expand-memory-to-limit 5000000)
+(expand-memory-to-limit 7500000)
 
 
 
