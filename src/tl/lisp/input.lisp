@@ -196,7 +196,7 @@
 	(final-result *input-string-buffer*)
 	(input-index-bounds (gli::string-stream-input-index-bounds
 			      string-stream))
-	next-char
+	(next-char #\null)
 	(missing-newline? t))
     (declare (string final-result)
 	     (character next-char)
