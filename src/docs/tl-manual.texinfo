@@ -260,15 +260,13 @@ this case a Motorola 68376.  The first prototypes of the BoreRat became
 operational in 1999 and are currently being marketed to the oil field services
 industry by IIC.
 
-@section Mathematician's Languages vs. Engineer's Languages
+@section Scientists, Mathematicians, and Engineers (oh my!)
 
 From the beginning Lisp was a mathematician's language.  To understand what I
 mean by Lisp this, I must explain one view of the differences between the goals
 of scientists, mathematicians, and engineers.  @footnote{All apologies in
 advance to my father-in-law Ed (a scientist) and my brother-in-law Holger (a
 mathematician).}
-
-@subsection Scientists, Mathematicians, and Engineers (oh my!)
 
 The goal of scientists is to learn truths about the world around them, using
 observation, analysis, hypothesis, and experimentation to advance and buttress
@@ -302,7 +300,7 @@ of these different disciplines abound.  Within the the small community of
 computer language designers, the mathematician and engineer distinguish
 themselves through two very different approaches to language design.
 
-@subsection Denotational and Operational Semantics
+@section Denotational and Operational Semantics
 
 The mathematician espouses @emph{denotational semantics}, where the behavior of
 an operation is determined by what the operation @emph{means}.  In this style,
@@ -356,13 +354,14 @@ command in the language.  Fortran, Pascal, Basic, and C are all examples of
 languages in this category, with C (and it's derivative, C++) now being the
 default choice for people building big systems.
 
-Lisp and other languages (such as Smalltalk, Eiffel, and recently Java) were are
-exemplars of the mathematical style, emphasizing denotational semantics.  The
-operations in these languages were defined with semantics that are deep (or fat
-if you prefer), focusing not on what an operation @emph{did} but on what it
-@emph{meant}.  Of course there had to be implementations of these operations,
-but the actual machine instructions carried out were allowed (even expected) to
-vary widely depending on the manner and situation in which it was used.
+Lisp and other languages (such as CLU, Smalltalk, Eiffel, and recently Java)
+were are exemplars of the mathematical style, emphasizing denotational
+semantics.  The operations in these languages were defined with semantics that
+are deep (or fat if you prefer), focusing not on what an operation @emph{did}
+but on what it @emph{meant}.  Of course there had to be implementations of these
+operations, but the actual machine instructions carried out were allowed (even
+expected) to vary widely depending on the manner and situation in which it was
+used.
 
 These philosophical differences lead to vastly different languages, with the
 consequences of each style evoking surprise, disbelief, or even indignant
@@ -371,7 +370,7 @@ believe how much of the underlying limitations of systems are exposed, and
 operational fans can't believe how disassociated operations are from the
 machine.  One sees too much exposed, and the other sees too much being hidden.
 
-@subsection Just GOTO, or Really GOTO
+@section Just GOTO, or GOTO When You're Ready
 
 An example of how this difference in design perspective plays out can be found
 in the behavior of the @code{goto} statement in C and the @code{go} special
