@@ -1077,7 +1077,7 @@ The offending clause"
     (if (null expr) 0
       (catch 'loop-simplep
 	(let ((ans (loop-simplep-1 expr)))
-	  (declare (fixnum ans))
+	  (declare (type fixnum ans))
 	  (and (< ans 20.) ans)))))
 
 (defvar-for-macro loop-simplep
@@ -1085,7 +1085,7 @@ The offending clause"
 
 (defun-for-macro loop-simplep-1 (x)
   (let ((z 0))
-    (declare (fixnum z))
+    (declare (type fixnum z))
     (cond ((loop-constantp x) 0)
 	  ((atom x) 1)
 	  ((eq (car x) 'cond)

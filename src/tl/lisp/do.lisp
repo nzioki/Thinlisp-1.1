@@ -41,7 +41,7 @@
     (cond
       ((fixnump count)
        `(let ((,var 0))
-	  (declare (fixnum ,var))
+	  (declare (type fixnum ,var))
 	  ,@decls
 	  (block nil
 	    (tli::for-loop
@@ -52,7 +52,7 @@
        (let ((end-value (gensym)))
 	 `(let ((,end-value ,count)
 		(,var 0))
-	    (declare (fixnum ,end-value ,var))
+	    (declare (type fixnum ,end-value ,var))
 	    ,@decls
 	    (block nil
 	      (tli::for-loop

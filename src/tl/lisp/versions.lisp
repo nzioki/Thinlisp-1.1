@@ -51,7 +51,7 @@
 (defvar tl-user-package (find-package "TL-USER"))
 
 (defun normalize-system-name (symbol)
-  (declare (symbol symbol)
+  (declare (type symbol symbol)
 	   (return-type symbol))
   (let ((tl-package-name (if (not (eq (symbol-package symbol) tl-user-package))
 			     (intern (symbol-name symbol) tl-user-package)
@@ -60,7 +60,7 @@
 	tl-package-name)))
 
 (defun normalize-module-name (symbol)
-  (declare (symbol symbol)
+  (declare (type symbol symbol)
 	   (return-type symbol))
   (if (not (eq (symbol-package symbol) tl-user-package))
       (intern (symbol-name symbol) tl-user-package)
@@ -80,31 +80,31 @@
 ;;; the given system name is always included as the last element of this list.
 
 (defun system-modules (system-name)
-  (declare (symbol system-name)
+  (declare (type symbol system-name)
 	   (return-type list))
   (get (normalize-system-name system-name) :system-modules))
 
 (defun system-alias (system-name)
-  (declare (symbol system-name)
+  (declare (type symbol system-name)
 	   (return-type symbol))
   (let ((name (normalize-system-name system-name)))
     (or (get name :alias)
 	name)))
 
 (defun system-nicknames (system-name)
-  (declare (symbol system-name)
+  (declare (type symbol system-name)
 	   (return-type list))
   (get (normalize-system-name system-name) :system-nicknames))
 
 (defun system-used-systems (system-name)
-  (declare (symbol system-name)
+  (declare (type symbol system-name)
 	   (return-type list))
   (get (normalize-system-name system-name) :system-used-systems))
 
 (defvar collected-systems nil)
 
 (defun system-all-used-systems (system-name)
-  (declare (symbol system-name)
+  (declare (type symbol system-name)
 	   (return-type list))
 
   (let* ((name (normalize-system-name system-name))
@@ -183,7 +183,7 @@
 
 (defvar g2-operating-system
   (let ((platform-code (tli::get-platform-code)))
-    (declare (fixnum platform-code))
+    (declare (type fixnum platform-code))
     (cond
       ((= platform-code i386-code)         'unix)
       ((= platform-code dos-code)          'dos)
@@ -230,7 +230,7 @@
 
 (defvar g2-machine-type
   (let ((platform-code (tli::get-platform-code)))
-    (declare (fixnum platform-code))
+    (declare (type fixnum platform-code))
     (cond
       ((= platform-code i386-code)         'i386)
       ((= platform-code dos-code)          'dos)

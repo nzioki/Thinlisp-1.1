@@ -65,7 +65,7 @@
 		     function))))
 	 (actual-arg-count
 	   (tli::compiled-function-arg-count compiled-function)))
-    (declare (fixnum rest-length given-arg-count actual-arg-count))
+    (declare (type fixnum rest-length given-arg-count actual-arg-count))
 ;    #+nil
     (when (/= given-arg-count actual-arg-count)
       (if (and (< given-arg-count actual-arg-count)

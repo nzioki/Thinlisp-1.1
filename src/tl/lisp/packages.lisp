@@ -50,7 +50,7 @@
 (declaim (functional sxhash-string))
 
 (defun sxhash-string (text-string)
-  (declare (string text-string)
+  (declare (type string text-string)
 	   (return-type fixnum))
   (loop with hash fixnum = 0
 	for index from 0 below (length text-string)
@@ -70,9 +70,9 @@
 ;;; from the top level initializations of symbols in translated C code.
 
 (defun tli::init-symbol (symbol string string-hash)
-  (declare (symbol symbol)
+  (declare (type symbol symbol)
 	   (type t string)
-	   (fixnum string-hash)
+	   (type fixnum string-hash)
 	   (return-type symbol))
   (tli::set-symbol-type-tag symbol)
   (setf (tli::symbol-local-value symbol) t)
@@ -90,10 +90,10 @@
   symbol)
 
 (defun tli::init-symbol-into-package (symbol string string-hash package)
-  (declare (symbol symbol)
+  (declare (type symbol symbol)
 	   (type t string)
-	   (fixnum string-hash)
-	   (package package)
+	   (type fixnum string-hash)
+	   (type package package)
 	   (return-type symbol))
   (tli::init-symbol symbol string string-hash)
   (when package
@@ -107,15 +107,15 @@
 ;;; interned directly into that package.  This function returns no values.
 
 (defun insert-symbol-into-package (symbol package)
-  (declare (symbol symbol)
-	   (package package)
+  (declare (type symbol symbol)
+	   (type package package)
 	   (return-type void))
   (if (tli::not-unbound-value-p (tli::package-root-symbol package))
       ;; Insert into balanced binary tree later, just a binary tree now.  -jra
       ;; 4/8/96
       (let ((hash-number (tli::symbol-name-hash symbol))
 	    (name (tli::non-null-symbol-name symbol)))
-	(declare (fixnum hash-number))
+	(declare (type fixnum hash-number))
 	(loop with current-symbol = (tli::package-root-symbol package)
 	      for last-symbol = current-symbol
 	      for current-hash fixnum = (tli::symbol-name-hash current-symbol)
@@ -136,7 +136,7 @@
 		 (let ((compare-result
 			 (tli::string-compare
 			   name (tli::non-null-symbol-name current-symbol))))
-		   (declare (fixnum compare-result))
+		   (declare (type fixnum compare-result))
 		   (cond
 		     ((< compare-result 0)
 		      (setq current-symbol (tli::symbol-left-branch current-symbol))
@@ -173,9 +173,9 @@
 ;;; external.
 
 (defun find-symbol-in-single-package (string string-hash package)
-  (declare (string string)
-	   (fixnum string-hash)
-	   (package package)
+  (declare (type string string)
+	   (type fixnum string-hash)
+	   (type package package)
 	   (return-type t))
   (loop with current-symbol = (tli::package-root-symbol package)
 	initially (unless (tli::not-unbound-value-p current-symbol)
@@ -191,7 +191,7 @@
 	   (let ((compare-result (tli::string-compare
 				   string
 				   (tli::non-null-symbol-name current-symbol))))
-	     (declare (fixnum compare-result))
+	     (declare (type fixnum compare-result))
 	     (cond
 	       ((< compare-result 0)
 		(setq current-symbol (tli::symbol-left-branch current-symbol)))
@@ -220,7 +220,7 @@
   (typecase string-or-symbol-or-package
     (string
      (let ((name string-or-symbol-or-package))
-       (declare (string name))
+       (declare (type string name))
        (loop for package in all-packages do
 	 (when (string= (package-name package) name)
 	   (return package)))))
@@ -264,7 +264,7 @@
      (find-package-or-error ,package-or-package-name)))
 
 (defun make-package-1 (name use)
-  (declare (string name)
+  (declare (type string name)
 	   (return-type t))
   (with-permanent-area
     (let* ((name-to-use (string-upcase name))
@@ -317,14 +317,14 @@
 	   ,string (sxhash-string ,string) ,package-arg)
 	(let ((string-var (gensym)))
 	  `(let ((,string-var ,string))
-	     (string ,string-var)
+	     (declare (type string ,string-var))
 	     (find-symbol-in-package
 	       ,string-var (sxhash-string ,string-var) ,package-arg))))))
 
 (defun find-symbol-in-package (string string-hash package)
-  (declare (string string)
-	   (fixnum string-hash)
-	   (package package))
+  (declare (type string string)
+	   (type fixnum string-hash)
+	   (type package package))
   #-translator
   (declare (ignore string-hash))
   #-translator
@@ -362,9 +362,9 @@
 ;;; object to intern any newly created symbol into.
 
 (defun intern-string-in-package (string hash-number package)
-  (declare (string string)
-	   (fixnum hash-number)
-	   (package package))
+  (declare (type string string)
+	   (type fixnum hash-number)
+	   (type package package))
   (multiple-value-bind (symbol found?)
       (find-symbol-in-package string hash-number package)
     (if found?
@@ -493,13 +493,13 @@
 
 (defvar *gensym-counter* 1)
 
-(declaim (fixnum *gensym-counter*))
+(declaim (type fixnum *gensym-counter*))
 
 (defun make-gensymed-symbol (string-or-counter?)
   (declare (return-type symbol))
   (let ((prefix "G")
 	(counter *gensym-counter*))
-    (declare (fixnum counter))
+    (declare (type fixnum counter))
     (cond
       ((fixnump string-or-counter?)
        (setq counter string-or-counter?))
@@ -515,7 +515,7 @@
 				 (log (float counter 1.0) 10)))))
 	     (new-name (make-string
 			(+ counter-length (length (the string prefix))))))
-	(declare (fixnum counter-length))
+	(declare (type fixnum counter-length))
 	(setf (fill-pointer new-name) 0)
 	(format new-name "~a~v,'0d" prefix counter-length counter)
 	(make-symbol new-name)))))
@@ -545,8 +545,8 @@
 	   (stream (get-string-or-file-stream-for-output-macro
 		     stream? length))
 	   (string? (stringp stream)))
-      (declare (string name)
-	       (fixnum length))
+      (declare (type string name)
+	       (type fixnum length))
       ;; Do the best optimization for the default case, :upcase.
       (cond
 	((eq case :upcase)
@@ -565,7 +565,7 @@
 	 (do* ((first t)
 	       (index 0 (+ index 1)))
 	      ((>= index length))
-	   (declare (fixnum index))
+	   (declare (type fixnum index))
 	   (let* ((char (char name index))
 		  (alpha-char? (alpha-char-p char)))
 	     (cond (first

@@ -41,6 +41,8 @@
 
 (deftype fixnum () 'tli::fixnum)
 
+(defconstant fixnum-signed-byte-width 30)
+
 (defconstant most-positive-fixnum 536870911)
 
 (defconstant most-negative-fixnum -536870912)
@@ -78,26 +80,32 @@
 (defmacro numberp (object)
   `(typep ,object 'tli::number))
 
-
-
-
-;;; Note that we are immoral scum and are ignoring the ranges handed in.  All
-;;; values declared as integers in this form are presumed to be just fixnums.
-;;; Note that this would be OK, but we also do in fact attempt to pay attention
-;;; to the unsigned-byte types by NOT expanding them.  When we have spare time
-;;; (HA!) we should do the moral thing, expand all other integer type
-;;; specifications into an integer range spec, and then fix up tl-typep and
-;;; tl-subtypep to explicitly deal with the integer types.  -jra 1/8/97
-
 (deftype integer (&optional low-bound high-bound)
-  (declare (ignore low-bound high-bound))
-  'tli::fixnum)
+  (tli::cond ((tli::or (tli::null low-bound) (tli::eq low-bound '*))
+	      (tli::setq low-bound most-negative-fixnum))
+	     ((tli::consp low-bound)
+	      (tli::setq low-bound (tli::1+ (tli::car low-bound)))))
+  (tli::cond ((tli::or (tli::null high-bound) (tli::eq high-bound '*))
+	      (tli::setq high-bound most-positive-fixnum))
+	     ((tli::consp high-bound)
+	      (tli::setq high-bound (tli::1- (tli::car high-bound)))))
+  `(tli::integer ,low-bound ,high-bound))
 
 (defmacro integerp (object)
   `(typep ,object 'tli::fixnum))
 
 (deftype unsigned-byte (bit-length)
-  `(tli::unsigned-byte ,bit-length))
+  (tli::when (tli::>= bit-length fixnum-signed-byte-width)
+    (tli::error "Type (unsigned-byte ~a) exceeds ThinLisp's fixnum range."
+		bit-length))
+  `(tli::integer 0 ,(tli::1- (tli::ash 1 bit-length))))
+
+(deftype signed-byte (bit-length)
+  (tli::when (tli::> bit-length fixnum-signed-byte-width)
+    (tli::error "Type (signed-byte ~a) exceeds ThinLisp's fixnum range."
+		bit-length))
+  `(tli::integer ,(tli::- (tli::ash 1 (tli::1- bit-length)))
+		 ,(tli::1- (tli::ash 1 (tli::1- bit-length)))))
 
 (deftype float () 'tli::double-float)
 
@@ -219,7 +227,7 @@
 
 
 
-;;;; Macro-type Subtyping Operations
+;;;; Macro-time Subtyping Operations
 
 
 

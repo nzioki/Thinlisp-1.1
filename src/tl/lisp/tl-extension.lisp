@@ -962,7 +962,7 @@
 	    (f2 (gensym)))
 	`(let ((,f1 ,positive-fixnum)
 	       (,f2 ,positive-divisor-fixnum))
-	   (declare (fixnum ,f1 ,f2))
+	   (declare (type fixnum ,f1 ,f2))
 	   (values (floorf-positive ,f1 ,f2)
 		   (modf-positive ,f1 ,f2))))))
 
@@ -997,7 +997,7 @@
 	   env)))
 
 (defun truncatef-first (fixnum divisor-fixnum)
-  (declare (fixnum fixnum divisor-fixnum) )
+  (declare (type fixnum fixnum divisor-fixnum) )
 ;;  (eliminate-for-gsi))
   (if (pluspf fixnum)
       (if (pluspf divisor-fixnum)
@@ -1039,7 +1039,7 @@
 	   `(let ((,logand-result
 		     ,(declare-type-preserving-numeric-operation
 			'fixnum 'logand fixnums env)))
-	      (declare (fixnum ,logand-result))
+	      (declare (type fixnum ,logand-result))
 	      ,logand-result)))
 	(t
 	 (declare-type-preserving-numeric-operation
@@ -1117,7 +1117,7 @@
 (declaim (functional rem-fixnums))
 
 (defun rem-fixnums (fixnum fixnum-divisor)
-  (declare (fixnum fixnum fixnum-divisor)
+  (declare (type fixnum fixnum fixnum-divisor)
 	   (return-type fixnum))
   ;;  (eliminate-for-gsi))
   (if (minuspf fixnum)
@@ -1140,7 +1140,7 @@
 (declaim (functional two-arg-lcmf))
 
 (defun two-arg-lcmf (n m)
-  (declare (fixnum n m)
+  (declare (type fixnum n m)
 	   (return-type fixnum))
 ;;  (eliminate-for-gsi))
   (*f (truncatef-first
@@ -1160,7 +1160,7 @@
 (declaim (functional two-arg-gcdf))
 
 (defun two-arg-gcdf (u v)
-  (declare (fixnum u v)
+  (declare (type fixnum u v)
 	   (return-type fixnum))
 ;;  (eliminate-for-gsi))
   (cond

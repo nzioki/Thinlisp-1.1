@@ -53,7 +53,7 @@
 	   (cons? (cdr-of-cons sequence) (cdr-of-cons cons?)))
 	  ((null cons?)
 	   count)
-       (declare (fixnum count))))
+       (declare (type fixnum count))))
     (simple-vector
      (tli::length-trans (the simple-vector sequence)))
     (string
@@ -100,7 +100,7 @@
 ;;; This section implements some of the primitive sequence operations.
 
 (defun copy-list (list)
-  (declare (list list)
+  (declare (type list list)
 	   (consing-area either)
 	   (return-type list))
   (if (null list)
@@ -113,7 +113,7 @@
 	    ((atom old-cdr)
 	     (setf (car new-cons) (car old-cons))
 	     (setf (cdr new-cons) old-cdr))
-	  (declare (cons old-cons new-cons))
+	  (declare (type cons old-cons new-cons))
 	  (setf (car new-cons) (car old-cons)))
 	new-list)))
 
@@ -133,7 +133,7 @@
 		    (setf (cdr (last cons-in-new-list?)) old-list))
 		   (t
 		    (setq new-list old-list))))
-	 (declare (cons list-holder))
+	 (declare (type cons list-holder))
 	 (when old-list
 	   (let ((new-copy (copy-list old-list)))
 	     (cond (cons-in-new-list?
@@ -197,17 +197,17 @@
 		    (return ,alist-entry)))))))))
 
 (defun assq (item alist)
-  (declare (list alist)
+  (declare (type list alist)
 	   (return-type t))
   (assoc item alist :test #'eq :key #'my-identity))
 
 (defun assoc-eql (item alist)
-  (declare (list alist)
+  (declare (type list alist)
 	   (return-type t))
   (assoc item alist :test #'eql :key #'my-identity))
 
 (defun assoc-equal (item alist)
-  (declare (list alist)
+  (declare (type list alist)
 	   (return-type t))
   (assoc item alist :test #'equal :key #'my-identity))
 
@@ -240,17 +240,17 @@
 		  (return ,list-var))))))))
 
 (defun memq (item list)
-  (declare (list list)
+  (declare (type list list)
 	   (return-type t))
   (member item list :test #'eq :key #'my-identity))
 
 (defun member-eql (item list)
-  (declare (list list)
+  (declare (type list list)
 	   (return-type t))
   (member item list :test #'eql :key #'my-identity))
 
 (defun member-equal (item list)
-  (declare (list list)
+  (declare (type list list)
 	   (return-type t))
   (member item list :test #'equal :key #'my-identity))
 
@@ -288,7 +288,7 @@
 		(,current-cons ,list-var))
 	       ((null ,current-cons)
 		,list-var)
-	    (declare (fixnum ,deleted-so-far))
+	    (declare (type fixnum ,deleted-so-far))
 	    (setq ,next-cons (cdr-of-cons ,current-cons))
 	    (cond
 	      ((funcall ,test (funcall ,key (car-of-cons ,current-cons))
@@ -305,41 +305,41 @@
 	    (setq ,current-cons ,next-cons)))))))
 
 (defun delq (item list &optional count)
-  (declare (list list)
+  (declare (type list list)
 	   (return-type t))
   (delete item list :test #'eq :key #'my-identity :count count))
 
 (defun delete-eql (item list &optional count)
-  (declare (list list)
+  (declare (type list list)
 	   (return-type t))
   (delete item list :test #'eql :key #'my-identity :count count))
 
 (defun delete-equal (item list &optional count)
-  (declare (list list)
+  (declare (type list list)
 	   (return-type t))
   (delete item list :test #'equal :key #'my-identity :count count))
 
-(declaim (functional nthcdr))
+(declaim (functional nthcdr nth))
 
 (defun nthcdr (n list)
-  (declare (fixnum n)
-	   (list list)
+  (declare (type fixnum n)
+	   (type list list)
 	   (return-type t))
   (do ((count 0 (+ count 1)))
       ((or (>= count n)
 	   (null list))
        list)
-    (declare (fixnum count))
+    (declare (type fixnum count))
     (setq list (cdr-of-cons list))))
 
 (defun nth (n list)
-  (declare (fixnum n)
-	   (list list)
+  (declare (type fixnum n)
+	   (type list list)
 	   (return-type t))
   (do ((count 0 (+ count 1)))
       ((null list)
        nil)
-    (declare (fixnum count))
+    (declare (type fixnum count))
     (cond ((>= count n)
 	   (return (car-of-cons list)))
 	  (t
@@ -399,7 +399,7 @@
 
 (defun tli::generic-set-fill-pointer (vector new-fill-pointer)
   (declare (type t vector)
-	   (fixnum new-fill-pointer)
+	   (type fixnum new-fill-pointer)
 	   (return-type fixnum))
   (typecase vector
     (string
@@ -497,8 +497,8 @@
 	 (string2 (string string-or-symbol-2))
 	 (length1 (length string1))
 	 (length2 (length string2)))
-    (declare (string string1 string2)
-	     (fixnum length1 length2))
+    (declare (type string string1 string2)
+	     (type fixnum length1 length2))
     (and (= length1 length2)
 	 (dotimes (index length1 t)
 	   (unless (char-equal (char string1 index) (char string2 index))
@@ -511,12 +511,12 @@
 	 (length1 (length string1))
 	 (length2 (length string2))
 	 (min-length (if (< length1 length2) length1 length2)))
-    (declare (string string1 string2)
-	     (fixnum length1 length2 min-length))
+    (declare (type string string1 string2)
+	     (type fixnum length1 length2 min-length))
     (dotimes (index min-length (< length1 length2))
       (let ((char1 (char-upcase (char string1 index)))
 	    (char2 (char-upcase (char string2 index))))
-	(declare (character char1 char2))
+	(declare (type character char1 char2))
 	(cond ((char< char1 char2)
 	       (return t))
 	      ((char> char1 char2)
@@ -529,12 +529,12 @@
 	 (length1 (length string1))
 	 (length2 (length string2))
 	 (min-length (if (< length1 length2) length1 length2)))
-    (declare (string string1 string2)
-	     (fixnum length1 length2 min-length))
+    (declare (type string string1 string2)
+	     (type fixnum length1 length2 min-length))
     (dotimes (index min-length (> length1 length2))
       (let ((char1 (char-upcase (char string1 index)))
 	    (char2 (char-upcase (char string2 index))))
-	(declare (character char1 char2))
+	(declare (type character char1 char2))
 	(cond ((char> char1 char2)
 	       (return t))
 	      ((char< char1 char2)
@@ -591,7 +591,7 @@
   (let* ((append-fill (fill-pointer string-to-append))
 	 (output-fill (fill-pointer output-string))
 	 (new-length (+ append-fill output-fill)))
-    (declare (fixnum append-fill output-fill new-length))
+    (declare (type fixnum append-fill output-fill new-length))
     (when (> new-length (array-dimension output-string 0))
       (error "Write-string-into-string overflow while appending ~s."
 	     string-to-append))
@@ -601,11 +601,11 @@
     output-string))
 
 (defun write-char-into-string (char output-string)
-  (declare (character char)
-	   (string output-string)
+  (declare (type character char)
+	   (type string output-string)
 	   (return-type string))
   (let ((current-fill (fill-pointer output-string)))
-    (declare (fixnum current-fill))
+    (declare (type fixnum current-fill))
     (unless (> (array-dimension output-string 0) current-fill)
       (error "Write-char-into-string overflow to string ~s." output-string))
     (setf (fill-pointer output-string) (+ current-fill 1))

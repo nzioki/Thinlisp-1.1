@@ -50,7 +50,7 @@
   (if (and (constantp radix) (<= (eval radix) 10))
       (let ((weight (gensym)))
 	`(let ((,weight (- (char-code ,character) (char-code #\0))))
-	   (declare (fixnum ,weight))
+	   (declare (type fixnum ,weight))
 	   (if (and (>= ,weight 0)
 		    (< ,weight ,radix))
 	       ,weight
@@ -59,7 +59,7 @@
 	    (rad (gensym)))
 	`(let ((,char-code (char-code ,character))
 	       (,rad ,radix))
-	   (declare (fixnum ,char-code ,rad))
+	   (declare (type fixnum ,char-code ,rad))
 	   (cond ((<= ,rad 10)
 		  (setq ,char-code (- ,char-code (char-code #\0)))
 		  (if (and (>= ,char-code 0)
@@ -94,13 +94,13 @@
 		 (code-char (+ (the fixnum ,weight) (char-code #\0)))
 		 nil)
 	    `(let ((,char-number ,weight))
-	       (declare (fixnum ,char-number))
+	       (declare (type fixnum ,char-number))
 	       (if (< ,char-number ,radix)
 		   (code-char (+ ,char-number (char-code #\0)))
 		   nil)))
 	`(let ((,char-number ,weight)
 	       (,radix-value ,radix))
-	   (declare (fixnum ,char-number ,radix-value))
+	   (declare (type fixnum ,char-number ,radix-value))
 	   (if (< ,char-number ,radix-value)
 	       (code-char
 		 (if (< ,char-number 10)
@@ -111,7 +111,7 @@
 (defmacro digit-char-no-nils (weight)
   (let ((fixnum (gensym)))
     `(let ((,fixnum ,weight))
-       (declare (fixnum ,fixnum))
+       (declare (type fixnum ,fixnum))
        (code-char (+ (if (< ,fixnum 10)
 			 (char-code #\0)
 			 (- (char-code #\A) 10))
@@ -128,7 +128,7 @@
 	    (let ((bindings (lisp:mapcar #'(lambda (char) (list (gensym) char))
 					 (cons char chars))))
 	      `(let ,bindings
-		 (declare (character ,@(lisp:mapcar #'lisp:car bindings)))
+		 (declare (type character ,@(lisp:mapcar #'lisp:car bindings)))
 		 (and ,@(do ((tests nil)
 			     (bind-cons bindings (cdr bind-cons)))
 			    ((null (cdr bind-cons))
@@ -152,21 +152,21 @@
 (defmacro lower-case-p (character)
   (let ((char (gensym)))
     `(let ((,char ,character))
-       (declare (character ,char))
+       (declare (type character ,char))
        (and (char<= #\a ,char)
 	    (char<= ,char #\z)))))
 
 (defmacro upper-case-p (character)
   (let ((char (gensym)))
     `(let ((,char ,character))
-       (declare (character ,char))
+       (declare (type character ,char))
        (and (char<= #\A ,char)
 	    (char<= ,char #\Z)))))
 
 (defmacro alpha-char-p (character)
   (let ((char (gensym)))
     `(let ((,char ,character))
-       (declare (character ,char))
+       (declare (type character ,char))
        (or (and (char<= #\a ,char)
 		(char<= ,char #\z))
 	   (and (char<= #\A ,char)
@@ -184,7 +184,7 @@
 (defmacro char-upcase (character)
   (let ((char (gensym)))
     `(let ((,char ,character))
-       (declare (character ,char))
+       (declare (type character ,char))
        (if (lower-case-p ,char)
 	   ;; ASCII assumption here!
 	   (code-char (- (char-code ,char)
@@ -194,7 +194,7 @@
 (defmacro char-downcase (character)
   (let ((char (gensym)))
     `(let ((,char ,character))
-       (declare (character ,char))
+       (declare (type character ,char))
        (if (upper-case-p ,char)
 	   ;; ASCII assumption here!
 	   (code-char (+ (char-code ,char)
@@ -224,7 +224,7 @@
   `(char-code ,character))
 
 (defun char-name (character)
-  (declare (character character)
+  (declare (type character character)
 	   (return-type t))
   (case (char-code character)
     (#.(char-code #\newline) "newline")
@@ -247,74 +247,74 @@
 
 
 (defun copy-string (string length)
-  (declare (string string)
-	   (fixnum length)
+  (declare (type string string)
+	   (type fixnum length)
 	   (consing-area either))
   (let ((new-string (make-string length)))
     (replace-strings new-string string :end2 length)
     new-string))
 
 (defun nstring-upcase (string &key (start 0) end)
-  (declare (string string)
-	   (fixnum start)
+  (declare (type string string)
+	   (type fixnum start)
 	   (return-type string))
   (do ((limit (if end end (tli::length-trans string)))
        (index start (+ index 1)))
       ((>= index limit) string)
-    (declare (fixnum limit index))
+    (declare (type fixnum limit index))
     (setf (char string index)
 	  (char-upcase (char string index)))))
 
 (defun string-upcase (string &key (start 0) end)
-  (declare (fixnum start)
-	   (string string)
+  (declare (type fixnum start)
+	   (type string string)
 	   (return-type string)
 	   (consing-area permanent))
   (do* ((length (tli::length-trans string))
 	(limit (if end end length))
 	(index start (+ index 1)))
        ((>= index limit) string)
-    (declare (fixnum length limit index))
+    (declare (type fixnum length limit index))
     (when (lower-case-p (char string index))
       (return (nstring-upcase
 		(copy-string string length) :start index :end limit)))))
 
 (defun nstring-downcase (string &key (start 0) end)
-  (declare (string string)
-	   (fixnum start)
+  (declare (type string string)
+	   (type fixnum start)
 	   (return-type string))
   (do ((limit (if end end (tli::length-trans string)))
        (index start (+ index 1)))
       ((>= index limit) string)
-    (declare (fixnum limit index))
+    (declare (type fixnum limit index))
     (setf (char string index)
 	  (char-downcase (char string index)))))
 
 (defun string-downcase (string &key (start 0) end)
-  (declare (fixnum start)
-	   (string string)
+  (declare (type fixnum start)
+	   (type string string)
 	   (return-type string)
 	   (consing-area permanent))
   (do* ((length (tli::length-trans string))
 	(limit (if end end length))
 	(index start (+ index 1)))
        ((>= index limit) string)
-    (declare (fixnum length limit index))
+    (declare (type fixnum length limit index))
     (when (upper-case-p (char string index))
       (return (nstring-downcase
 		(copy-string string length) :start index :end limit)))))
 
 (defun nstring-capitalize (string &key (start 0) end)
-  (declare (string string)
-	   (fixnum start)
+  (declare (type string string)
+	   (type fixnum start)
 	   (return-type string))
   (do ((word-start t)
        (limit (if end end (tli::length-trans string)))
        (index start (+ index 1)))
       ((>= index limit) string)
-    (declare (fixnum limit index))
+    (declare (type fixnum limit index))
     (let ((char (char string index)))
-      (declare (character char))
+      (declare (type character char))
       (setf (char string index)
 	    (cond ((alphanumericp char)
 		   (cond (word-start
@@ -409,7 +409,7 @@
 	(needed-chars (gensym)))
     `(let ((,stream ,stream-arg)
 	   (,needed-chars ,needed-space))
-       (declare (fixnum ,needed-chars))
+       (declare (type fixnum ,needed-chars))
        (typecase ,stream
 	 (symbol
 	  (cond
@@ -422,7 +422,7 @@
 	  (get-string-or-file-stream-for-output ,stream ,needed-chars))))))
 
 (defun get-string-or-file-stream-for-output (stream-arg needed-space)
-  (declare (fixnum needed-space)
+  (declare (type fixnum needed-space)
 	   (return-type t))
   (typecase stream-arg
     (symbol
@@ -446,7 +446,7 @@
 		     (if (> needed-space default-string-stream-size)
 			 needed-space
 			 default-string-stream-size))))
-	     (declare (string new-string))
+	     (declare (type string new-string))
 	     (setf (fill-pointer new-string) 0)
 	     (setf (tli::string-stream-strings stream-arg)
 		   (cons new-string string-list))
@@ -461,10 +461,10 @@
      (bad-stream-error stream-arg))))
 
 (defun last-string-char? (string)
-  (declare (string string)
+  (declare (type string string)
 	   (return-type t))
   (let ((length (tli::length-trans string)))
-    (declare (fixnum length))
+    (declare (type fixnum length))
     (if (> length 0)
 	(char string (1- length))
 	nil)))
@@ -486,23 +486,23 @@
 	(t nil)))
 
 (defun get-output-stream-string (string-stream)
-  (declare (string-stream string-stream)
+  (declare (type string-stream string-stream)
 	   (return-type t))
   (let ((string-list (tli::string-stream-strings string-stream))
 	(length 0))
-    (declare (fixnum length))
+    (declare (type fixnum length))
     (dolist (string string-list)
       (declare (type t string))
       (incf length (tli::length-trans (the string string))))
     (let ((result-string (locally (declare (consing-area permanent))
 			   (make-string length)))
 	  (current-end length))
-      (declare (string result-string)
-	       (fixnum current-end))
+      (declare (type string result-string)
+	       (type fixnum current-end))
       (dolist (string string-list)
 	(declare (type t string))
 	(let ((this-length (tli::length-trans (the string string))))
-	  (declare (fixnum this-length))
+	  (declare (type fixnum this-length))
 	  (decf current-end this-length)
 	  (replace-strings result-string
 			   (the string string)
@@ -537,18 +537,18 @@
 
 (defun write-string
     (string &optional (stream? nil) &key (start 0) (end nil))
-  (declare (string string)
-	   (fixnum start)
+  (declare (type string string)
+	   (type fixnum start)
 	   (return-type string))
   (let* ((end-index (if (null end)
 		  (tli::length-trans string)
 		  end))
 	 (stream (get-string-or-file-stream-for-output stream?
 						       (- end-index start))))
-    (declare (fixnum end-index))
+    (declare (type fixnum end-index))
     (cond ((stringp stream)
 	   (let ((current-fill (fill-pointer (the string stream))))
-	     (declare (fixnum current-fill))
+	     (declare (type fixnum current-fill))
 	     (setf (fill-pointer (the string stream))
 		   (+ current-fill (the fixnum (- end-index start))))
 	     (replace-strings
@@ -560,7 +560,7 @@
 	   (do ((index start (+ index 1)))
 	       ((>= index end-index)
 		nil)
-	     (declare (fixnum index))
+	     (declare (type fixnum index))
 	     (write-char-to-file-stream (char string index) stream)))
 	  (t
 	   (write-string-to-file-stream string stream)))
@@ -573,12 +573,12 @@
     (if (and (or (constantp character) (symbolp character))
 	     (symbolp string))
 	`(let ((,fill (fill-pointer (the string ,string))))
-	   (declare (fixnum ,fill))
+	   (declare (type fixnum ,fill))
 	   (setf (fill-pointer (the string ,string)) (+ ,fill 1))
 	   (setf (char (the string ,string) ,fill) ,character))
       `(let ((,char ,character)
 	     (,str ,string))
-	 (declare (character ,char))
+	 (declare (type character ,char))
 	 (write-char-to-string ,char ,str)))))
 
 (defmacro write-char-to-string-or-file-stream (character string-or-file-stream string?)
@@ -594,11 +594,11 @@
 	  (stream (gensym)))
       `(let ((,char ,character)
 	     (,stream ,string-or-file-stream))
-	 (declare (character ,char))
+	 (declare (type character ,char))
 	 (write-char-to-string-or-file-stream ,char ,stream ,string?)))))
 
 (defun write-char (char &optional (stream? nil))
-  (declare (character char)
+  (declare (type character char)
 	   (return-type character))
   (let ((string? nil))
     (typecase stream?
@@ -613,7 +613,7 @@
     char))
 
 (defun write-fixnum-in-hex (fixnum stream?)
-  (declare (fixnum fixnum)
+  (declare (type fixnum fixnum)
 	   (return-type void))
   (when (< fixnum 0)
     (write-char #\- stream?)
@@ -625,7 +625,7 @@
 	      stream?))
 
 (defun write-fixnum-in-arbitrary-base (fixnum base stream)
-  (declare (fixnum fixnum base)
+  (declare (type fixnum fixnum base)
 	   (return-type void))
   (cond ((< fixnum 0)
 	 (write-char #\- stream)
@@ -644,11 +644,11 @@
 (defparameter reversed-fixnum-with-commas-string (make-string 64))
 
 (defun write-fixnum-with-commas (fixnum base comma-interval comma-char stream)
-  (declare (fixnum fixnum base comma-interval)
-	   (character comma-char)
+  (declare (type fixnum fixnum base comma-interval)
+	   (type character comma-char)
 	   (return-type void))
   (let ((reversed-fixnum-with-commas reversed-fixnum-with-commas-string))
-    (declare (string reversed-fixnum-with-commas))
+    (declare (type string reversed-fixnum-with-commas))
     (when (< fixnum 0)
       (write-char #\- stream)
       (setq fixnum (- fixnum)))
@@ -656,7 +656,7 @@
     (do ((char-count 0 (+ char-count 1))
 	 (fill 0 (+ fill 1)))
 	((and (<= fixnum 0) (> fill 0)))
-      (declare (fixnum char-count fill))
+      (declare (type fixnum char-count fill))
       (when (>= char-count comma-interval)
 	(setq char-count 0)
 	(setf (fill-pointer reversed-fixnum-with-commas) (+ fill 1))
@@ -672,16 +672,16 @@
     (do ((index (1- (tli::length-trans reversed-fixnum-with-commas))
 		(- index 1)))
 	((< index 0))
-      (declare (fixnum index))
+      (declare (type fixnum index))
       (write-char (char reversed-fixnum-with-commas index) stream))))
 
 (defun write-fixnum (fixnum base width stream?)
-  (declare (fixnum fixnum base width)
+  (declare (type fixnum fixnum base width)
 	   (return-type fixnum))
   (let ((stream (get-string-or-file-stream-for-output-macro
 		  stream?
 		  (if (= width 0) 11 width))))
-    (declare (fixnum base))
+    (declare (type fixnum base))
     (cond
       ((= base 10)
        (if (stringp stream)
@@ -702,8 +702,8 @@
 	    (,stream (get-string-or-file-stream-for-output
 		       ,stream?
 		       (if (= ,width-value 0) 16 ,width-value))))
-       (declare (double-float ,double)
-		(fixnum ,width-value))
+       (declare (type double-float ,double)
+		(type fixnum ,width-value))
        (if (stringp ,stream)
 	   (tli::write-double-to-string ,double ,width-value ,stream)
 	   (tli::princ-double-to-file ,double ,width-value ,stream))
@@ -716,7 +716,7 @@
      ,stream?))
 
 (defun print-random-object-with-type-name (object name extra-info? stream?)
-  (declare (string name)
+  (declare (type string name)
 	   (return-type void))
   (write-string "#<" stream?)
   (write-string name stream?)
@@ -748,7 +748,7 @@
     (cons
      (write-list object stream))
     (character
-     (locally (declare (character object))
+     (locally (declare (type character object))
        (if escape
 	   (let ((name? (char-name object)))
 	     (write-string "#\\" stream)
@@ -766,7 +766,7 @@
      (print-random-object-with-type-name
        object "Simple-Vector" (tli::length-trans (the simple-vector object)) stream))
     (string
-     (locally (declare (string object))
+     (locally (declare (type string object))
        (cond (escape
 	      (write-char #\" stream)
 	      (dotimes (index (tli::length-trans object))
@@ -856,7 +856,7 @@
 (defmacro write-byte (byte file-stream)
   (let ((value (gensym)))
     `(let ((,value ,byte))
-       (declare (fixnum ,value))
+       (declare (type fixnum ,value))
        (tli::write-byte-to-file ,value ,file-stream)
        ,value)))
 
@@ -874,7 +874,7 @@
 	       (write-string " . " stream?)
 	       (write next-cons :stream stream?)
 	       (write-char #\) stream?))))
-    (declare (cons current-cons))
+    (declare (type cons current-cons))
     (write current-car :stream stream?)
     (write-char #\space stream?))
   cons)
@@ -901,7 +901,7 @@
   (let* ((this-cons field-width-string-list)
 	 (this-string (car this-cons))
 	 (next-cons? (cdr this-cons)))
-    (declare (cons this-cons))
+    (declare (type cons this-cons))
     (unless next-cons?
       (setq next-cons?
 	    (cons (make-string field-width-string-length) nil))
@@ -929,16 +929,16 @@
 	      (colinc (or colinc-arg 1))
 	      (minpad (or minpad-arg 0))
 	      (padchar (or padchar-arg #\space)))
-	  (declare (fixnum mincol colinc minpad)
-		   (character padchar)
-		   (string current-stream))
+	  (declare (type fixnum mincol colinc minpad)
+		   (type character padchar)
+		   (type string current-stream))
 	  (unless atsign-modifier?
 	    (write-string current-stream stream))
 	  (do ((length (tli::length-trans current-stream))
 	       (pad 0 (+ pad colinc)))
 	      ((and (>= (+ length pad) mincol)
 		    (>= pad minpad)))
-	    (declare (fixnum length pad))
+	    (declare (type fixnum length pad))
 	    (dotimes (x colinc)
 	      (write-char padchar stream)))
 	  (when atsign-modifier?
@@ -953,7 +953,7 @@
 
 (defun write-fixnum-with-arglist
     (stream fixnum arglist atsign-modifier? colon-modifier?)
-  (declare (fixnum fixnum)
+  (declare (type fixnum fixnum)
 	   (return-type void))
   (let ((current-stream (if arglist (alloc-field-width-string) stream)))
     (when (and atsign-modifier? (>= fixnum 0))
@@ -969,14 +969,14 @@
 	    (padchar (or padchar-arg #\space))
 	    (comma-char (or comma-char-arg #\,))
 	    (comma-interval (or comma-interval-arg 3)))
-	(declare (fixnum mincol comma-interval)
-		 (character padchar comma-char))
+	(declare (type fixnum mincol comma-interval)
+		 (type character padchar comma-char))
 	(if colon-modifier?
 	    (write-fixnum-with-commas
 	      fixnum *print-base* comma-interval comma-char current-stream)
 	    (write-fixnum fixnum *print-base* 0 current-stream))
 	(when mincol-arg
-	  (locally (declare (string current-stream))
+	  (locally (declare (type string current-stream))
 	    (dotimes (x (- mincol (tli::length-trans current-stream)))
 	      (write-char padchar stream))
 	    (write-string current-stream stream)))))))
@@ -1020,7 +1020,7 @@
 ;;; ~]   End-of-conditional
 
 (defun format (stream-arg control-string &rest args)
-  (declare (string control-string))
+  (declare (type string control-string))
   (let ((stream (or stream-arg
 		    ;; The following is a leak.  We need to make these streams
 		    ;; in a pool.  -jra 12/30/96
@@ -1039,11 +1039,11 @@
 	(iteration-sublists nil)
 	(control-string-length (tli::length-trans control-string))
 	(field-width-string-list field-width-string-list))
-    (declare (fixnum index control-string-length))
+    (declare (type fixnum index control-string-length))
     (do ()
 	((>= index control-string-length))
       (let ((next-char (char control-string index)))
-	(declare (character next-char))
+	(declare (type character next-char))
 	(incf index)
 	(cond
 	  ((char= next-char #\~)
@@ -1072,7 +1072,7 @@
 		   (case (char-code next-char)
 		     ((#.(char-code #\,))
 		      (let ((new-cons arglist-pool))
-			(declare (cons new-cons))
+			(declare (type cons new-cons))
 			(setq arglist-pool (cdr new-cons))
 			(setf (car new-cons) current-arg?)
 			(setf (cdr new-cons) nil)
@@ -1094,7 +1094,7 @@
 		     (t
 		      (when current-arg?
 			(let ((new-cons arglist-pool))
-			  (declare (cons new-cons))
+			  (declare (type cons new-cons))
 			  (setq arglist-pool (cdr new-cons))
 			  (setf (car new-cons) current-arg?)
 			  (setf (cdr new-cons) nil)
@@ -1107,7 +1107,7 @@
 	       (setq next-char (char control-string index))
 	       (incf index))
 	     (let ((down-char (char-downcase next-char)))
-	       (declare (character down-char))
+	       (declare (type character down-char))
 	       (case down-char
 		 ((#\a #\s)
 		  (let ((*print-escape* (char= down-char #\s)))
@@ -1182,7 +1182,7 @@
 		  (unless (and current-case-conversion cached-stream?)
 		    (bad-control-directive-error control-string))
 		  (let ((field-width-string stream))
-		    (declare (string field-width-string))
+		    (declare (type string field-width-string))
 		    (case current-case-conversion
 		      (:upcase
 		       (nstring-upcase field-width-string))
@@ -1227,13 +1227,13 @@
 			  (do ((end-index index (+ end-index 1)))
 			      ((>= end-index control-string-length)
 			       nil)
-			    (declare (fixnum end-index))
+			    (declare (type fixnum end-index))
 			    (let ((char (char control-string end-index)))
-			      (declare (character char))
+			      (declare (type character char))
 			      (when (char= char #\~)
 				(let ((next-char
 					(char control-string (+ end-index 1))))
-				  (declare (character next-char))
+				  (declare (type character next-char))
 				  (cond ((char= next-char #\})
 					 (return (+ end-index 2)))
 					((and (char= next-char #\:)
@@ -1298,18 +1298,18 @@
 				  (if arglist
 				      (car arglist)
 				      (pop args))))))
-		    (declare (fixnum clause-number))
+		    (declare (type fixnum clause-number))
 		    (when (< clause-number 0)
 		      (setq clause-number most-positive-fixnum))
 		    (do ((clause-index index (1+ clause-index)))
 			((>= clause-index control-string-length)
 			 (format-error "No ~] found for ~[" control-string))
-		      (declare (fixnum clause-index))
+		      (declare (type fixnum clause-index))
 		      (when (zerop clause-number)
 			(setq index clause-index)
 			(return nil))
 		      (let ((char (char control-string clause-index)))
-			(declare (character char))
+			(declare (type character char))
 			(when (char= char #\~)
 			  (incf clause-index)
 			  (let* ((directive-index
@@ -1318,8 +1318,8 @@
 				     control-string-length))
 				 (next-char
 				   (char control-string directive-index)))
-			    (declare (fixnum directive-index)
-				     (character next-char))
+			    (declare (type fixnum directive-index)
+				     (type character next-char))
 			    (case next-char
 			      ((#\;)
 			       (cond
@@ -1359,8 +1359,8 @@
 	nil)))
 
 (defun discard-format-arglist (control-string index length)
-  (declare (string control-string)
-	   (fixnum index length)
+  (declare (type string control-string)
+	   (type fixnum index length)
 	   (return-type fixnum))
   (do ((char (char control-string index)
 	     (char control-string index)))
@@ -1368,7 +1368,7 @@
        (format-error "Twiddle did not have corresponding directive."
 		     control-string)
        0)
-    (declare (character char))
+    (declare (type character char))
     (case char
       ((#\, #\v #\V #\# #\@ #\: #\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9)
        ;; Skip it
@@ -1381,16 +1381,16 @@
        (return index)))))
 
 (defun find-end-of-conditional (control-string conditional-body-index length)
-  (declare (string control-string)
-	   (fixnum conditional-body-index length)
+  (declare (type string control-string)
+	   (type fixnum conditional-body-index length)
 	   (return-type fixnum))
   (do* ((nesting 1)
 	(index conditional-body-index (+ index 1)))
        ((>= index length)
 	(format-error "Unmatched ~[." control-string))
-    (declare (fixnum nesting index))
+    (declare (type fixnum nesting index))
     (let ((char (char control-string index)))
-      (declare (character char))
+      (declare (type character char))
       (when (char= char #\~)
 	(setq index (discard-format-arglist
 		      control-string (+ index 1) length))

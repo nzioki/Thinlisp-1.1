@@ -39,7 +39,7 @@
   `(= ,value (tli::c-eof-value)))
 
 (defun analyze-file-stream-error (file-stream eof-error-p eof-value)
-  (declare (file-stream file-stream)
+  (declare (type file-stream file-stream)
 	   (return-type t))
   (if (tli::file-stream-eof-p file-stream)
       (error-or-value file-stream eof-error-p eof-value)
@@ -63,8 +63,8 @@
 	    (,getc-val-var (tli::call-getc-on-file-stream ,stream-var))
 	    (,eof-error-p-var ,eof-error-p)
 	    (,eof-value-var ,eof-value))
-       (declare (file-stream ,stream-var)
-		(fixnum ,getc-val-var))
+       (declare (type file-stream ,stream-var)
+		(type fixnum ,getc-val-var))
        (if (eof-value? ,getc-val-var)
 	   (analyze-file-stream-error ,stream-var
 				      ,eof-error-p-var
@@ -83,8 +83,8 @@
 	    (,getc-val-var (tli::call-getc-on-file-stream ,stream-var))
 	    (,eof-error-p-var ,eof-error-p)
 	    (,eof-value-var ,eof-value))
-       (declare (file-stream ,stream-var)
-		(fixnum ,getc-val-var))
+       (declare (type file-stream ,stream-var)
+		(type fixnum ,getc-val-var))
        (if (eof-value? ,getc-val-var)
 	   (analyze-file-stream-error ,stream-var
 				      ,eof-error-p-var
@@ -103,8 +103,8 @@
 	    (,index-var (tli::string-stream-input-index ,stream-var))
 	    (,eof-error-p-var ,eof-error-p)
 	    (,eof-value-var ,eof-value))
-       (declare (string-stream ,stream-var)
-		(fixnum ,index-var))
+       (declare (type string-stream ,stream-var)
+		(type fixnum ,index-var))
        (cond ((< ,index-var (tli::string-stream-input-index-bounds ,stream-var))
 	      (setf (tli::string-stream-input-index ,stream-var)
 		    (the fixnum (1+ ,index-var)))
@@ -168,7 +168,7 @@
 (defun read-line-from-file-stream (&optional (file-stream *standard-input*)
 					     (eof-error-p t)
 					     eof-value)
-  (declare (file-stream file-stream))
+  (declare (type file-stream file-stream))
   (let ((fgets-result (tli::call-fgets-on-file-stream
 			(the string *input-string-buffer*)
 			(the fixnum *input-string-buffer-size*)
@@ -182,7 +182,7 @@
 	  (t
 	   (let ((strlen-value (tli::call-strlen *input-string-buffer*))
 		 (missing-new-line? t))
-	     (declare (fixnum strlen-value))
+	     (declare (type fixnum strlen-value))
 	     (cond ((> strlen-value
 		       (the fixnum *input-string-buffer-size*))
 		    (error "Input buffer overflow reading from ~s"
@@ -204,16 +204,16 @@
 (defun read-line-from-string-stream (&optional (string-stream *standard-input*)
 					       (eof-error-p t)
 					       eof-value)
-  (declare (string-stream string-stream))
+  (declare (type string-stream string-stream))
   (let ((input-string (tli::string-stream-input-string string-stream))
 	(final-result *input-string-buffer*)
 	(input-index-bounds (tli::string-stream-input-index-bounds
 			      string-stream))
 	(next-char #\null)
 	(missing-newline? t))
-    (declare (string final-result)
-	     (character next-char)
-	     (fixnum input-index-bounds))
+    (declare (type string final-result)
+	     (type character next-char)
+	     (type fixnum input-index-bounds))
     (do ((input-index (tli::string-stream-input-index string-stream)
 		      (1+ input-index))
 	 (buffer-index 0 (1+ buffer-index)))
@@ -239,7 +239,7 @@
 	       ; (char *input-string-buffer* buffer-index) #\null
 	       (fill-pointer (the string *input-string-buffer*)) buffer-index)
 	 (values final-result missing-newline?))
-      (declare (fixnum input-index buffer-index))
+      (declare (type fixnum input-index buffer-index))
       (setf next-char (char input-string input-index))
       (setf (char *input-string-buffer* buffer-index) next-char
 	    missing-newline? (char/= next-char #\newline)))))
@@ -309,7 +309,7 @@
 	  t))
 
 (defun create-file (filename &optional binary?)
-  (declare (string filename)
+  (declare (type string filename)
 	   (consing-area either))
   (if binary?
       (close-file-stream (tli::call-fopen filename "ab"))
@@ -361,7 +361,7 @@
     (t (error "Invalid value for :DIRECTION keyword.  Form = ~s" form))))
 
 (defun open-for-binary-input (filename if-does-not-exist)
-  (declare (string filename)
+  (declare (type string filename)
 	   (consing-area either)
 	   (return-type t))
   (case if-does-not-exist
@@ -380,7 +380,7 @@
 		(tli::call-fopen filename "rb")))))))
 
 (defun open-for-text-input (filename if-does-not-exist)
-  (declare (string filename)
+  (declare (type string filename)
 	   (consing-area either)
 	   (return-type t))
   (case if-does-not-exist
@@ -401,7 +401,7 @@
 	      if-does-not-exist))))
 
 (defun open-for-binary-output (filename if-exists if-does-not-exist)
-  (declare (string filename)
+  (declare (type string filename)
 	   (consing-area either)
 	   (return-type t))
   (case if-does-not-exist
@@ -454,7 +454,7 @@
 		(t nil))))))))
 
 (defun open-for-text-output (filename if-exists if-does-not-exist)
-  (declare (string filename)
+  (declare (type string filename)
 	   (consing-area either)
 	   (return-type t))
   (case if-does-not-exist

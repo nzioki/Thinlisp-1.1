@@ -65,7 +65,7 @@
     `(progn
        (declaim (functional ,function-name))
        (defun ,function-name (arg1 arg2)
-	 (declare (number arg1 arg2)
+	 (declare (type number arg1 arg2)
 		  (return-type t))
 	 (if (fixnump arg1)
 	     (if (fixnump arg2)
@@ -112,7 +112,7 @@
        (declaim (functional ,function-name)
 		(conser ,function-name))
        (defun ,function-name (number1 number2)
-	 (declare (number number1 number2)
+	 (declare (type number number1 number2)
 		  (return-type number))
 	 (typecase number1
 	   (fixnum
@@ -151,7 +151,7 @@
 	`(let* ((fix1 ,number1)
 		(fix2 ,number2)
 		(result (,op-symbol fix1 fix2)))
-	   (declare (fixnum fix1 fix2 result))
+	   (declare (type fixnum fix1 fix2 result))
 	   (if (and (<= result most-positive-fixnum)
 		    (>= result most-negative-fixnum))
 	       result
@@ -168,7 +168,7 @@
 (declaim (functional generic-divide))
 
 (defun generic-divide (number1 number2)
-  (declare (number number1 number2)
+  (declare (type number number1 number2)
 	   (consing-area either)
 	   (return-type number))
   (typecase number1
@@ -234,7 +234,7 @@
 	    (divisor (gensym)))
 	`(let ((,numerator ,fixnum)
 	       (,divisor ,divisor-fixnum))
-	   (declare (fixnum ,numerator ,divisor))
+	   (declare (type fixnum ,numerator ,divisor))
 	   (ceilingf-positive ,numerator ,divisor)))))
 
 (declaim (functional fixnum-floor fixnum-floor-first generic-floor
@@ -245,11 +245,11 @@
 		     generic-round-one-first generic-round-two-first))
 
 (defun fixnum-floor (fixnum divisor-fixnum)
-  (declare (fixnum fixnum divisor-fixnum)
+  (declare (type fixnum fixnum divisor-fixnum)
 	   (return-type (values fixnum fixnum)))
   (let ((floor-result 0)
 	(remainder-result 0))
-    (declare (fixnum floor-result remainder-result))
+    (declare (type fixnum floor-result remainder-result))
     (if (> divisor-fixnum 0)
 	(cond ((>= fixnum 0)
 	       (setq floor-result 
@@ -258,7 +258,7 @@
 		     (modf-positive fixnum divisor-fixnum)))
 	      (t
 	       (let ((positive-fixnum (- fixnum)))
-		 (declare (fixnum positive-fixnum))
+		 (declare (type fixnum positive-fixnum))
 		 (setq floor-result
 		       ;; The following is the negation of ceiling.
 		       (- (ceilingf-positive
@@ -269,7 +269,7 @@
 		   (setq remainder-result
 			 (- divisor-fixnum remainder-result))))))
 	(let ((positive-divisor (- divisor-fixnum)))
-	  (declare (fixnum positive-divisor))
+	  (declare (type fixnum positive-divisor))
 	  (cond ((>= fixnum 0)
 		 (setq floor-result
 		       (- (ceilingf-positive fixnum positive-divisor)))
@@ -282,7 +282,7 @@
 			 (+ divisor-fixnum remainder-result))))
 		(t
 		 (let ((positive-fixnum (- fixnum)))
-		   (declare (fixnum positive-fixnum))
+		   (declare (type fixnum positive-fixnum))
 		   (setq floor-result
 			 (floorf-positive positive-fixnum positive-divisor))
 		   (setq remainder-result
@@ -291,21 +291,21 @@
     (values floor-result remainder-result)))
 
 (defun fixnum-floor-first (fixnum divisor-fixnum)
-  (declare (fixnum fixnum divisor-fixnum)
+  (declare (type fixnum fixnum divisor-fixnum)
 	   (return-type fixnum))
   (if (> divisor-fixnum 0)
       (cond ((>= fixnum 0)
 	     (floorf-positive fixnum divisor-fixnum))
 	    (t
 	     (let ((positive-fixnum (- fixnum)))
-	       (declare (fixnum positive-fixnum))
+	       (declare (type fixnum positive-fixnum))
 	       ;; The following is the negation of ceiling.
 	       (- (floorf-positive
 		    (+ positive-fixnum (- divisor-fixnum 1))
 		    divisor-fixnum)))))
       (cond ((>= fixnum 0)
 	     (let ((positive-divisor (- divisor-fixnum)))
-	       (declare (fixnum positive-divisor))
+	       (declare (type fixnum positive-divisor))
 	       (- (ceilingf-positive fixnum positive-divisor))))
 	    (t
 	     ;; since floor = truncate when both args have same sign
@@ -321,7 +321,7 @@
 	(fixnum-floor (the fixnum number) (the fixnum divisor)))
        (double-float
 	(let ((float-number (float (the fixnum number) 1.0)))
-	  (declare (double-float float-number))
+	  (declare (type double-float float-number))
 	  (values (the fixnum (floor float-number
 				     (the double-float divisor)))
 		  (mod float-number (the double-float divisor)))))
@@ -333,7 +333,7 @@
      (typecase divisor
        (fixnum
 	(let ((float-divisor (float (the fixnum divisor) 1.0)))
-	  (declare (double-float float-divisor))
+	  (declare (type double-float float-divisor))
 	  (values (the fixnum (floor (the double-float number) float-divisor))
 		  (mod (the double-float number) float-divisor))))
        (double-float
@@ -356,7 +356,7 @@
      (values number 0))
     (double-float
      (let ((floored-value (the fixnum (floor (the double-float number)))))
-       (declare (fixnum floored-value))
+       (declare (type fixnum floored-value))
        (values floored-value
 	       (the double-float (- (the double-float number)
 				    (float floored-value 1.0))))))
@@ -376,7 +376,7 @@
 		(mod (the fixnum number) (the fixnum divisor))))
        (double-float
 	(let ((float-number (float (the fixnum number) 1.0)))
-	  (declare (double-float float-number))
+	  (declare (type double-float float-number))
 	  (values (ffloor float-number (the double-float divisor))
 		  (mod float-number (the double-float divisor)))))
        (t
@@ -387,7 +387,7 @@
      (typecase divisor
        (fixnum
 	(let ((float-divisor (float (the fixnum divisor) 1.0)))
-	  (declare (double-float float-divisor))
+	  (declare (type double-float float-divisor))
 	  (values (ffloor (the double-float number) float-divisor)
 		  (mod (the double-float number) float-divisor))))
        (double-float
@@ -411,7 +411,7 @@
     (double-float
      (let ((floored-value (the double-float
 			       (ffloor (the double-float number)))))
-       (declare (double-float floored-value))
+       (declare (type double-float floored-value))
        (values floored-value
 	       (the double-float (- (the double-float number)
 				    (the double-float floored-value))))))
@@ -423,7 +423,7 @@
   (declare (consing-area either)
 	   (return-type (values fixnum number)))
   (let ((ceiling-value 0))
-    (declare (fixnum ceiling-value))
+    (declare (type fixnum ceiling-value))
     (typecase number
       (fixnum
        (typecase divisor
@@ -438,7 +438,7 @@
 			      ceiling-value)))))
 	 (double-float
 	  (let ((float-number (float (the fixnum number) 1.0)))
-	    (declare (double-float float-number))
+	    (declare (type double-float float-number))
 	    (setf ceiling-value
 		  (the fixnum (ceiling float-number
 				       (the double-float divisor))))
@@ -457,7 +457,7 @@
        (typecase divisor
 	 (fixnum
 	  (let ((float-divisor (float (the fixnum divisor) 1.0)))
-	    (declare (double-float float-divisor))
+	    (declare (type double-float float-divisor))
 	    (setf ceiling-value
 		  (the fixnum (ceiling (the double-float number)
 				       float-divisor)))
@@ -494,7 +494,7 @@
      (values number 0))
     (double-float
      (let ((ceiled-value (the fixnum (ceiling (the double-float number)))))
-       (declare (fixnum ceiled-value))
+       (declare (type fixnum ceiled-value))
        (values ceiled-value
 	       (the double-float (- (the double-float number)
 				    (float ceiled-value 1.0))))))
@@ -506,14 +506,14 @@
   (declare (consing-area either)
 	   (return-type (values double-float number)))
   (let ((ceiling-value 0.0))
-    (declare (double-float ceiling-value))
+    (declare (type double-float ceiling-value))
     (typecase number
       (fixnum
        (typecase divisor
 	 (fixnum
 	  (let ((fixnum-ceiling-value
 		  (ceiling (the fixnum number) (the fixnum divisor))))
-	    (declare (fixnum fixnum-ceiling-value))
+	    (declare (type fixnum fixnum-ceiling-value))
 	    (setf ceiling-value
 		  (the double-float (float fixnum-ceiling-value 1.0)))
 	    (values ceiling-value
@@ -524,7 +524,7 @@
 				    (the fixnum divisor))))))))
 	 (double-float
 	  (let ((float-number (float (the fixnum number) 1.0)))
-	    (declare (double-float float-number))
+	    (declare (type double-float float-number))
 	    (setf ceiling-value
 		  (fceiling float-number (the double-float divisor)))
 	    (values ceiling-value
@@ -541,7 +541,7 @@
        (typecase divisor
 	 (fixnum
 	  (let ((float-divisor (float (the fixnum divisor) 1.0)))
-	    (declare (double-float float-divisor))
+	    (declare (type double-float float-divisor))
 	    (setf ceiling-value (fceiling (the double-float number)
 					  float-divisor))
 	    (values ceiling-value
@@ -575,7 +575,7 @@
      (values (the double-float (float (the fixnum number) 1.0)) 0))
     (double-float
      (let ((ceiled-value (fceiling (the double-float number))))
-       (declare (double-float ceiled-value))
+       (declare (type double-float ceiled-value))
        (values ceiled-value
 	       (the double-float (- (the double-float number)
 				    ceiled-value)))))
@@ -599,7 +599,7 @@
     (fixnum (values (the fixnum number) 0))
     (double-float
      (let ((truncate-value (truncate (the double-float number))))
-       (declare (fixnum truncate-value))
+       (declare (type fixnum truncate-value))
        (values truncate-value
 	       (the double-float (- (the double-float number)
 				    (float truncate-value 1.0))))))
@@ -671,7 +671,7 @@
      (values 0 0))))
 
 (defun ftruncate-two-arg-mult-value (number divisor)
-  (declare (double-float number divisor)
+  (declare (type double-float number divisor)
 	   (consing-area either)
 	   (return-type (values double-float double-float)))
   (let* ((quotient (/ number divisor))
@@ -680,14 +680,14 @@
 				    (tli::ffloor-one-arg quotient))
 			       (the double-float
 				    (tli::fceiling-one-arg quotient)))))
-    (declare (double-float quotient integer-quotient))
+    (declare (type double-float quotient integer-quotient))
     (values integer-quotient
 	    (the double-float
 		 (- number (the double-float
 				(* divisor integer-quotient)))))))
 
 (defun ftruncate-one-arg-mult-value (number)
-  (declare (double-float number)
+  (declare (type double-float number)
 	   (consing-area either)
 	   (return-type (values double-float double-float)))
   (let ((quotient (if (>= number 0.0)
@@ -697,7 +697,7 @@
 		      (the double-float
 			   (tli::fceiling-one-arg
 			     (the double-float number))))))
-    (declare (double-float quotient))
+    (declare (type double-float quotient))
     (values quotient
 	    (the double-float
 		 (- number quotient)))))
@@ -719,7 +719,7 @@
     (double-float
      (let ((round-value (the fixnum	; is this needed to force single return val?
 			     (round (the double-float number)))))
-       (declare (fixnum round-value))
+       (declare (type fixnum round-value))
        (values round-value
 	       (the double-float (- (the double-float number)
 				    (float round-value 1.0))))))
@@ -749,7 +749,7 @@
   (declare (consing-area either)
 	   (return-type (values fixnum number)))
   (let ((round-value 0))
-    (declare (fixnum round-value))
+    (declare (type fixnum round-value))
     (typecase number
       (fixnum
        (typecase divisor
@@ -797,17 +797,17 @@
 		     generic-mod generic-rem))
 
 (defun mod-fixnums (fixnum divisor-fixnum)
-  (declare (fixnum fixnum divisor-fixnum)
+  (declare (type fixnum fixnum divisor-fixnum)
 	   (return-type fixnum))
   (let ((remainder-result 0))
-    (declare (fixnum remainder-result))
+    (declare (type fixnum remainder-result))
     (if (> divisor-fixnum 0)
 	(cond ((>= fixnum 0)
 	       (setq remainder-result
 		  (modf-positive fixnum divisor-fixnum)))
 	      (t
 	       (let ((positive-fixnum (- fixnum)))
-		 (declare (fixnum positive-fixnum))
+		 (declare (type fixnum positive-fixnum))
 		 (setq remainder-result
 		       (modf-positive positive-fixnum divisor-fixnum))
 		 (unless (= remainder-result 0)
@@ -815,7 +815,7 @@
 			 (- divisor-fixnum remainder-result))))))
 	(cond ((>= fixnum 0)
 	       (let ((positive-divisor (- divisor-fixnum)))
-		 (declare (fixnum positive-divisor))
+		 (declare (type fixnum positive-divisor))
 		 (setq remainder-result
 		       (modf-positive fixnum positive-divisor))
 		 (unless (= remainder-result 0)
@@ -829,10 +829,10 @@
     remainder-result))
 
 (defun mod-float (float divisor-float)
-  (declare (double-float float divisor-float)
+  (declare (type double-float float divisor-float)
 	   (return-type double-float))
   (let ((remainder-result 0.0))
-    (declare (double-float remainder-result))
+    (declare (type double-float remainder-result))
     (if (> divisor-float 0.0)
 	(cond ((>= float 0.0)
 	       (setq remainder-result
@@ -931,12 +931,12 @@
      number)))
 
 (defun integer-length (fixnum)
-  (declare (fixnum fixnum)
+  (declare (type fixnum fixnum)
 	   (return-type fixnum))
   (when (< fixnum 0)
     (setq fixnum (lognot fixnum)))
   (let ((count 0))
-    (declare (fixnum count))
+    (declare (type fixnum count))
     (cond ((>= fixnum (expt 2 24))
 	   (incf count 24)
 	   (setq fixnum (ash fixnum -24)))
@@ -953,7 +953,7 @@
     count))
 
 (defun logcount (fixnum)
-  (declare (fixnum fixnum)
+  (declare (type fixnum fixnum)
 	   (return-type fixnum))
   (when (< fixnum 0)
     (setq fixnum (lognot fixnum)))
@@ -987,7 +987,7 @@
 	 (functional isqrt))
 
 (defun isqrt (n)
-  (declare (fixnum n)
+  (declare (type fixnum n)
 	   (return-type fixnum))
   ;; theoretically (> n 7) ,i.e., n-len-quarter > 0
   (if (<= n 24)
@@ -1002,18 +1002,18 @@
 	     (n-half-isqrt (isqrt n-half))
 	     (init-value
 	       (tli::fixnum-left-shift (1+ n-half-isqrt) n-len-quarter)))
-	(declare (fixnum n-len-quarter n-half n-half-isqrt init-value))
+	(declare (type fixnum n-len-quarter n-half n-half-isqrt init-value))
 	(loop do
 	  (let ((iterated-value
 		  (tli::fixnum-right-shift
 		    (+ init-value (floorf-positive n init-value)) 1)))
-	    (declare (fixnum iterated-value))
+	    (declare (type fixnum iterated-value))
 	    (unless (< iterated-value init-value)
 	      (return init-value))
 	    (setq init-value iterated-value))))))
 
 (defun expt-fixnum (base power)
-  (declare (fixnum base power)
+  (declare (type fixnum base power)
 	   (return-type fixnum))
   (loop with accumulator fixnum = 1
 	repeat power
@@ -1022,7 +1022,7 @@
 	finally (return accumulator)))
 
 (defun generic-expt (base power)
-  (declare (number base power)
+  (declare (type number base power)
 	   (consing-area either)
 	   (return-type number))
   (if (fixnump base)

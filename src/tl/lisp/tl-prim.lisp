@@ -154,7 +154,7 @@
 	       ,string (sxhash-string ,string) ,package-arg))
 	  (let ((string-var (gensym)))
 	    `(let ((,string-var ,string))
-	       (declare (string ,string-var))
+	       (declare (type string ,string-var))
 	       (intern ,string-var ,@(if package `(,package) nil)))))
       `(lisp:intern ,string ,@(if package `(,package) nil))))
 
@@ -452,13 +452,13 @@
 (declaim (functional last))
 
 (defun last (list)
-  (declare (list list)
+  (declare (type list list)
 	   (return-type list))
   ;; Note that tl:loop is not yet defined.
   (if list
       (let* ((current-cons list)
 	     (next-cons? (cdr current-cons)))
-	(declare (cons current-cons))
+	(declare (type cons current-cons))
 	(tli::while-loop
 	  next-cons?
 	  (setq current-cons next-cons?)
@@ -477,12 +477,12 @@
 
 (defun reverse-list (list)
   (declare (consing-area permanent)
-	   (list list)
+	   (type list list)
 	   (return-type list))
   (if list
       (let* ((current-cons list)
 	     (reversed-list nil))
-	(declare (list current-cons reversed-list))
+	(declare (type list current-cons reversed-list))
 	(tli::while-loop
 	  current-cons
 	  (setf reversed-list
@@ -493,14 +493,14 @@
 
 (defun reverse-string (string)
   (declare (consing-area permanent)
-	   (string string)
+	   (type string string)
 	   (return-type string))
   (let* ((length (tli::length-trans string))
 	 (new-string (make-string length))
 	 (index 0)
 	 (reverse-index (1- length)))
-    (declare (fixnum length index reverse-index)
-	     (string new-string))
+    (declare (type fixnum length index reverse-index)
+	     (type string new-string))
     (tli::while-loop
       (< index length)
       (setf (char new-string reverse-index)
@@ -510,7 +510,7 @@
     new-string))
 
 (defun nreverse (list)
-  (declare (list list)
+  (declare (type list list)
 	   (return-type list))
   (if list
       (let ((current-cdr (cdr-of-cons list)))

@@ -250,9 +250,6 @@
 (defmacro maphash (function hash-table)
   `(lisp:maphash ,function ,hash-table))
 
-(defmacro defstruct (&rest args)
-  `(lisp:defstruct ,@args))
-
 (defmacro get-universal-time ()
   `(lisp:get-universal-time))
 

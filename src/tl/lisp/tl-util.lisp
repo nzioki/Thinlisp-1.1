@@ -379,26 +379,43 @@
 
 (defmacro mapcar (function list &rest more-lists)
   (let* ((all-lists (cons list more-lists))
+	 (function-var (if (or (symbolp function)
+			       (constantp function)
+			       (and (consp function)
+				    (eq (car function) 'function)))
+			   function
+			 (gensym)))
 	 (vars (loop repeat (length all-lists)
 		     collect (gensym))))
-    `(loop ,@(loop for list-expr in all-lists
+    `(loop ,@(if (not (eq function function-var))
+		 `(with ,function-var = ,function)
+	       nil)
+	   ,@(loop for list-expr in all-lists
 		   for var in vars
 		   nconc `(for ,var in ,list-expr))
-	      collect (funcall ,function ,@vars))))
+	   collect (funcall ,function ,@vars))))
 
 (defmacro mapc (function list &rest more-lists)
   (let ((loop-name (gensym))
+	(function-var (if (or (symbolp function)
+			      (constantp function)
+			      (and (consp function)
+				   (eq (car function) 'function)))
+			  function
+			(gensym)))
 	(first-list-var (gensym))
-	(more-vars (loop repeat (1+ (length lists))
+	(more-vars (loop repeat (1+ (length more-lists))
 			 collect (gensym))))
     `(loop named ,loop-name
+	   ,@(if (not (eq function-var function))
+		 `(with ,function-var = ,function)
+	       nil)
 	   with ,first-list-var = ,list
 	   ,@(loop for list-expr in (cons list more-lists)
 		   for var in more-vars
 		   nconc `(for ,var in ,list-expr))
-	   do
-       (funcall ,function ,@more-vars)
-           finally (return-from ,loop-name ,first-list-var))))
+	   do (funcall ,function ,@more-vars)
+	   finally (return-from ,loop-name ,first-list-var))))
 
 
 
@@ -551,7 +568,7 @@
 	(searched-length (gensym)))
     `(let ((,pattern ,pattern-string)
 	   (,searched ,searched-string))
-       (declare (string ,pattern ,searched))
+       (declare (type string ,pattern ,searched))
        ,(if (and (or (equal test '#'eql)
 		     (equal test '#'char=))
 		 (null end1)
@@ -570,7 +587,7 @@
 (defun search-list (pattern-list source-list test-func
 				 &key (start1 0) (end1 nil) (start2 0) (end2 nil))
   (declare (return-type t)
-	   (fixnum start1 start2))
+	   (type fixnum start1 start2))
   (loop with pattern = (nthcdr start1 pattern-list)
 	for index from start2 to (- (the fixnum (or end2 (length source-list)))
 				    (the fixnum (or end1 (length pattern-list))))
@@ -585,7 +602,7 @@
 (defun generic-search (pattern source test-func start1 end1 start2 end2)
   (declare (return-type t)
 	   (fat-and-slow)
-	   (fixnum start1 start2))
+	   (type fixnum start1 start2))
   (if (and (listp pattern) (listp source))
       (search-list pattern source test-func
 		   :start1 start1 :end1 end1 :start2 start2 :end2 end2)
@@ -678,7 +695,7 @@
 
 
 (defun quick-sort-list (l n predicate)
-  (declare (fixnum n)
+  (declare (type fixnum n)
 	   (return-type t))
   (case n
     ((0 1)
@@ -697,7 +714,7 @@
 	    (l1 (progn
 		  (setf (cdr l-tail) nil)
 		  (quick-sort-list l half-n predicate))))
-       (declare (fixnum half-n))
+       (declare (type fixnum half-n))
        (setq l nil)
        (loop until			; merge the sorted halves
 	     (cond
@@ -796,7 +813,7 @@
     `(let (,@(when (not (eq elt element))
 	       `((,elt ,element)))
 	     (,str ,string))
-       (declare (string ,str))
+       (declare (type string ,str))
        (loop for ,index from ,start below ,(or end `(length ,str)) 
 	     when (funcall ,test ,elt (funcall ,key
 					       (char ,str ,index)))
@@ -822,8 +839,8 @@
 	       `((,char ,character)))
 	     (,str ,string))
        (declare ,@(when (not (eq char character))
-		    `((character ,char)))
-		(string ,str))
+		    `((type character ,char)))
+		(type string ,str))
        ,(if (and (or (equal test '#'char=)
 		     (equal test '#'eql))
 		 (equal key '#'identity)
@@ -920,7 +937,7 @@
 	   (,seq ,sequence)
 	   (,start-index ,start)
 	   (,end-index? ,end))
-       (declare (fixnum ,start-index))
+       (declare (type fixnum ,start-index))
        (if (listp ,seq)
 	   (loop for ,elt in (nthcdr ,start-index ,seq)
 		 for ,index from ,start-index
@@ -1048,7 +1065,7 @@
 (declaim (functional list-length))
 
 (defun list-length (lis)
-  (declare (list lis)
+  (declare (type list lis)
 	   (return-type t))
   (loop for n from 0 by 2
 	for fast = lis then (cdr (the cons fast))  ;; first cdr is done below
@@ -1206,7 +1223,7 @@
     (simple-vector
      (and (arrayp b)
 	  (let ((a-length (length (the simple-vector a))))
-	    (declare (fixnum a-length))
+	    (declare (type fixnum a-length))
 	    (and (= a-length (length b))
 		 (loop for index from 0 below a-length
 		       always
@@ -1215,7 +1232,7 @@
     ((array (unsigned-byte 8))
      (and (arrayp b)
 	  (let ((a-length (length (the (array (unsigned-byte 8)) a))))
-	    (declare (fixnum a-length))
+	    (declare (type fixnum a-length))
 	    (and (= a-length (the fixnum (length b)))
 		 (loop for index from 0 below a-length
 		       always
@@ -1224,7 +1241,7 @@
     ((array (unsigned-byte 16))
      (and (arrayp b)
 	  (let ((a-length (length (the (array (unsigned-byte 16)) a))))
-	    (declare (fixnum a-length))
+	    (declare (type fixnum a-length))
 	    (and (= a-length (the fixnum (length b)))
 		 (loop for index from 0 below a-length
 		       always
@@ -1233,7 +1250,7 @@
     ((array double-float)
      (and (arrayp b)
 	  (let ((a-length (length (the (array double-float) a))))
-	    (declare (fixnum a-length))
+	    (declare (type fixnum a-length))
 	    (and (= a-length (the fixnum (length b)))
 		 (loop for index from 0 below a-length
 		       always
@@ -1309,8 +1326,8 @@
       (let* ((length (length (the simple-vector arg)))
 	     (sv arg)
 	     (new-sv (tli::make-simple-vector length)))
-	(declare (fixnum length)
-		 (simple-vector sv new-sv))
+	(declare (type fixnum length)
+		 (type simple-vector sv new-sv))
 	(loop for index from 0 below length do
 	  (setf (svref new-sv index)
 		(recursive-copy-optimized-constant
@@ -1354,11 +1371,11 @@
 ;;; allocated memory is ever given back, new memory is incrementally added.
 
 (defun realloc-region-up-to-limit (region-name target-size)
-  (declare (fixnum target-size)
+  (declare (type fixnum target-size)
 	   (return-type void))
   (let* ((region-number (region-number-of-name region-name))
 	 (size (tli::internal-region-bytes-size region-number)))
-    (declare (fixnum region-number size))
+    (declare (type fixnum region-number size))
     (when (< size target-size)
       (tli::malloc-block-into-region
 	region-number (the fixnum (- target-size size)) 1))))
@@ -1433,7 +1450,7 @@
 (declaim (type (array (unsigned-byte 16)) *decompose-float-buffer*))
 
 (defun sxhash-double-float (double-float)
-  (declare (double-float double-float)
+  (declare (type double-float double-float)
 	   (return-type fixnum))
   #-translator
   (ab-lisp::sxhash double-float)
@@ -1450,7 +1467,7 @@
 	    (return hash))))
 
 (defun sxhash-cons-tree (cons-tree)
-  (declare (cons cons-tree)
+  (declare (type cons cons-tree)
 	   (return-type fixnum))
   (loop with hash = 0
 	for next-cons on cons-tree
