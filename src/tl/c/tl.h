@@ -26,6 +26,7 @@
  */
 
 #ifdef PTHREAD
+#define _REENTRANT
 #include <pthread.h>
 #endif
 

@@ -25,6 +25,7 @@
  * itself.
  */
 
+#include "tl.h"
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
@@ -33,7 +34,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <time.h>
-#include "tl.h"
 
 
 Thread_state default_thread_state;
@@ -43,6 +43,8 @@ int thread_states_length = 0;
 Thread_state **thread_states = NULL;
 
 #ifdef PTHREAD
+
+pthread_mutex_t thread_states_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_t default_thread_id = (pthread_t)0;
 
@@ -67,7 +69,8 @@ Thread_state *new_thread_state(pthread_t new_id, int new_index) {
   ts->current_throw = NULL;
   ts->global_bindings = NULL;
   ts->parent_thread_state = NULL;
-  if (new_index == -1) {
+  if (new_index<0 || new_index>=thread_states_length) {
+    /* If we get here, there were no empty slots, grow the array. */
     new_index = thread_states_length;
     thread_states_length += NEW_THREADS_INC;
     new_array = (Thread_state **)malloc(thread_states_length * 
@@ -81,6 +84,7 @@ Thread_state *new_thread_state(pthread_t new_id, int new_index) {
   }
   ts->thread_index = new_index;
   thread_states[new_index] = ts;
+
   return ts;
 }
 
@@ -89,28 +93,55 @@ Thread_state *current_thread_state(void) {
   Thread_state *ts;
   pthread_t current_thread_id = pthread_self();
 
-  if (pthread_equal(default_thread_id, current_thread_id)) {
+  if (pthread_equal(default_thread_id, current_thread_id))
     return &default_thread_state;
-  } else {
-    earliest_null = -1;
-    for (i = 0; i < thread_states_length; ++i) {
-      ts = thread_states[i];
-      if (ts == NULL) {
-	if (earliest_null == -1)
-	  earliest_null = i;
-      } else if (pthread_equal(ts->thread_id, current_thread_id)) {
-	return ts;
-      }
+  
+  if (pthread_mutex_lock(&thread_states_mutex) != 0)
+    error("Thread states mutex corrupted.");
+
+  earliest_null = -1;
+  ts = NULL;
+  for (i = 0; i < thread_states_length && ts == NULL; ++i) {
+    ts = thread_states[i];
+    if (ts == NULL) {
+      if (earliest_null == -1)
+	earliest_null = i;
+    } else if (!pthread_equal(ts->thread_id, current_thread_id)) {
+      ts = NULL;
     }
-    /* If we get here, no thread_state was found, create one. */
-    return new_thread_state(current_thread_id, earliest_null);
   }
+  if (ts == NULL) 
+    ts = new_thread_state(current_thread_id, earliest_null);
+  
+  if (pthread_mutex_unlock(&thread_states_mutex) != 0)
+    error("Thread status mutex corrupted on unlock.");
+  return ts;
 }
+
+
+Binding *make_binding(void) {
+  return (Binding *)malloc(sizeof(Binding));
+}
+
+void reclaim_binding(Binding *b) {
+  free((void *)b);
+}
+  
 
 void delete_thread_state(Thread_state *condemned) {
   Binding *b = condemned->global_bindings;
+  Binding *next;
+  if (pthread_mutex_lock(&thread_states_mutex) != 0)
+    error("Thread states mutex corrupted.");
   thread_states[condemned->thread_index] = NULL;
-  while (b != NULL) {}
+  if (pthread_mutex_unlock(&thread_states_mutex) != 0)
+    error("Thread states mutex corrupted on unlock.");
+  while (b != NULL) {
+    next = b->next_binding;
+    reclaim_binding(b);
+    b = next;
+  }
+  free((void *)condemned);
 }
 #endif
 
