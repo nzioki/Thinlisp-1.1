@@ -755,7 +755,31 @@
   (if error?
       (write-string "   Error: " *error-output*)
       (write-string "   Warning: " *error-output*)))
-	  
+
+
+
+;;; The variable `nonnil-variable-of-unknowable-value-and-type' is used
+;;; in contexts were we want to supress all knowledge the compiler might
+;;; infer about the result type.  This is useful in CMU lisp to supress
+;;; dead code warnings due to nonlocal exits or constant return values.
+;;; Such cases presumably arise only in code that is platform specific.
+
+(defvar nonnil-variable-of-unknowable-value-and-type t)
+
+
+
+
+;;; The function `lisp-translation-error' is used in the translation
+;;; for the Lisp when we want to error at runtime.  It is obfuscated
+;;; enough to assure that the compiler does not infer things about
+;;; the down stream code.  This includes obfuscating the return type
+;;; and the nonlocal exit, both of which generate dead code notes in
+;;; CMU Lisp.
+
+(defun lisp-translation-error (format-string &rest args)
+  (when nonnil-variable-of-unknowable-value-and-type
+    (apply #'error format-string args))
+  nonnil-variable-of-unknowable-value-and-type)
 
 
 

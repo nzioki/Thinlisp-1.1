@@ -1530,7 +1530,7 @@
 (def-c-translation symbol-local-value (symbol)
   ((lisp-specs :ftype ((symbol) t))
    (declare (ignore symbol))
-   t)
+   'nonnil-variable-of-unknowable-value-and-type)
   ((trans-specs :c-type ((obj) boolean))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer sym) symbol)
@@ -1580,7 +1580,7 @@
 (def-c-translation symbol-balance (symbol)
   ((lisp-specs :ftype ((symbol) fixnum))
    (declare (ignore symbol))
-   0)
+   'nonnil-variable-of-unknowable-value-and-type)
   ((trans-specs :c-type ((obj) sint32))
    (make-c-cast-expr
      'sint32 (make-c-indirect-selection-expr
@@ -1603,7 +1603,7 @@
 (def-c-translation symbol-imported (symbol)
   ((lisp-specs :ftype ((symbol) t))
    (declare (ignore symbol))
-   nil)
+   'nonnil-variable-of-unknowable-value-and-type)
   ((trans-specs :c-type ((obj) boolean))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer sym) symbol) "imported")))
@@ -1624,7 +1624,7 @@
 (def-c-translation symbol-name-hash (symbol)
   ((lisp-specs :ftype ((symbol) fixnum))
    (declare (ignore symbol))
-   0)
+   'nonnil-variable-of-unknowable-value-and-type)
   ((trans-specs :c-type ((obj) sint32))
    (make-c-cast-expr
      'sint32 (make-c-indirect-selection-expr
@@ -1844,7 +1844,7 @@
 (def-c-translation symbol-left-branch (symbol)
   ((lisp-specs :ftype ((symbol) t))
    (declare (ignore symbol))
-   nil)
+   'nonnil-variable-of-unknowable-value-and-type)
   ((trans-specs :c-type ((obj) obj))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer sym) symbol)
@@ -1868,7 +1868,7 @@
 (def-c-translation symbol-right-branch (symbol)
   ((lisp-specs :ftype ((symbol) t))
    (declare (ignore symbol))
-   nil)
+   'nonnil-variable-of-unknowable-value-and-type)
   ((trans-specs :c-type ((obj) obj))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer sym) symbol)
@@ -2478,7 +2478,9 @@
 
 (def-c-translation get-platform-code ()
   ((lisp-specs :ftype (() fixnum))
-   15)					; the code for Sun4
+   '(if nonnil-variable-of-unknowable-value-and-type
+	15 					; the code for Sun4
+       nonnil-variable-of-unknowable-value-and-type))
   ((trans-specs :c-type (() sint32))
    (register-needed-function-extern
      (c-func-c-file c-func) '("extern") 'sint32 "get_platform_code" nil)

@@ -147,9 +147,12 @@
 ;;; the compiler will proceed to investigate all alternatives down stream
 ;;; from this call. - ben 6/2/99
 
+#+nil
 (defvar fake-out-cmu-dead-code-analyzer t)
 
 (defmacro derror (&rest args)
+  `(lisp-translation-error ,@args)
+#+nil
   `(progn
      (when fake-out-cmu-dead-code-analyzer
        (error ,@args))
