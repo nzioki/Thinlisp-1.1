@@ -59,7 +59,7 @@ enum Stack_frames {
 /**
  * Integer types in TL translated code will always refer to the following types,
  * representing signed and unsigned integers containing the given number of
- * bits.  The one except to this rule is the type unsigned char, which may
+ * bits.  The one exception to this rule is the type unsigned char, which may
  * appear in TL translated code and is assumed to be equivalent to uint8.  Twos
  * complement representation of all integers is assumed.
  */
@@ -73,7 +73,6 @@ typedef   signed int   sint32;
 
 
 /**
-
  * Structure types in TL provide the base level data structure needed to
  * build the rest of the runtime system.
  *
@@ -186,6 +185,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj);
 } Func;
@@ -196,6 +196,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(void);
 } Func_0;
@@ -206,6 +207,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj);
 } Func_1;
@@ -216,6 +218,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj);
 } Func_2;
@@ -226,6 +229,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj);
 } Func_3;
@@ -236,6 +240,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj);
 } Func_4;
@@ -246,6 +251,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj);
 } Func_5;
@@ -256,6 +262,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj, Obj);
 } Func_6;
@@ -266,6 +273,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj, Obj, Obj);
 } Func_7;
@@ -276,6 +284,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj);
 } Func_8;
@@ -286,6 +295,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj);
 } Func_9;
@@ -296,6 +306,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj);
 } Func_10;
@@ -306,6 +317,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj);
 } Func_11;
@@ -316,6 +328,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj);
 } Func_12;
@@ -326,6 +339,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj,
 		    Obj);
@@ -337,6 +351,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj,
 		    Obj, Obj);
@@ -348,6 +363,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj,
 		    Obj, Obj, Obj);
@@ -359,6 +375,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj,
 		    Obj, Obj, Obj, Obj);
@@ -370,6 +387,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj,
 		    Obj, Obj, Obj, Obj, Obj);
@@ -381,6 +399,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj,
 		    Obj, Obj, Obj, Obj, Obj, Obj);
@@ -392,6 +411,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj,
 		    Obj, Obj, Obj, Obj, Obj, Obj, Obj);
@@ -403,6 +423,7 @@ typedef struct {
   unsigned int optional_arguments: 8;
   unsigned int sets_values_count:  1;
   Obj default_arguments;
+  Obj closure_environment;
   Obj name;
   Obj (*c_function)(Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj,
 		    Obj, Obj, Obj, Obj, Obj, Obj, Obj, Obj);
@@ -479,6 +500,9 @@ typedef struct thread_state_type {
   Obj     current_throw;
   /* A pointer to the parent thread for this thread, if any. */
   struct thread_state_type *parent_thread_state;
+  /* A pointer to the closure environment for the most recently funcalled
+   * function. */
+  Obj     closure_env;
 } Thread_state;
 
 
@@ -506,6 +530,8 @@ extern Thread_state **thread_states;
 #define Throw_stack_top (THREAD_STATE->throw_stack_top)
 
 #define Current_throw (THREAD_STATE->current_throw)
+
+#define Closure_env (THREAD_STATE->closure_env)
 
 extern Hdr Unbound;
 
