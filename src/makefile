@@ -1,3 +1,5 @@
+# Makefile for ThinLisp, requires the GNU varient of make.
+
 MF = makefile-`uname -s | tr 'A-Z' 'a-z'`
 
 ifdef THREAD
@@ -17,7 +19,7 @@ docs/tl-manual.pdf : docs/tl-manual.texinfo
 	cd docs && make -k
 
 lisp :
-	echo '(load "boot")' | lisp -batch
+	./bootstrap
 
 bin :
 	cd tl/bin && make -kf $(MF)
