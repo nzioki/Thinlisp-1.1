@@ -39,6 +39,6 @@ tarballs :
 	if [ ! -d src ] ; then echo Must export an SRC before making distribution ; exit 1 ; fi
 	mkdir dist
 	cp src/README src/INSTALL src/docs/LICENSE src/VERSION dist
-	cd src && tar czvf ../dist/thinlisp-`head -1 VERSION`.tgz 
+	cd src && tar czvf ../dist/thinlisp-`head -1 VERSION`.tgz *
 	cd src && zip -r ../dist/thinlisp-`head -1 VERSION`.zip *
 	cd src && bzip2 -cz `find * -type f -print` > ../dist/thinlisp-`head -1 VERSION`.bz2
