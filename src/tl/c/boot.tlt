@@ -33,7 +33,8 @@
     TL-USER::TL-UTIL
     TL-USER::VERSIONS
     TL-USER::FORWARD
-    TL-USER::TL-EXTENSION)
+    TL-USER::TL-EXTENSION
+    TL-USER::TL-TIME)
   ;; Used compiled-functions = (name func-array . index).
   NIL
   ;; Name for this file's array of compiled-functions.

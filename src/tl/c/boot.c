@@ -16,7 +16,7 @@
 static const Str_5 str_const
   = { 7, 2, 2, "TL" };
 
-static Obj cons_const[36]
+static Obj cons_const[38]
   = 
 #if defined(NO_ADDRESS_CONSTANTS)
   {(Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, 
@@ -24,7 +24,8 @@ static Obj cons_const[36]
       (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, 
       (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, 
       (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, 
-      (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL}
+      (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, (Obj)NULL, 
+      (Obj)NULL}
 #else
   {(Obj)(tl_boot_symbols+4), (Obj)(((uint32)(&(cons_const[2])))     /* BOOT */
       +2), (Obj)(tl_boot_symbols+5), (Obj)(((uint32)(&(cons_const[4])))     /* STUBS */
@@ -44,6 +45,7 @@ static Obj cons_const[36]
       (Obj)(((uint32)(&(cons_const[30])))+2), (Obj)(tl_boot_symbols+19),    /* VERSIONS */
       (Obj)(((uint32)(&(cons_const[32])))+2), (Obj)(tl_boot_symbols+20),    /* FORWARD */
       (Obj)(((uint32)(&(cons_const[34])))+2), (Obj)(tl_boot_symbols+21),    /* TL-EXTENSION */
+      (Obj)(((uint32)(&(cons_const[36])))+2), (Obj)(tl_boot_symbols+22),    /* TL-TIME */
       (Obj)NULL}
 #endif
   ;
@@ -117,7 +119,10 @@ static const Str_9 str_const_22
 static const Str_13 str_const_23
   = { 7, 12, 12, "TL-EXTENSION" };
 
-Sym tl_boot_symbols[22];
+static const Str_9 str_const_24
+  = { 7, 7, 7, "TL-TIME" };
+
+Sym tl_boot_symbols[23];
 
 /* Translated from SYMS-TL-BOOT() = VOID */
 
@@ -183,6 +188,8 @@ void syms_tl_boot (void)
       7708,cached_tl_user_package);
   init_symbol_into_package((Obj)(&(tl_boot_symbols[21])),(Obj)(&str_const_23),  /* "TL-EXTENSION" */
       47407,cached_tl_user_package);
+  init_symbol_into_package((Obj)(&(tl_boot_symbols[22])),(Obj)(&str_const_24),  /* "TL-TIME" */
+      7435,cached_tl_user_package);
   return;
 }
 
@@ -201,7 +208,7 @@ void init_tl_boot (void)
       (Obj)NULL);
 #if defined(NO_ADDRESS_CONSTANTS)
   {
-    hook_up_cdrs(cons_const,18,(Obj)NULL);
+    hook_up_cdrs(cons_const,19,(Obj)NULL);
     (cons_const[0]) = (Obj)(tl_boot_symbols+4);     /* BOOT */
     (cons_const[2]) = (Obj)(tl_boot_symbols+5);     /* STUBS */
     (cons_const[4]) = (Obj)(tl_boot_symbols+6);     /* TL-TYPES */
@@ -220,6 +227,7 @@ void init_tl_boot (void)
     (cons_const[30]) = (Obj)(tl_boot_symbols+19);   /* VERSIONS */
     (cons_const[32]) = (Obj)(tl_boot_symbols+20);   /* FORWARD */
     (cons_const[34]) = (Obj)(tl_boot_symbols+21);   /* TL-EXTENSION */
+    (cons_const[36]) = (Obj)(tl_boot_symbols+22);   /* TL-TIME */
   }
 #endif
   set_get((Obj)(tl_boot_symbols+0),(Obj)(tl_boot_symbols+3),    /* TL, SYSTEM-MODULES */

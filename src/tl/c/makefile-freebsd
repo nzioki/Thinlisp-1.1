@@ -15,7 +15,8 @@ ARCHIVE=ar rsc
 OBJECTS= tl.o boot.o stubs.o tl-types.o \
         inline.o tl-prim.o do.o format.o input.o \
         tl-basics.o loop.o apply.o generic-math.o generic-prim.o \
-        packages.o tl-util.o versions.o forward.o tl-extension.o
+        packages.o tl-util.o versions.o forward.o tl-extension.o \
+        tl-time.o
 
 all : libtl.a
 

@@ -491,6 +491,15 @@ extern void write_fixnum_into_str(sint32 value, sint32 width, Str *output);
 
 extern void write_double_into_str(double value, sint32 width, Str *output);
 
+extern void init_cronometer(void);
+
+extern sint32 cronometer(void);
+
+extern sint32 cpu_run_time(void);
+
+extern sint32 ticks_per_second(void);
+
+extern void sleep_ticks(sint32 seconds);
 
 /**
  * In some cases it seems that externs have been explicitly left out on some
