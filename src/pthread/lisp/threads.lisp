@@ -33,3 +33,7 @@
 ;;; to two additional forms, progn-parallel and progn-parallel-race.
 
 ;;; In ThinLisp, threads are represented as a structure that you created with make-pthread
+
+(defstruct (pthread (:reclaimer reclaim-pthread))
+  (thread-id 0 :type uint32))
+

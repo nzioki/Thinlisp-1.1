@@ -31,6 +31,6 @@
 (unless (find-package "PTHREAD")
   (make-package "PTHREAD"))
 
-(declare-system (pthread :library t :used-systems '(tl))
+(declare-system (pthread :library t :used-systems (tl))
   boot
   threads)

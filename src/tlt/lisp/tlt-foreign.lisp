@@ -241,3 +241,14 @@
      (tl:def-inlined-pseudo-function-with-side-effects ,lisp-name ,args
        ,@lisp-body)))
 
+
+;;; The macro `def-c' is the simplest interface to defining an interface to
+;;; calling a C function from Lisp.  This macro takes the name of the new Lisp
+;;; macro to be defined, and then it takes the elements of a C extern statement
+;;; in the order, return type, C name string, and the rest being argument types.
+
+;;; For example, to define an interface to the C ceil() function, you would use
+;;; the following form.
+;;;   (def-c ceil double "ceil" double)
+;;;
+
