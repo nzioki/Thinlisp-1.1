@@ -84,8 +84,8 @@
 		       (load backup-standard-boot-name)
 		       (get system-name :system))
 		  (error
-		    "No system ~a; no files ~a or ~a exist, or they didn't ~
-		     define ~a."
+		    "No system ~a exists, or no file ~a exist, or if it did ~
+		     it did not define ~a."
 		    system-name standard-boot-name system-name)))))))
 
 (defsetf gl:find-system set-find-system)
