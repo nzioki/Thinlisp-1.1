@@ -244,8 +244,6 @@
 
 ;;;; String Case Convesions
 
-
-
 (defun copy-string (string length)
   (declare (type string string)
 	   (type fixnum length)
@@ -814,10 +812,7 @@
     ;; During Lisp development, we will need to be able to print Lisp pathnames.
     #-translator
     (ab-lisp::pathname
-     (let ((string (ab-lisp::with-output-to-string (temp-stream)
-		     (ab-lisp::write object :stream temp-stream
-				     :case case :escape escape))))
-       (write-string string stream)))
+     (write-string (tli::pathname-print-string object case escape) stream))
     (t
      (print-random-object-with-type-name
        object "Unknown-Type" nil stream)))

@@ -154,6 +154,10 @@
   `(write-string ,string ,stream ,@keyword-args))
 
 
+(defun pathname-print-string (path case escape)
+  (with-output-to-string (temp-stream)
+    (write path :stream temp-stream :case case :escape escape)))
+
 
 
 
