@@ -1,0 +1,6 @@
+These instructions need work!
+
+You will need a working Common Lisp environment.
+
+Then src/boot.lisp should get you started.
+
