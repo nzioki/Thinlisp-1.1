@@ -55,8 +55,14 @@
     (format t "Usage: lecho [arg] ...~%  all arguments will be echoed to stdout~%")
     -1)
    (t
+    
     (loop
-      finally (terpri)
+      with terpri? = (cond
+		      ((string= (car args) "-n")
+		       (pop args)
+		       t)
+		      (t nil))
+      finally (when terpri? (terpri))
       for first? = t then nil
       for arg in args
       unless first? do (write-char #\space)
