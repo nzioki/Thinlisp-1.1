@@ -2,7 +2,7 @@
 
 ;;; Module: Bit-pack
 
-;;; Copyright (c) 1999 The ThinLisp Group
+;;; Copyright (c) 1999-2000 The ThinLisp Group
 ;;; Copyright (c) 1998 Artificial Creatures, Inc.
 ;;; Copyright (c) 1998 IS Robotics, Inc.
 

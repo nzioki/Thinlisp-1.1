@@ -2,7 +2,7 @@
 
 ;;;; Module TLT-MATH
 
-;;; Copyright (c) 1999 The ThinLisp Group
+;;; Copyright (c) 1999-2000 The ThinLisp Group
 ;;; Copyright (c) 1995 Gensym Corporation.
 ;;; All rights reserved.
 
