@@ -697,9 +697,11 @@
      (translation-warning-1 (format nil ,control-string ,@args))))
 
 (defun translation-warning-1 (message)
+  (force-output *standard-output*)
   (describe-translation-context nil)
   (write-string message *error-output*)
   (write-char #\space *error-output*)
+  (force-output *error-output*)
   (handle-translation-problem nil))
   
 
@@ -725,10 +727,11 @@
 	    (setq message (format nil "~a..." (subseq message 0 80))))
 	  (format *error-output* "~%Within ~a:" message)))
     (setq current-translation-context nil))
-  (fresh-line *error-output*)
+  (terpri *error-output*)
   (if error?
       (write-string "   Error: " *error-output*)
-      (write-string "   Warning: " *error-output*)))
+      (write-string "   Warning: " *error-output*))
+  (force-output *error-output*))
 
 
 
@@ -959,7 +962,7 @@
   #+allegro
   (excl:gc :tenure)
   #+cmu
-  (gc)
+  (ext:gc)
   nil)
 
 (defun gc-a-lot ()
@@ -968,5 +971,5 @@
   #+allegro
   (excl:gc t)
   #+cmu
-  (gc :full t)
+  (ext:gc :full t)
   nil)

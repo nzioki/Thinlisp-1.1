@@ -2535,7 +2535,7 @@
 ;;; arguments need to be translated in separate statements or whether then can
 ;;; be emitted in line.  If there is more than one argument, or if there is at
 ;;; least one non-side-effect-free argument and the remaining arguments are not
-;;; functional (basically constants), then we need to allocate new varaibles to
+;;; functional (basically constants), then we need to allocate new variables to
 ;;; hold the function arguments, evaluate each in turn in a separate statement,
 ;;; then return the c-expr for calling this function on the given arguments.
 

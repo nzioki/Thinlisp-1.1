@@ -71,8 +71,9 @@
 
 ;;;   ( port-names-list . makefile-element-alist-overrides )
 
-;;; The port-names-list portion is a list of the name of this port, and the names of other defined ports which should provide defaults for this port.  The  ports later in the list will win out over
-;;; overrides earlier in the list.
+;;; The port-names-list portion is a list of the name of this port, and the
+;;; names of other defined ports which should provide defaults for this port.
+;;; The ports later in the list will win out over overrides earlier in the list.
 
 ;;; For example, the element (("freebsd" "linux") (cc . "cc -o")) would specify
 ;;; that the makefile for FreeBSD should be like the makefile for Linux, except

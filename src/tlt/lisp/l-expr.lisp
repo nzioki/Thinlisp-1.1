@@ -859,6 +859,8 @@
 	(translation-error
 	  "Calling ~s, which does not name a defined function."
 	  name))
+      (when (cdr (assq 'tl:conser decls))
+	(check-area-for-conser-call name env))
       (let* ((ftype (or (cdr (assq 'ftype decls))
 			(cdr (assq 'computed-ftype decls))))
 	     (arg-spec (second ftype))

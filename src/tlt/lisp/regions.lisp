@@ -81,6 +81,22 @@
 
 
 
+;;; The function `check-area-for-conser-call' is called when translating a call
+;;; to a function that conses into the current area (i.e. a conser).  If there
+;;; is no current area declaration, this will issue a warning.
+
+(defun check-area-for-conser-call (conser-function-name env)
+  (let ((area? (tl:declaration-information 'tl:consing-area env)))
+    (unless (or area?
+		(null (tl:declaration-information 'scope-name env)))
+      (translation-warning
+       "Calling a consing function, ~a, without a surrounding consing-area declaration."
+       conser-function-name))
+    nil))
+
+
+
+
 ;;; The macros `with-temporary-area' and `with-permanent-area' are implemented
 ;;; by rebinding the variables Current-region and Temporary-area-top.  These
 ;;; variables are defined in TL.
