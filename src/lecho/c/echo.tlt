@@ -25,7 +25,10 @@
     (TL::FORMAT-FUNCTION "format_function" FUNCTION (T STRING T) T)
     (TL:TERPRI "terpri" FUNCTION (&OPTIONAL T) NULL)
     (TL:WRITE-CHAR "write_char" FUNCTION (CHARACTER &OPTIONAL T) CHARACTER)
-    (TL::WRITE-STRING-FUNCTION "write_string_function" FUNCTION (STRING T FIXNUM T) STRING))
+    (TL::WRITE-STRING-FUNCTION "write_string_function"
+                               FUNCTION
+                               (STRING T FIXNUM T)
+                               STRING))
   ;; Defined functions.
   '((LECHO::BLATZ . "blatz")
     (LECHO::COPY-UFFDA . "copy_uffda")
@@ -43,6 +46,6 @@
   ;; Defined variables
   NIL
   ;; Used class typedefs.
-  '((LECHO::UFFDA "uffda" STRUCT ((UINT 24) "type") ((UINT 8) "extended_type") (OBJ "uffda_x")
-     (OBJ "uffda_y") (OBJ "uffda_z")))
+  '((LECHO::UFFDA "uffda" STRUCT ((UINT 24) "type") ((UINT 8) "extended_type")
+     (OBJ "uffda_x") (OBJ "uffda_y") (OBJ "uffda_z")))
   )

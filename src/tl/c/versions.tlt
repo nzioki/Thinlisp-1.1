@@ -61,7 +61,10 @@
     (TL::FIND-PACKAGE-OR-ERROR-1 "find_package_or_error_1" FUNCTION (T) PACKAGE)
     (TL::FORMAT-FUNCTION "format_function" FUNCTION (T STRING T) T)
     (TL:GET "get" FUNCTION (T T &OPTIONAL T) T)
-    (TL::INTERN-STRING-IN-PACKAGE "intern_string_in_package" FUNCTION (STRING FIXNUM PACKAGE) *)
+    (TL::INTERN-STRING-IN-PACKAGE "intern_string_in_package"
+                                  FUNCTION
+                                  (STRING FIXNUM PACKAGE)
+                                  *)
     (TL:MEMQ "memq" FUNCTION (T LIST) T)
     (TL:NREVERSE "nreverse" FUNCTION (LIST) LIST)
     (TL::SET-GET "set_get" FUNCTION (T T T) T)

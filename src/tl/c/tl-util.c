@@ -81,10 +81,10 @@ Obj *fill_simple_vector (Obj *sequence, Obj elt_1)
   return sequence;
 }
 
-/* Translated from FILL-ARRAY-UNSIGNED-BYTE-8((ARRAY (INTEGER 0 255)) (INTEGER 0 255)) = (ARRAY
-                                                                                          (INTEGER
-                                                                                           0
-                                                                                           255)) */
+/* Translated from FILL-ARRAY-UNSIGNED-BYTE-8((ARRAY (INTEGER 0 255))
+                                              (INTEGER 0 255)) = (ARRAY
+                                                                  (INTEGER 0
+                                                                   255)) */
 
 uint8 *fill_array_unsigned_byte_8 (uint8 *sequence, uint8 elt_1)
 {
@@ -99,7 +99,9 @@ uint8 *fill_array_unsigned_byte_8 (uint8 *sequence, uint8 elt_1)
 }
 
 /* Translated from FILL-ARRAY-UNSIGNED-BYTE-16((ARRAY (INTEGER 0 65535))
-                                               (INTEGER 0 65535)) = (ARRAY (INTEGER 0 65535)) */
+                                               (INTEGER 0 65535)) = (ARRAY
+                                                                     (INTEGER 0
+                                                                      65535)) */
 
 uint16 *fill_array_unsigned_byte_16 (uint16 *sequence, uint16 elt_1)
 {

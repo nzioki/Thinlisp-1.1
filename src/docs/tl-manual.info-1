@@ -60,7 +60,7 @@ Preface
 *******
 
    ThinLisp is an open source Lisp to C translator for delivering
-commercial quality, Lisp-based application.  It implements a subset of
+commercial quality, Lisp-based applications.  It implements a subset of
 Common Lisp with extensions.  ThinLisp itself is written in Common
 Lisp, and so must run on top of an underlying Common Lisp
 implementation such as Allegro, MCL, or CMU Lisp.  The C code resulting

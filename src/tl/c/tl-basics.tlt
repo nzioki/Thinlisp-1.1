@@ -41,6 +41,8 @@
     (GENERIC-SET-FILL-POINTER . "generic_set_fill_pointer")
     (TL:IDENTITY . "identity")
     (TL:LENGTH . "length")
+    (TL:LISP-IMPLEMENTATION-TYPE . "lisp_implementation_type")
+    (TL:LISP-IMPLEMENTATION-VERSION . "lisp_implementation_version")
     (TL::MEMBER-EQL . "member_eql")
     (TL:MEMBER-EQUAL . "member_equal")
     (TL:MEMQ . "memq")

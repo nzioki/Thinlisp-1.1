@@ -202,16 +202,6 @@ typedef struct {
 static const Str_113 str_const_5
   = { 7, 110, 110, "The following problem has been detected:  Casting floats to integers cannot be relied on to perform truncation" };
 
-typedef struct {
-  unsigned int type       :  8;
-  unsigned int length     : 24;
-  unsigned int fill_length: 24;
-  unsigned char body[121];
-} Str_121;
-
-static const Str_121 str_const_6
-  = { 7, 117, 117, "The following problem has been detected:  Division of fixnums does not reliably perform truncation with negative args" };
-
 /* Translated from VALIDATE-FIXNUM-ASSUMPTIONS() = NULL */
 
 Obj validate_fixnum_assumptions (void)
@@ -225,10 +215,6 @@ Obj validate_fixnum_assumptions (void)
       (sint32)(((Ldouble *)float_test_value)->body/-1.0))==(-13))) && ((
       (sint32)((-(((Ldouble *)float_test_value)->body))/-1.0))==13))) 
     error((char *)(((Str *)(&str_const_5))->body));     /* "The following problem has been detected:  Casting ..." */
-  if (!((((UNBOXFIX((Obj)(2-(sint32)fixnum_test_value))/2)==(-5)) && ((
-      UNBOXFIX(fixnum_test_value)/(-2))==(-5))) && ((UNBOXFIX((Obj)(2-(sint32)fixnum_test_value))
-      /(-2))==5))) 
-    error((char *)(((Str *)(&str_const_6))->body));     /* "The following problem has been detected:  Division..." */
   return (Obj)NULL;
 }
 
@@ -306,7 +292,7 @@ Obj getfq_function (Obj plist, Obj indicator, Obj default_1)
 
 Obj special_variable_for_use_value_macro = (Obj)(&Unbound);
 
-static const Str_5 str_const_7
+static const Str_5 str_const_6
   = { 7, 2, 2, "#<" };
 
 /* Translated from PRINT-RANDOM-OBJECT-PREFIX(T T) = STRING */
@@ -314,7 +300,7 @@ static const Str_5 str_const_7
 unsigned char *print_random_object_prefix (Obj object, Obj stream)
 {
   (void)object;                                 /* OBJECT was declared ignore */
-  return write_string_function(((Str *)(&str_const_7))->body,   /* "#<" */
+  return write_string_function(((Str *)(&str_const_6))->body,   /* "#<" */
       stream,0,(Obj)NULL);
 }
 

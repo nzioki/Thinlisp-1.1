@@ -24,7 +24,10 @@
     (TL:MEMQ "memq" FUNCTION (T LIST) T)
     (TL:WRITE-CHAR "write_char" FUNCTION (CHARACTER &OPTIONAL T) CHARACTER)
     (TL::WRITE-FIXNUM "write_fixnum" FUNCTION (FIXNUM FIXNUM FIXNUM T) FIXNUM)
-    (TL::WRITE-STRING-FUNCTION "write_string_function" FUNCTION (STRING T FIXNUM T) STRING))
+    (TL::WRITE-STRING-FUNCTION "write_string_function"
+                               FUNCTION
+                               (STRING T FIXNUM T)
+                               STRING))
   ;; Defined functions.
   '((TL::COERCE-TO-DOUBLE-FLOAT-FUNCTION . "coerce_to_double_float_function")
     (TL::EQ-OR-MEMQ . "eq_or_memq")
@@ -41,7 +44,8 @@
   ;; Used variables = (symbol c-name . type).
   '((*PACKAGE* "SpackageS" . OBJ))
   ;; Defined variables
-  '((TL::COMPILE-TIME-MOST-POSITIVE-FIXNUM . "compile_time_most_positive_fixnum")
+  '((TL::COMPILE-TIME-MOST-POSITIVE-FIXNUM
+     . "compile_time_most_positive_fixnum")
     (TL::DEBUG-1 . "debug_1")
     (TL::DEBUG-10 . "debug_10")
     (TL::DEBUG-11 . "debug_11")
@@ -61,7 +65,8 @@
     (TL:KEYWORD-PACKAGE-1 . "keyword_package_1")
     (TL:LISP-PACKAGE-1 . "lisp_package_1")
     (TL::NEGATIVE-FIFTY-MILLION . "negative_fifty_million")
-    (TL::SPECIAL-VARIABLE-FOR-USE-VALUE-MACRO . "special_variable_for_use_value_macro")
+    (TL::SPECIAL-VARIABLE-FOR-USE-VALUE-MACRO
+     . "special_variable_for_use_value_macro")
     (TL:WITHIN-MANAGED-OBJECT-SCOPE . "within_managed_object_scope"))
   ;; Used class typedefs.
   NIL

@@ -795,6 +795,33 @@ unsigned char *write_char_into_string (unsigned char char_1, unsigned char *outp
   return output_string;
 }
 
+static const Str_5 str_const_10
+  = { 7, 3, 3, "0.6" };
+
+/* Translated from LISP-IMPLEMENTATION-VERSION() = STRING */
+
+unsigned char *lisp_implementation_version (void)
+{
+  return ((Str *)(&str_const_10))->body;        /* "0.6" */
+}
+
+typedef struct {
+  unsigned int type       :  8;
+  unsigned int length     : 24;
+  unsigned int fill_length: 24;
+  unsigned char body[9];
+} Str_9;
+
+static const Str_9 str_const_11
+  = { 7, 8, 8, "ThinLisp" };
+
+/* Translated from LISP-IMPLEMENTATION-TYPE() = STRING */
+
+unsigned char *lisp_implementation_type (void)
+{
+  return ((Str *)(&str_const_11))->body;        /* "ThinLisp" */
+}
+
 /* Translated from SYMS-TL-TL-BASICS() = VOID */
 
 void syms_tl_tl_basics (void)
