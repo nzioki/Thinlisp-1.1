@@ -557,16 +557,17 @@
     (when to
       (setq to (normalize-module-name to)))
     (loop for used-system-name in used-system-names do
-      (if (eq used-system-name system-name)
-	  (compile-system-1
-	    used-system-name :verbose verbose :print print
-	    :recompile recompile :from from :to to)
+      (with-compilation-unit ()
+	(if (eq used-system-name system-name)
+	    (compile-system-1
+	     used-system-name :verbose verbose :print print
+	     :recompile recompile :from from :to to)
 	  (if (or compile-used-systems recompile-used-systems)
 	      (compile-system-1
-		used-system-name :verbose verbose :print print
-		:recompile recompile-used-systems)
-	      (load-system-1
-		used-system-name verbose print nil))))))
+	       used-system-name :verbose verbose :print print
+	       :recompile recompile-used-systems)
+	    (load-system-1
+	     used-system-name verbose print nil)))))))
 
 (defun compile-system-1
     (system &key (verbose t) (print nil) (recompile nil) (from nil) (to nil))

@@ -53,13 +53,17 @@
 	      type))
     (cond
       ((and (consp type)
-	    (memqp (cons-car type)
-		   '(and or not array simple-array unsigned-byte)))
+	    (memqp (cons-car type) '(array simple-array)))
+       (if (cons-cdr type)
+	   `(,(cons-car type) ,(expand-type (cons-cadr type)) ,@(cddr type))
+	 type))
+      ((and (consp type)
+	    (memqp (cons-car type) '(and or not unsigned-byte)))
        (cons (cons-car type)
 	     (loop for subtype in (cons-cdr type)
-		   collect (if (integerp subtype)
-			       subtype
-			       (expand-type subtype)))))
+		 collect (if (integerp subtype)
+			     subtype
+			   (expand-type subtype)))))
       ((and (consp type)
 	    (eq (cons-car type) 'function))
        (list 'function

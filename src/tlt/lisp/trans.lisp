@@ -52,15 +52,16 @@
 	 (used-system-names (system-all-used-systems system-struct)))
     ;; First, compile or load the used systems, then run translations.
     (loop for used-system-name in used-system-names do
-      (if (eq used-system-name system-name)
-	  (compile-system-1
-	    used-system-name :verbose verbose :print print
-	    :recompile recompile :from from :to to)
+      (with-compilation-unit ()
+	(if (eq used-system-name system-name)
+	    (compile-system-1
+	     used-system-name :verbose verbose :print print
+	     :recompile recompile :from from :to to)
 	  (if (or compile-used-systems recompile-used-systems)
 	      (compile-system-1
-		used-system-name :verbose verbose :print print
-		:recompile recompile-used-systems)
-	      (load-system-1 used-system-name verbose print nil))))
+	       used-system-name :verbose verbose :print print
+	       :recompile recompile-used-systems)
+	    (load-system-1 used-system-name verbose print nil)))))
     ;; Next, bind global environments needed for translation, and translate.
     (let ((*global-c-namespace* (make-c-namespace *reserved-c-namespace*))
 	  (*global-symbol-registry* (make-hash-table :test #'eq))

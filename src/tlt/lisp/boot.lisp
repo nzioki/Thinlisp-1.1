@@ -120,14 +120,15 @@
 	     (setq delete-from-preventer nil))
 	   (unless delete-from-preventer
 	     (delete-glt-module-binary module)))
-	 (compile-load-glt-module 'boot (and recompile (null from)))
-	 (loop with recompile-module? = (and recompile (null from))
+	 (with-compilation-unit ()
+	   (compile-load-glt-module 'boot (and recompile (null from)))
+	   (loop with recompile-module? = (and recompile (null from))
 	       for module in glt-modules do
-	   (when (and recompile
-		      (null recompile-module?)
-		      (string= (symbol-name from) (symbol-name module)))
-	     (setq recompile-module? t))
-	   (compile-load-glt-module module recompile-module?))
+	     (when (and recompile
+			(null recompile-module?)
+			(string= (symbol-name from) (symbol-name module)))
+	       (setq recompile-module? t))
+	     (compile-load-glt-module module recompile-module?)))
 	 (let ((gli-compile-glt (intern "COMPILE-GLT" "GLI"))
 	       (gl-compile-glt (intern "COMPILE-GLT" "GL")))
 	   (unless (fboundp gli-compile-glt)
@@ -269,6 +270,7 @@
 			  :name file-name
 			  :type binary-file-type))))
     (when (probe-file bin-file)
+      (format t "Deleting ~a~%" bin-file)
       (delete-file bin-file))))
 
 			  
