@@ -70,7 +70,7 @@
 	 (used-system-names (system-all-used-systems system-struct)))
     ;; First, compile or load the used systems, then run translations.
     (loop for used-system-name in used-system-names do
-      (with-compilation-unit ()
+      (with-deferred-compilation-warnings
 	(if (eq used-system-name system-name)
 	    (compile-system-1
 	     used-system-name :verbose verbose :print print
@@ -640,8 +640,8 @@
     (unless abort
       (loop for last-emitted-symbol-definition = nil then last-definition
 	    for last-definition = (c-file-last-symbol-definition? c-file)
+	    for symbol-array-name = (car last-definition)
 	    until (eq last-emitted-symbol-definition last-definition)
-	    for symbol-array-name = (cons-car last-definition)
 	    do
 	(emit-symbol-array-initialization
 	  c-file symbol-array-name

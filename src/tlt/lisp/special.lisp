@@ -192,9 +192,9 @@
   (when (null forms)
     (setq forms (list nil)))
   (loop for form-cons = forms then next-form-cons?
-	while form-cons
 	for next-form-cons? = (cdr form-cons)
 	for sub-form = (car form-cons)
+	while form-cons
 	collect (tl:walk sub-form env walker
 			 (if next-form-cons?
 			     'void
@@ -1179,8 +1179,8 @@
 	      do
 	  (when (eq (cons-car subform-cons) 'tl::next-loop)
 	    (setq subform-cons (cons-cdr subform-cons))
-	    (return (loop while subform-cons
-			  for subform = (cons-car subform-cons)
+	    (return (loop for subform = (car subform-cons)
+			  while subform-cons
 			  never (atom subform)
 			  thereis (equal subform '(tl:go tl::next-loop))
 			  do
@@ -1677,9 +1677,9 @@
 	(t
 	 `(tl:and
 	    ,@(loop for arg-cons = (cons-cdr form) then next-cons?
+		    for next-cons? = (cdr arg-cons)
+		    for arg = (car arg-cons)
 		    while arg-cons
-		    for next-cons? = (cons-cdr arg-cons)
-		    for arg = (cons-car arg-cons)
 		    collect (tl:walk arg env walker
 				     (if next-cons? 't required-type)))))))
 
@@ -1691,9 +1691,9 @@
 	(t
 	 `(tl:or
 	    ,@(loop for arg-cons = (cons-cdr form) then next-cons?
+		    for next-cons? = (cdr arg-cons)
+		    for arg = (car arg-cons)
 		    while arg-cons
-		    for next-cons? = (cons-cdr arg-cons)
-		    for arg = (cons-car arg-cons)
 		    collect (tl:walk arg env walker
 				     (if next-cons? 't required-type)))))))
 

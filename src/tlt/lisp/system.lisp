@@ -86,7 +86,7 @@
 		:name "boot"
 		:type lisp-file-type)))
 	(or (and (probe-file standard-boot-name)
-		 (load standard-boot-name)
+		 (load standard-boot-name :verbose nil)
 		 (get system-name :system))
 	    (let ((backup-standard-boot-name
 		   (make-pathname
@@ -94,7 +94,7 @@
 		     :name (format nil "~(~a~)-boot" system-name)
 		     :type lisp-file-type)))
 	      (or (and (probe-file backup-standard-boot-name)
-		       (load backup-standard-boot-name)
+		       (load backup-standard-boot-name :verbose nil)
 		       (get system-name :system))
 		  (error
 		    "No system ~a exists, or no file ~a exist, or if it did ~
@@ -106,6 +106,12 @@
 (defun set-find-system (system-name system-structure)
   (setf (get (normalize-system-name system-name) :system)
 	system-structure))
+
+(defmacro with-deferred-compilation-warnings (&body forms) 
+  #+clisp
+  `(progn ,@forms)
+  #-clisp
+  `(with-compilation-unit () ,@forms))
 
 
 
@@ -673,7 +679,7 @@
     (when to
       (setq to (normalize-module-name to)))
     (loop for used-system-name in used-system-names do
-      (with-compilation-unit ()
+      (with-deferred-compilation-warnings
 	(if (eq used-system-name system-name)
 	    (compile-system-1
 	     used-system-name :verbose verbose :print print

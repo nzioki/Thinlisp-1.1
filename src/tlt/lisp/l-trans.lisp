@@ -1443,11 +1443,13 @@
 		       while (consp next-cons?)
 		       do
 		   (assign-index next-cons?))
-		 (loop for next-cons? = cons then (cons-cdr next-cons?)
+		 (loop with car
+		       for next-cons? = cons then (cons-cdr next-cons?)
 		       while (consp next-cons?)
-		       for car = (cons-car next-cons?)
 		       do
-		   (when (consp car) (assign-index car)))))
+		   (setq car (cons-car next-cons?))
+		   (when (consp car)
+		     (assign-index car)))))
 
 	     (cons-expr (cons)
 	       (let ((index (make-c-literal-expr
@@ -1475,11 +1477,13 @@
 		   (let ((length
 			   (loop for last-index fixnum = (- car-index 2) then next-index
 				 for next-cons = cons then (cons-cdr next-cons)
-				 while (consp next-cons)
 				 for next-index fixnum = car-index
-						then (* (the fixnum (gethash next-cons cons-hash))
+						then (* (if (consp next-cons)
+							    (gethash next-cons cons-hash)
+							  0)
 							2)
-				 while (= (the fixnum (+ last-index 2)) next-index)
+				 while (and (consp next-cons)
+					    (= (the fixnum (+ last-index 2)) next-index))
 				 count t)))
 		     (declare (fixnum length))
 		     (cond
@@ -1502,11 +1506,12 @@
 			  init-statements)
 			;; Then, initialize the cars and put NILs into the
 			;; simple initialization vector for the cdrs.
-			(loop for index fixnum from car-index by 2
+			(loop with next-cons?
+			      for index fixnum from car-index by 2
 			      for this-cons = cons then next-cons?
 			      while (consp this-cons)
-			      for next-cons? = (cons-cdr this-cons)
 			      do
+			  (setq next-cons? (cons-cdr this-cons))
 			  (init-car-or-cdr-at-index
 			    (cons-car this-cons) index nil)
 			  (setf (svref simple-init-vector (+ index 1))
@@ -1875,10 +1880,10 @@
 	 (temp-storage-classes (storage-classes-for-env env))
 	 (previous-unwind-protect nil)
 	 (current-c-body c-body)
-	 (target-block (loop for entry in exit-scope
-			     until (and (eq (cons-car entry) 'block)
-					(eq (cons-second entry) target-name))
-			     finally (return (cons-third entry))))
+	 (target-block (loop for block in exit-scope
+			     when (and (eq (cons-car block) 'block)
+				       (eq (cons-second block) target-name))
+			       return (cons-third block)))
 	 (block-scope-return-directive
 	   (block-scope-return-directive target-block))
 	 (c-type (block-scope-c-return-type target-block))
@@ -2684,9 +2689,9 @@
     ((and (consp required-lisp-type) (eq (cons-car required-lisp-type) 'values))
      (let* ((needed-types
 	      (loop with initial-types = (cons-cdr required-lisp-type)
-		    while initial-types
 		    for last-type? = (car (last initial-types))
-		    while (and last-type? (tl-subtypep t last-type?))
+		    while (and initial-types 
+			       last-type? (tl-subtypep t last-type?))
 		    do
 		(setq initial-types (butlast initial-types))
 		    finally (return initial-types)))
