@@ -20,6 +20,10 @@ work appropriately.  (Note that tlt stands for ThinLisp Translator.)
   (truename "tlt/") 
     => "/home/jallard/work/tlt/"
 
+For example, in clisp you can setting the default directory as so:
+
+   (setf (default-directory) "/home/jallard/work/"))
+
 3.  Bootstrap the translator by loading its boot file.
 
   (load "tlt/lisp/boot")
@@ -58,4 +62,4 @@ Lisp-based libraries and executables.
 Enjoy.
 
 --------
-$Id: INSTALL,v 1.4 2001/07/01 11:15:24 jallard Exp $
+$Id: INSTALL,v 1.5 2001/10/22 14:57:10 bhyde Exp $
