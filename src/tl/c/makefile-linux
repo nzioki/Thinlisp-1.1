@@ -1,0 +1,25 @@
+#
+# TL Linux Makefile
+#
+# Copyright (c) 1999 Jim Allard
+
+CC=gcc -o
+CFLAGS=-O2 -ansi -pedantic -W -Wall -fomit-frame-pointer -c
+ARCHIVE=ar rsc
+OBJECTS= tl.o boot.o stubs.o tl-types.o \
+        inline.o tl-prim.o do.o format.o input.o \
+        tl-basics.o loop.o apply.o generic-math.o generic-prim.o \
+        packages.o tl-util.o versions.o forward.o tl-extension.o
+
+all : libtl.a
+
+clean :
+	-rm *.o
+	-( if [ -f libtl.a ] ; then rm libtl.a ; fi )
+
+libtl.a : makefile-linux $(OBJECTS) $(LIBS)
+	-( if [ -f libtl.a ] ; then rm libtl.a ; fi )
+	$(ARCHIVE) libtl.a $(OBJECTS)
+
+%.o : ../c/%.c ../c/%.h makefile-linux ../c/tl.h
+	$(CC) $@ $(CFLAGS) -I ../c $<
