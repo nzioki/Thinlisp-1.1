@@ -60,8 +60,8 @@
       with terpri? = (cond
 		      ((string= (car args) "-n")
 		       (pop args)
-		       t)
-		      (t nil))
+		       nil)
+		      (t t))
       finally (when terpri? (terpri))
       for first? = t then nil
       for arg in args
