@@ -25,6 +25,10 @@
  * library.
  */
 
+#ifdef PTHREAD
+#include <pthread.h>
+#endif
+
 #include <ctype.h>
 #include <math.h>
 
@@ -424,15 +428,19 @@ typedef struct {
 
 typedef struct binding_type {
   Obj                 *global_address;
-  Obj                 thread_address;
+  Obj                 thread_value;
   struct binding_type *next_binding;
 } Binding;
 
 #define THROW_STACK_MAX 2048
 
 typedef struct thread_state_type {
-  /* Thread_id is whatever pthread_self returns, but cast to a uint32. */
-  uint32  thread_id;
+  /* Thread_id is whatever pthread_self() returns. */
+#ifdef PTHREAD
+  pthread_t  thread_id;
+#else
+  uint32     thread_id;
+#endif
   /* Thread_index is the index of this thread_id withint the thread_states
    * array.  This index is used during thread_state deletion to remove it from
    * the array.*/
@@ -469,11 +477,14 @@ typedef struct thread_state_type {
 
 extern Thread_state default_thread_state;
 
-extern uint32 default_thread_id;
+#ifdef PTHREAD
+extern pthread_t default_thread_id;
+#endif
+
 
 extern int thread_states_length;
 
-extern Thread_state *thread_states;
+extern Thread_state **thread_states;
 
 #define Values_count (THREAD_STATE->values_count)
 
