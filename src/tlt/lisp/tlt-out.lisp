@@ -129,9 +129,22 @@
 	     (make-c-cast-expr '(pointer file-strm) file-stream)
 	     "output")))))
 
+
+
+
+;;; The CMU Lisp compiler continually finds it necessary to brag when it finds
+;;; and eliminates dead code.  To inhibit these noise warnings, I've added this
+;;; variable which makes it uncertain whether or not ERROR will actually get
+;;; called.  This leaves enough doubt for the compiler to be quiet.  -jallard
+;;; 5/28/99
+
+(defvar fake-out-cmu-dead-code-analyzer t)
+
 (def-c-translation gli-simple-error (string)
   ((lisp-specs :ftype ((string) void))
-   `(error "~a" ,string))
+   `(if fake-out-cmu-dead-code-analyzer
+	(error "~a" ,string)
+      nil))
   ((trans-specs :c-type (((pointer unsigned-char)) void))
    (make-c-function-call-expr
      (make-c-name-expr "error")
