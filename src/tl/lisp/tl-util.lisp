@@ -1549,9 +1549,6 @@
 ;;; simply calls error when the test fails.
 
 (defmacro assert (test places format-string &rest format-args)
+  (declare (ignore places))
   `(unless ,test
-     (error ,(if (stringp format-string)
-		 (format nil "Within ~s: ~s"
-			 places format-string)
-	       format-string)
-	    ,@format-args)))
+     (error ,format-string ,@format-args)))
