@@ -3,7 +3,7 @@
 
 ;;;; Module TL-EXTENSION
 
-;;; Copyright (c) 1999 The ThinLisp Group
+;;; Copyright (c) 1999-2000 The ThinLisp Group
 ;;; Copyright (c) 1990, 1991, 1992, 1997 Gensym Corporation.
 ;;; All Rights Reserved.
 

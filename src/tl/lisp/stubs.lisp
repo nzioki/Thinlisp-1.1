@@ -2,7 +2,7 @@
 
 ;;;; Module STUBS
 
-;;; Copyright (c) 1999 The ThinLisp Group
+;;; Copyright (c) 1999-2000 The ThinLisp Group
 ;;; Copyright (c) 1996 Gensym Corporation.
 ;;; All rights reserved.
 
@@ -157,9 +157,6 @@
 
 (defmacro get-decoded-time ()
   `(lisp:get-decoded-time))
-
-(defmacro sleep (seconds)
-  `(lisp:sleep ,seconds))
 
 (defmacro read (&optional input-stream eof-error-p eof-value recursive-p)
   `(lisp:read
