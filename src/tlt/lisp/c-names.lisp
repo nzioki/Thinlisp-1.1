@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module C-NAMES
 
@@ -52,7 +52,7 @@
 ;;; There will be a global C namespace that contains all built in identifiers
 ;;; and reserved words of C.  This set will be determined by numbly entering all
 ;;; identifiers listed in the index on pages 385 through 392 of Harbison and
-;;; Steele (3rd), all identifers built-in to GL in the hand-written C code, and any
+;;; Steele (3rd), all identifers built-in to TL in the hand-written C code, and any
 ;;; POSIX identifiers we use.  Omissions in this list will show up as multiple
 ;;; definitions or improper links only if Lisp symbols are made that happen to
 ;;; collide with the C versions.  In all cases, errors of this form should be
@@ -119,13 +119,13 @@
 ;;; Reference Manual, 4th Edition_ (CaRM4), by Harbison and Steele.  This set
 ;;; was compiled from CaRM4 reserved words, p. 23; CaRM4 C++ reserved words,
 ;;; p. 37, and the index from CaRM3.  This namespace should also hold all
-;;; identifiers defined within hand-written C code we include into GLT output
+;;; identifiers defined within hand-written C code we include into TLT output
 ;;; images.
 
 (defparameter *reserved-c-namespace*
   (populate-c-namespace
     (make-c-namespace nil)
-    '(;; GL library defined identifiers
+    '(;; TL library defined identifiers
       ("Values_count" variable)
       ("Values_buffer" variable)
       ("Unbound" variable)
@@ -164,7 +164,7 @@
       ("write_fixnum_into_str" function)
       ("write_double_into_str" function)
 
-      ;; Macros in glt.h
+      ;; Macros in tlt.h
       ("CAR" macro)
       ("CDR" macro)
       ("BOXFIX" macro)
@@ -924,7 +924,7 @@
 		   (c-identifier-for-symbol
 		     lisp-function (list 'function lisp-function)
 		     id-namespace referencing-namespace)))
-	     (gl:proclaim
+	     (tl:proclaim
 	       (list 'function-c-identifier lisp-function new-identifier))
 	     new-identifier))))))
 
@@ -947,7 +947,7 @@
 	(when current-name?
 	  (translation-warning "Redefining ~s from ~s to foreign function ~s"
 			       lisp-name current-name? c-name))
-	(gl:proclaim (list 'function-c-identifier lisp-name c-name))
+	(tl:proclaim (list 'function-c-identifier lisp-name c-name))
 	(unless current-description?
 	  (setf (c-namespace-get-identifier *global-c-namespace* c-name)
 		(list 'function lisp-name))))))
@@ -969,7 +969,7 @@
       (let ((new-identifier
 	      (c-identifier-for-symbol
 		lisp-variable '(variable) id-namespace referencing-namespace)))
-	(gl:proclaim (list 'variable-c-identifier lisp-variable new-identifier))
+	(tl:proclaim (list 'variable-c-identifier lisp-variable new-identifier))
 	new-identifier)))
 
 

@@ -2,7 +2,7 @@
  +
  + Copyright (c) 1994-1995 Gensym Corporation.  All Rights Reserved.
  +
- + Module:      glt.h
+ + Module:      tlt.h
  +
  + Copyright (c) 1999 The Thinlisp Group
  + All Rights Reserved.
@@ -21,8 +21,8 @@
  +
  + Author Jim Allard
  +
- + Description: Declarations and externs for the Gensym Language (GL) runtime
- + library, itself called GLL.
+ + Description: Declarations and externs for the ThinLisp (TL) runtime
+ + library.
  + 
  + Key:
  +   +++++++ Module Header.   Used for file-wide information.
@@ -44,7 +44,7 @@
  +   Section:      Typedefs
  +      Uint8, Sint8, Uint16, Sint16, Uint32, Sint32,
  +      Hdr, Obj, Str, Sv, Sa_uint8, Sa_uint16, Sa_double
- +   Section:      Externs for glt.c
+ +   Section:      Externs for tlt.c
  +      Values_count, Values_buffer
  +
  +   Section:      TESTING
@@ -91,7 +91,7 @@
  % Section:      Typedefs
  %
  % Description:
- %      All gll built-in types are found here.
+ %      All tll built-in types are found here.
  %
  % Notes:
  %
@@ -103,10 +103,10 @@
  * Integer Types
  *
  *   Description:
- *     Integer types in GL translated code will always refer to the following
+ *     Integer types in TL translated code will always refer to the following
  *     types, representing signed and unsigned integers containing the given
  *     number of bits.  The one except to this rule is the type unsigned char,
- *     which may appear in GL translated code and is assumed to be equivalent to
+ *     which may appear in TL translated code and is assumed to be equivalent to
  *     uint8.  Twos complement representation of all integers is assumed.
  * 
  *       uint8, sint8, uint16, sint16, uint32, sint32
@@ -123,10 +123,10 @@ typedef unsigned int   uint32;
 typedef   signed int   sint32;
 
 /*****************************************************************************
- * Base GLL Stucture Types
+ * Base TLL Stucture Types
  *
  *   Description:
- *     Structure types in GL provide the base level data structure needed to
+ *     Structure types in TL provide the base level data structure needed to
  *     build the rest of the runtime system.
  *
  *       Hdr - The header of all heap allocated Lisp objects, has type tag,
@@ -145,7 +145,7 @@ typedef   signed int   sint32;
  *       File_strm - file-streams.
  *
  *   Notes:
- *     See glt.txt for a description of the design of the other types.  -jra
+ *     See tlt.txt for a description of the design of the other types.  -jra
  *     1/4/95
  *   Modifications:
  *****************************************************************************/
@@ -483,10 +483,10 @@ typedef struct {
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %
- % Section:      Externs for Handwritten GLT C files
+ % Section:      Externs for Handwritten TLT C files
  %
  % Description:
- %      Externs for the hand-written C utilities in glt.c and notify.c
+ %      Externs for the hand-written C utilities in tlt.c and notify.c
  %
  % Notes:
  %
@@ -494,7 +494,7 @@ typedef struct {
  %
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-/* The first set are for glt.c */
+/* The first set are for tlt.c */
 
 extern sint32 Values_count;
 

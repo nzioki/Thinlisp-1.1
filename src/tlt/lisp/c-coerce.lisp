@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module C-COERCE
 
@@ -31,7 +31,7 @@
 
 
 ;;; This module implements coercions between C types.  Most of the types used in
-;;; GLT can be coerced into type Obj and back.  This module implements the
+;;; TLT can be coerced into type Obj and back.  This module implements the
 ;;; functions and declarations needed for that.
 
 
@@ -441,9 +441,9 @@
 
 (defmacro def-c-function-types-for-funcall ()
   (cons 'progn
-	(loop for args from 0 to gl:lambda-parameters-limit
+	(loop for args from 0 to tl:lambda-parameters-limit
 	      for c-type-symbol
-		  = (intern (format nil "FUNC-~a" args) *gli-package*)
+		  = (intern (format nil "FUNC-~a" args) *tli-package*)
 	      for c-type-string = (format nil "Func_~a" args)
 	      collect
 	      `(def-c-type ,c-type-symbol
@@ -457,7 +457,7 @@
 
 (def-c-type unbound "Hdr" "Hdr *" unbound 14)
 
-(def-c-type string-strm "String_strm" "String_strm *" gl-string-stream 15)
+(def-c-type string-strm "String_strm" "String_strm *" tl-string-stream 15)
 
 (def-c-type file-strm "File_strm" "File_strm *" file-stream 16)
 

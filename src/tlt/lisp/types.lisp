@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module TYPES
 
@@ -30,16 +30,16 @@
 
 
 
-;;; The macro `gl:deftype' defines an expander from one type specification to
+;;; The macro `tl:deftype' defines an expander from one type specification to
 ;;; another, where it is presumed that the type expanded into is a "simpler"
-;;; type closer to the what is natively supported within the GL language.  Types
-;;; declared with gl:deftype can be used anywhere that natively supported types
+;;; type closer to the what is natively supported within the TL language.  Types
+;;; declared with tl:deftype can be used anywhere that natively supported types
 ;;; can be used.
 
 (defmacro declared-type-expansion (name)
   `(get ,name :declared-type-expander))
 
-(defmacro gl:deftype (name arglist &rest body)
+(defmacro tl:deftype (name arglist &rest body)
   (let ((type-expander (intern (format nil "~a-TYPE-EXPANDER" name))))
     (unless (eval-feature :translator)
       (multiple-value-bind (decls forms)
@@ -101,17 +101,17 @@
 
 
 
-;;; This module contains operations for manipulating types within GLT.  In many
+;;; This module contains operations for manipulating types within TLT.  In many
 ;;; cases the operations used here will be based on the underlying Lisp's type
-;;; system.  Note that these operations are not the GL supported operations for
-;;; use in runtime systems.  Those will be supplied in the GLRTL system under
-;;; the GL package, not the GLI package.
+;;; system.  Note that these operations are not the TL supported operations for
+;;; use in runtime systems.  Those will be supplied in the TLRTL system under
+;;; the TL package, not the TLI package.
 
-;;; The function `gl-subtypep' should be used instead of subtypep so we can fix
+;;; The function `tl-subtypep' should be used instead of subtypep so we can fix
 ;;; problems in underlying Lisp implementations as needed.  Similarly, we should
-;;; use `gl-typep' instead of typep and `gl-type-of' instead of type-of.
+;;; use `tl-typep' instead of typep and `tl-type-of' instead of type-of.
 
-(defun gl-subtypep (subtype superior-type)
+(defun tl-subtypep (subtype superior-type)
   (setq subtype (expand-type subtype))
   (setq superior-type (expand-type superior-type))
   (cond ((eq superior-type 'void)
@@ -135,19 +135,19 @@
 	 (values
 	   (or (and (eq subtype '*)
 		    (loop for value-type in (cons-cdr superior-type)
-			  always (gl-subtypep 't value-type)))
+			  always (tl-subtypep 't value-type)))
 	       (and (consp subtype)
 		    (eq (cons-car subtype) 'values)
 		    (loop for superior-value-type in (cons-cdr superior-type)
 			  for subtype-value-type-cons?
 			      = (cons-cdr subtype)
 			      then (cdr subtype-value-type-cons?)
-			  always (gl-subtypep (or (car subtype-value-type-cons?)
+			  always (tl-subtypep (or (car subtype-value-type-cons?)
 						  'null)
 					      superior-value-type))))
 	   t))
 	((or (memqp superior-type
-		    '(unbound managed-float gl-string-stream file-stream))
+		    '(unbound managed-float tl-string-stream file-stream))
 	     (memqp subtype '(unbound)))
 	 (values (eq subtype superior-type) t))
 	;; Since all of our arrays are one-dimensional, all array types are
@@ -155,35 +155,35 @@
 	;; sequence.
 	((eq superior-type 'sequence)
 	 (multiple-value-bind (result certainp)
-	     (gl-subtypep subtype 'array)
+	     (tl-subtypep subtype 'array)
 	   (if result
 	       (values result certainp)
-	     (gl-subtypep subtype 'list))))
+	     (tl-subtypep subtype 'list))))
 	((eq subtype 'void)
 	 (values nil t))
 	((eq subtype '*)
-	 (gl-subtypep 't superior-type))
+	 (tl-subtypep 't superior-type))
 	((and (consp subtype)
 	      (eq (cons-car subtype) 'values))
-	 (gl-subtypep (or (second subtype) 'null) superior-type))
+	 (tl-subtypep (or (second subtype) 'null) superior-type))
 	((eq subtype 'managed-float)
 	 (values (eq superior-type 't) t))
-	((memqp subtype '(gl-string-stream file-stream))
+	((memqp subtype '(tl-string-stream file-stream))
 	 (values (memqp superior-type '(stream t)) t))
 	(t
 	 (subtypep subtype superior-type))))
 
-(defconstant most-positive-gl-fixnum 536870911)
+(defconstant most-positive-tl-fixnum 536870911)
 
-(defconstant most-negative-gl-fixnum -536870912)
+(defconstant most-negative-tl-fixnum -536870912)
 
-(defstruct (gl-string-stream)
+(defstruct (tl-string-stream)
   (strings nil)
   (input-string)
   (input-index)
   (input-index-bounds))
 
-(defun gl-typep (object type)
+(defun tl-typep (object type)
   (setq type (expand-type type))
   (cond ((memqp type '(void * t))
 	 t)
@@ -192,11 +192,11 @@
 	;; Lucid doesn't implement the types string-stream or file-stream.  -jra
 	;; 3/4/96 However, CMU Lisp and other ANSI CL implementations do, and on
 	;; those Lisps the interpretation of the type string-stream was messing
-	;; us up.  Instead, switch over to gl-string-stream, which is the
-	;; structure type that will actually implement this functionality in GL.
+	;; us up.  Instead, switch over to tl-string-stream, which is the
+	;; structure type that will actually implement this functionality in TL.
 	;; -jallard 5/27/99
-	((eq type 'gl-string-stream)
-	 (typep object 'gl-string-stream))
+	((eq type 'tl-string-stream)
+	 (typep object 'tl-string-stream))
 	((eq type 'managed-float)
 	 (and (typep object '(array double-float))
 	      (= (length object) 1)))
@@ -208,12 +208,12 @@
 	;; -jra 3/4/96
 ;	((eq type 'fixnum)
 ;	 (and (typep object 'integer)
-;	       (<= object most-positive-gl-fixnum)
-;	       (>= object most-negative-gl-fixnum)))
+;	       (<= object most-positive-tl-fixnum)
+;	       (>= object most-negative-tl-fixnum)))
 	((and (consp type)
 	      (eq (cons-car type) 'values)
 	      (= (length type) 2))
-	 (gl-typep object (cons-second type)))
+	 (tl-typep object (cons-second type)))
 	((explicit-lisp-to-c-type-p type)
 	 nil)
 	(t
@@ -222,23 +222,23 @@
 
 
 
-;;; The macro `fixnump' checks if the given value is a fixnum in GL translated
+;;; The macro `fixnump' checks if the given value is a fixnum in TL translated
 ;;; systems.
 
 (defmacro fixnump (x)
-  `(gl-typep ,x 'fixnum))
+  `(tl-typep ,x 'fixnum))
 
-(defmacro gl-type-of (object)
+(defmacro tl-type-of (object)
   `(type-of ,object))
 
 
 
 
-;;; The parameter `gl-optimizable-types' holds an alist of Lisp types to C type
+;;; The parameter `tl-optimizable-types' holds an alist of Lisp types to C type
 ;;; implementations to optimize the given type when that value is stored in a
 ;;; lexcial variable or appears as a result of an expression evaluation.
 
-(defparameter gl-optimizable-types
+(defparameter tl-optimizable-types
   '(((unsigned-byte 8) . uint8)
     ((unsigned-byte 16) . uint16)
     (fixnum . sint32)
@@ -254,8 +254,8 @@
 
 
 
-;;; The parameter `gl-significant-types' is a list of Lisp types that are
-;;; significant to the optimizations possible in GL.  This list can be added to
+;;; The parameter `tl-significant-types' is a list of Lisp types that are
+;;; significant to the optimizations possible in TL.  This list can be added to
 ;;; arbitrarily, but it is included here so that the translator can collapse
 ;;; pathological combinations of ands, ors, and nots into a simple enough type
 ;;; spec that it can be handled easily.  Effectively this list is used to limit
@@ -264,9 +264,9 @@
 ;;; Note that all types in this list must either have a single type tag or must
 ;;; have a special case within translate-type-check-predicate.
 
-(defparameter gl-significant-types
+(defparameter tl-significant-types
   (nconc
-    (loop for (type) in gl-optimizable-types
+    (loop for (type) in tl-optimizable-types
 	  collect type)
     '(null
       cons
@@ -275,7 +275,7 @@
       symbol
       compiled-function
       package
-      gl-string-stream
+      tl-string-stream
       file-stream)))
       
       
@@ -285,7 +285,7 @@
 ;;; The function `most-specific-common-supertype' takes two types and returns a
 ;;; type that the most specific type that is superior to both given types.  It
 ;;; first attempts to use one or the other of the given types, and then searches
-;;; through a set of types that GL knows how to optimize in runtime systems.  If
+;;; through a set of types that TL knows how to optimize in runtime systems.  If
 ;;; all of this fails, this function returns T, the supertype of all types.
 ;;; This function is useful when combining the types from multiple expressions
 ;;; to determine the most specific type that could result from the evaluation of
@@ -323,13 +323,13 @@
 			for subtype2 in (cons-cdr type2)
 			collect (most-specific-common-supertype
 				  subtype1 subtype2))))))
-	((gl-subtypep type1 type2)
+	((tl-subtypep type1 type2)
 	 type2)
-	((gl-subtypep type2 type1)
+	((tl-subtypep type2 type1)
 	 type1)
 	(t
-	 (loop for type in gl-significant-types
-	       when (and (gl-subtypep type1 type) (gl-subtypep type2 type))
+	 (loop for type in tl-significant-types
+	       when (and (tl-subtypep type1 type) (tl-subtypep type2 type))
 	         return type
 	       finally (return t)))))
 
@@ -349,13 +349,13 @@
 	 type2)
 	((eq type2 '*)
 	 type1)
-	((or (eq type2 'void) (gl-subtypep type1 type2))
+	((or (eq type2 'void) (tl-subtypep type1 type2))
 	 type1)
-	((or (eq type1 'void) (gl-subtypep type2 type1))
+	((or (eq type1 'void) (tl-subtypep type2 type1))
 	 type2)
 	(t
-	 (loop for type in gl-significant-types
-	       when (or (gl-subtypep type1 type) (gl-subtypep type2 type))
+	 (loop for type in tl-significant-types
+	       when (or (tl-subtypep type1 type) (tl-subtypep type2 type))
 	         return type
 	       finally (return t)))))
 
@@ -366,8 +366,8 @@
 ;;; specific optimizable type that includes the given object.
 
 (defun optimizable-type-of (object)
-  (loop for type in gl-significant-types
-	when (gl-typep object type)
+  (loop for type in tl-significant-types
+	when (tl-typep object type)
 	  return type
 	finally (return t)))
 
@@ -375,14 +375,14 @@
 
 
 ;;; The function `upgraded-optimizable-type' takes a type and returns the most
-;;; specific super type that is optimizable in GL.
+;;; specific super type that is optimizable in TL.
 
 (defun upgraded-optimizable-type (base-type)
   (loop with expanded-base-type = (expand-type base-type)
 	initially (when (explicit-lisp-to-c-type-p expanded-base-type)
 		    (return expanded-base-type))
-	for type in gl-significant-types
-	when (gl-subtypep expanded-base-type type)
+	for type in tl-significant-types
+	when (tl-subtypep expanded-base-type type)
 	  return type
 	finally (return t)))
 
@@ -390,28 +390,28 @@
 
 
 ;;; The parameter `upgraded-array-element-type-alist' holds the alist of Lisp
-;;; types array element types to their equivalent GL package Lisp types and
+;;; types array element types to their equivalent TL package Lisp types and
 ;;; optimized C array element types, representing all array type optimizations
-;;; supported within GL.
+;;; supported within TL.
 
 (defparameter upgraded-array-element-type-alist
-  `((character          gl:character          unsigned-char)
-    ((unsigned-byte 8)  (gl:unsigned-byte 8)  uint8)
-    ((unsigned-byte 16) (gl:unsigned-byte 16) uint16)
-    (double-float       gl:double-float       double)
-    (t                  gl:t                  obj)))
+  `((character          tl:character          unsigned-char)
+    ((unsigned-byte 8)  (tl:unsigned-byte 8)  uint8)
+    ((unsigned-byte 16) (tl:unsigned-byte 16) uint16)
+    (double-float       tl:double-float       double)
+    (t                  tl:t                  obj)))
 
 
 
 
-;;; The function `upgraded-gl-array-element-type' takes an element type for an
+;;; The function `upgraded-tl-array-element-type' takes an element type for an
 ;;; array and returns the specific superior type that has a specialized array
-;;; implementation.  Note that the macro gl:upgraded-array-element-type uses
+;;; implementation.  Note that the macro tl:upgraded-array-element-type uses
 ;;; this function.
 
-(defun upgraded-gl-array-element-type (element-type)
+(defun upgraded-tl-array-element-type (element-type)
   (second (assoc (expand-type element-type) upgraded-array-element-type-alist
-		 :test #'gl-subtypep)))
+		 :test #'tl-subtypep)))
 
 
 
@@ -430,20 +430,20 @@
     ((explicit-lisp-to-c-type-p lisp-type)
      ;; The C type for Lisp types of the form (c-type *) are EQ to that Lisp
      ;; type.  (Got you confused yet?  -jallard 7/7/97)
-     (cond ((gl-subtypep lisp-type '(c-type "long"))
+     (cond ((tl-subtypep lisp-type '(c-type "long"))
 	    'long)
-	   ((gl-subtypep lisp-type '(c-type (pointer "char")))
+	   ((tl-subtypep lisp-type '(c-type (pointer "char")))
 	    '(pointer char))
-	   ((gl-subtypep lisp-type '(c-type (pointer "void")))
+	   ((tl-subtypep lisp-type '(c-type (pointer "void")))
 	    '(pointer void))
-	   ((gl-subtypep lisp-type '(c-type (pointer "uint32")))
+	   ((tl-subtypep lisp-type '(c-type (pointer "uint32")))
 	    '(pointer uint32))
 	   (t
 	    lisp-type)))
     (t
-     (loop for (optimizable-type . c-type) in gl-optimizable-types
+     (loop for (optimizable-type . c-type) in tl-optimizable-types
 	   do
-       (when (gl-subtypep lisp-type optimizable-type)
+       (when (tl-subtypep lisp-type optimizable-type)
 	 (return c-type))
 	   finally (return 'obj)))))
 
@@ -505,12 +505,12 @@
 		     for result-type-cons = (cons-cdr result-type)
 					  then (cdr result-type-cons)
 		     for result-subtype = (or (car result-type-cons) 'null)
-		     always (gl-subtypep subtype result-subtype))
+		     always (tl-subtypep subtype result-subtype))
 	       (and (eq result-type '*)
 		    (loop for subtype in (cons-cdr required-type)
-			  always (gl-subtypep 't subtype)))))
+			  always (tl-subtypep 't subtype)))))
       (and (not (values-of-t-type-p required-type))
-	   (gl-subtypep (type-of-first-value result-type) required-type))))
+	   (tl-subtypep (type-of-first-value result-type) required-type))))
 
 
 
@@ -555,7 +555,7 @@
 ;;; given no explicit initial value.
 
 (defun default-init-for-lisp-type (lisp-type)
-  (cond ((gl-subtypep lisp-type 'fixnum) 0)
-	((gl-subtypep lisp-type 'double-float) 0.0)
-	((gl-subtypep lisp-type 'character) #\null)
+  (cond ((tl-subtypep lisp-type 'fixnum) 0)
+	((tl-subtypep lisp-type 'double-float) 0.0)
+	((tl-subtypep lisp-type 'character) #\null)
 	(t nil)))

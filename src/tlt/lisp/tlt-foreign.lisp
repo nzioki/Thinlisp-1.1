@@ -1,6 +1,6 @@
-(in-package "GLI")
+(in-package "TLI")
 
-;;;; Module GLT-FOREIGN
+;;;; Module TLT-FOREIGN
 
 ;;; Copyright (c) 1999 The ThinLisp Group
 ;;; Copyright (c) 1997 Gensym Corporation.
@@ -25,7 +25,7 @@
 
 
 
-;;;; Primitive Operations for GL Foreign Function Call Out and Call In
+;;;; Primitive Operations for TL Foreign Function Call Out and Call In
 
 
 
@@ -38,19 +38,19 @@
 ;;; libraries against the set of foreign functions that have been defined, but
 ;;; not yet bound to C functions within the Lisp environment.
 
-;;; The macro `def-gl-foreign-function' defines a Lisp function that can be
+;;; The macro `def-tl-foreign-function' defines a Lisp function that can be
 ;;; called in order to call a C function.  When expanding during translation
 ;;; this macro has the side-effect of registering the given C name as the
 ;;; identifier for the Lisp symbol.
 
-(defmacro gl:def-gl-foreign-function (lisp-name-and-key-forms
+(defmacro tl:def-tl-foreign-function (lisp-name-and-key-forms
 				      &rest arg-names-and-types)
   (let* ((lisp-name (first lisp-name-and-key-forms))
 	 (key-forms (rest lisp-name-and-key-forms))
 	 (language-form (assq :language key-forms))
 	 (name-form (assq :name key-forms))
 	 (return-type-form (assq :return-type key-forms)))
-    `(def-gl-foreign-function-required-args
+    `(def-tl-foreign-function-required-args
 	 (,lisp-name
 	    (:language ,(if language-form
 			    (second language-form)
@@ -63,23 +63,23 @@
 			       nil)))
 	 ,@arg-names-and-types)))
 
-(defmacro def-gl-foreign-function-required-args ((lisp-name
+(defmacro def-tl-foreign-function-required-args ((lisp-name
 						   (&key (language :c))
 						   (&key name)
 						   (&key return-type))
 						 &rest arg-names-and-types)
   (unless (eq language :c)
-    (error "GL can only translate foreign calls to :C, not ~s" language))
+    (error "TL can only translate foreign calls to :C, not ~s" language))
   (let ((expansion
-	  `(gl:progn
-	     (gl:declaim (gl:ftype
-			   (gl:function
+	  `(tl:progn
+	     (tl:declaim (tl:ftype
+			   (tl:function
 			     ,(loop for (nil type) in arg-names-and-types
 				    collect (rewrite-foreign-keyword-type-names
 					      type))
 			     ,(rewrite-foreign-keyword-type-names return-type))
 			   ,lisp-name))
-	     (gl:declaim (foreign-c-identifier ,lisp-name ,name)))))
+	     (tl:declaim (foreign-c-identifier ,lisp-name ,name)))))
 ;    (format t "~%~%Made ~s~%" expansion)
     expansion))
 
@@ -144,13 +144,13 @@
 
 
 
-;;; The macro `gli::def-foreign-callable' is written to be compatible with the
+;;; The macro `tli::def-foreign-callable' is written to be compatible with the
 ;;; Lucid and Chestnut implementations.  It defines the function in question,
 ;;; using the same type transforms as are used for foreign-functions.  Note that
-;;; this is NOT being made into an exported symbol of GL until the Lisp code has
+;;; this is NOT being made into an exported symbol of TL until the Lisp code has
 ;;; been rewritten to be able to handle it.
 
-(defmacro gli::def-foreign-callable
+(defmacro tli::def-foreign-callable
     ((lisp-name &rest key-value-pairs)
      args
      &body decls-and-forms)
@@ -166,16 +166,16 @@
 			       (rewrite-foreign-keyword-type-names arg-type))))
 	 (translating? (eval-feature :translator))
 	 (lisp-implementation? underlying-def-foreign-callable))
-    `(gl:progn
+    `(tl:progn
        ,@(unless translating?
-	   `((gl:declaim
-	       (gl:ftype
-		 (gl:function ,(loop for arg-spec in transformed-args
+	   `((tl:declaim
+	       (tl:ftype
+		 (tl:function ,(loop for arg-spec in transformed-args
 				     collect (second arg-spec))
 			      ,transformed-return-type)
 		 ,lisp-name))))
        ,@(unless (or translating? (null name))
-	   `((gl:declaim
+	   `((tl:declaim
 	       (function-c-identifier ,lisp-name ,name))))
        ,(cond
 	   ((and (not translating?) lisp-implementation?)
@@ -187,11 +187,11 @@
 		       collect `(,arg-name ,(underlying-lisp-callable-type arg-type)))
 		,@decls-and-forms))
 	   (t
-	    `(gl:defun ,lisp-name ,(loop for (arg-name) in args collect arg-name)
-	       (gl:declare
-		 (gl:return-type ,transformed-return-type)
+	    `(tl:defun ,lisp-name ,(loop for (arg-name) in args collect arg-name)
+	       (tl:declare
+		 (tl:return-type ,transformed-return-type)
 		 ,@(loop for (arg-name arg-type) in transformed-args
-			 collect `(gl:type ,arg-type ,arg-name)))
+			 collect `(tl:type ,arg-type ,arg-name)))
 	       ,@decls-and-forms))))))
 
 
@@ -202,7 +202,7 @@
 ;;;; Inlineable Pseudo Functions
 
 
-(def-gl-macro gl:def-inlined-pseudo-function-with-side-effects
+(def-tl-macro tl:def-inlined-pseudo-function-with-side-effects
     (lisp-name args &body lisp-body)
   (unless (eval-feature :translator)
     (let* ((specs? (and (consp lisp-name) lisp-name))
@@ -234,10 +234,10 @@
 	    (make-c-name-expr ,c-name)
 	    (list ,@arg-names)))))))
 
-(def-gl-macro gl:def-inlined-pseudo-function (lisp-name args &body lisp-body)
-  `(gl:progn
-     (gl:declaim (gl:side-effect-free
+(def-tl-macro tl:def-inlined-pseudo-function (lisp-name args &body lisp-body)
+  `(tl:progn
+     (tl:declaim (tl:side-effect-free
 		   ,(if (consp lisp-name) (car lisp-name) lisp-name)))
-     (gl:def-inlined-pseudo-function-with-side-effects ,lisp-name ,args
+     (tl:def-inlined-pseudo-function-with-side-effects ,lisp-name ,args
        ,@lisp-body)))
 

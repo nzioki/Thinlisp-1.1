@@ -1,4 +1,4 @@
-(in-package "GL")
+(in-package "TL")
 
 ;;;; Module GENERIC-PRIM
 
@@ -25,7 +25,7 @@
 
 
 
-;;;; Generic Functions Mirroring GLT-PRIM
+;;;; Generic Functions Mirroring TLT-PRIM
 
 
 
@@ -35,7 +35,7 @@
 	   (return-type t))
   (macrolet ((aref-typecase (array-var array-index)
                `(typecase ,array-var
-                  ,@(loop for type-triple in gli::primitive-array-types
+                  ,@(loop for type-triple in tli::primitive-array-types
 			  for type = (first type-triple)
                           collect
                           `(,type
@@ -51,7 +51,7 @@
 	   (return-type t))
   (macrolet ((set-aref-typecase (array-var array-index new-value)
                `(typecase ,array-var
-                  ,@(loop for type-triple in gli::primitive-array-types
+                  ,@(loop for type-triple in tli::primitive-array-types
 			  for type = (first type-triple)
 			  for elt-type = (second type-triple)
                           collect
@@ -73,7 +73,7 @@
   (macrolet ((elt-typecase (sequence-var sequence-index)
                `(typecase ,sequence-var
 		  (list (nth ,sequence-index (the list ,sequence-var)))
-                  ,@(loop for type-triple in gli::primitive-array-types
+                  ,@(loop for type-triple in tli::primitive-array-types
 			  for type = (first type-triple)
                           collect
                           `(,type
@@ -90,7 +90,7 @@
                `(typecase ,sequence-var
 		  (list (setf (nth ,sequence-index (the list ,sequence-var))
 			      ,new-value))
-                  ,@(loop for type-triple in gli::primitive-array-types
+                  ,@(loop for type-triple in tli::primitive-array-types
 			  for type = (first type-triple)
 			  for elt-type = (second type-triple)
                           collect

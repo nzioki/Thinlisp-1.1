@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module MAKEFILES
 
@@ -31,7 +31,7 @@
 
 
 ;;; This module implements a simple makefile generator to bootstrap compilation
-;;; of GL translations.
+;;; of TL translations.
 
 ;;; The variable `makefile-element-alist' is an alist of symbols naming
 ;;; variables to be bound in a makefile, associated with the strings that should
@@ -160,13 +160,13 @@
 		     (makeup (if debuggable-makefile 'debug-link 'link-flags)))
 	     (format output "LIBS=")
 	     (loop for subsystem in (butlast (system-all-used-systems system)) do
-	       (glt-write-char #\space output)
+	       (tlt-write-char #\space output)
 	       (relative-path-to-directory
-		bin-dir (system-bin-dir (gl:find-system subsystem))
+		bin-dir (system-bin-dir (tl:find-system subsystem))
 		output)
 	       (format output "lib~(~a~).a" subsystem))
 	     (format output "~%SYSLIBS=~a~%" (makeup 'system-libs))))
-      (glt-write-string "OBJECTS=" output)
+      (tlt-write-string "OBJECTS=" output)
       (loop for file-count = 1 then (1+ file-count)
 	  for file-name in (system-extra-c-files system) do
 	(when (= (mod file-count files-per-line) 0)
@@ -182,15 +182,15 @@
 	  (format output " ~a~a" (module-file-name-string module) obj)))
             
       (format output "~%~%all : ~a~%~%clean :~%" target)
-      (glt-write-char #\tab output)
+      (tlt-write-char #\tab output)
       (format output "-rm *~a~%" obj)
-      (glt-write-char #\tab output)
+      (tlt-write-char #\tab output)
       (format output "-( if [ -f ~a ] ; then rm ~a ; fi )~%~%" target target)
       
       (format output "~a : ~a $(OBJECTS) $(LIBS)~%" target (pathname-name path))
-      (glt-write-char #\tab output)
+      (tlt-write-char #\tab output)
       (format output "-( if [ -f ~a ] ; then rm ~a ; fi )~%" target target)
-      (glt-write-char #\tab output)
+      (tlt-write-char #\tab output)
       (cond ((system-is-library-p system)
 	     (format output "$(ARCHIVE) ~a $(OBJECTS)~%~%" target))
 	    (t
@@ -201,14 +201,14 @@
 	      pattern obj pattern pattern (pathname-name path))
       (loop for file in (system-extra-h-files system) do
 	(format output " ../c/~a.h" file))
-      (glt-write-char #\newline output)
-      (glt-write-char #\tab output)
+      (tlt-write-char #\newline output)
+      (tlt-write-char #\tab output)
       (format output "$(CC) ~a $(CFLAGS) -I ../c"
 	      (makeup 'target))
-      (unless (eq system (gl:find-system 'gl))
+      (unless (eq system (tl:find-system 'tl))
 	(format output " -I")
 	(relative-path-to-directory
-	 bin-dir (system-c-dir (gl:find-system 'gl)) output))
+	 bin-dir (system-c-dir (tl:find-system 'tl)) output))
       (format output " ~a~%" (makeup 'first-dep)))
     
     ;; If the newly created makefile is different from the existing one,

@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module C-TYPES
 
@@ -81,7 +81,7 @@
 ;;; is used in a c-typedef-decl, the generated type name will be the normal
 ;;; structure name with "_<length>" appended to it, e.g. Sv_5.
 
-;;; C-type is a type used for GL end-users extending the C types that GL can
+;;; C-type is a type used for TL end-users extending the C types that TL can
 ;;; handle.  They contain either the string naming C type, or the list (pointer
 ;;; "<c-name>").  These C types are exactly the same form as the Lisp type that
 ;;; represents them.
@@ -195,7 +195,7 @@
 	(t
 	 (loop for entry in c-types-implementing-lisp-type-alist
 	       do
-	   (when (gl-subtypep lisp-type (cons-car entry))
+	   (when (tl-subtypep lisp-type (cons-car entry))
 	     (return (cons-cdr entry)))))))
 
 (defun lisp-type-tag (lisp-type)
@@ -223,10 +223,10 @@
 	   (loop for (type . tag)
 		     in '((null . 0) (fixnum . 1) (cons . 2) (character . 3))
 		 do
-	     (when (gl-subtypep type lisp-type)
+	     (when (tl-subtypep type lisp-type)
 	       (push tag tag-list)))
 	   (loop for (type . c-type) in c-types-implementing-lisp-type-alist do
-	     (when (gl-subtypep type lisp-type)
+	     (when (tl-subtypep type lisp-type)
 	       (push (c-type-tag c-type) tag-list)))))
     (sort (the list tag-list) #'<)))
     
@@ -271,7 +271,7 @@
 ;;; returns a variant of the C Func type which happens to hold pointers to
 ;;; functions of the given description.  This is similar to what is done for C
 ;;; constant arrays of Lisp types, but all of the currently defined C Func types
-;;; are defined explicitly in gl/c/glt.h.  This function signals an error if it
+;;; are defined explicitly in tl/c/tlt.h.  This function signals an error if it
 ;;; cannot return an appropriate type.
 
 (defun c-func-type-holding-function-type (c-function-type)
@@ -284,10 +284,10 @@
 		       always (eq type 'obj)))
       (translation-error "Cannot find appropriate function type for spec ~s"
 			 c-function-type))
-    (unless (<= arg-count gl:lambda-parameters-limit)
+    (unless (<= arg-count tl:lambda-parameters-limit)
       (translation-error
 	"Funcalls are limited to ~a arguments, a call had ~a."
-	gl:lambda-parameters-limit arg-count))
+	tl:lambda-parameters-limit arg-count))
     ;; The case statement optimizes the most common cases, but otherwise is
     ;; unneccesary.
     (list 'pointer
@@ -304,7 +304,7 @@
 	    (9 'func-9)
 	    (10 'func-10)
 	    (t
-	     (intern (format nil "FUNC-~a" arg-count) *gli-package*))))))
+	     (intern (format nil "FUNC-~a" arg-count) *tli-package*))))))
 
 
 

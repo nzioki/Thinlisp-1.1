@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module SPECIAL
 
@@ -37,56 +37,56 @@
 ;;; structurize-all, and the last purpose is a generalized walking form for
 ;;; calling a function on all macroexpanded subforms of a given form.
 
-;;; Each GL special form will have a macroexpander that expands into the Lisp
+;;; Each TL special form will have a macroexpander that expands into the Lisp
 ;;; version of the same form.  This allows us to use the underlying Lisp
-;;; compiler on forms that have been macroexpanded to functions and GL special
-;;; forms.  The function gl:macro-function will decline to return the
-;;; macro-function for any GL special form, thus preventing any of our
+;;; compiler on forms that have been macroexpanded to functions and TL special
+;;; forms.  The function tl:macro-function will decline to return the
+;;; macro-function for any TL special form, thus preventing any of our
 ;;; macroexpanders from expanding it.
 
-;;; The macro `declare-gl-special-forms' takes an &rest argument of symbols and
+;;; The macro `declare-tl-special-forms' takes an &rest argument of symbols and
 ;;; declaims that these name special forms, and it also defines macros that will
 ;;; expand calls to this forms in underlying Lisp systems into the special forms
-;;; with the same name in the GLI package, which uses the underlying Lisp.
+;;; with the same name in the TLI package, which uses the underlying Lisp.
 
-(defmacro declare-gl-special-forms (&rest special-form-names)
+(defmacro declare-tl-special-forms (&rest special-form-names)
   `(progn
-     (gl:declaim (special-form ,@(loop for arg in special-form-names
+     (tl:declaim (special-form ,@(loop for arg in special-form-names
 				     collect (if (consp arg) (car arg) arg))))
      ,@(loop for name-or-form in special-form-names
 	   for name = (if (consp name-or-form) (car name-or-form) name-or-form)
-	   for lisp-name = (intern (symbol-name name) *gli-package*)
-	   when (not (eq name lisp-name)) ; some symbols are imported into GL
+	   for lisp-name = (intern (symbol-name name) *tli-package*)
+	   when (not (eq name lisp-name)) ; some symbols are imported into TL
 	   collect
 	     (if (consp name-or-form)
 		 (cons 'defmacro name-or-form)
 	       `(defmacro ,name (&rest forms)
 		  (cons ',lisp-name forms))))))
 
-(declare-gl-special-forms
-  gl:block gl:catch gl:declare gl:go gl:if
-  gl:flet gl:labels
-  gl:let gl:let* gl:macrolet
+(declare-tl-special-forms
+  tl:block tl:catch tl:declare tl:go tl:if
+  tl:flet tl:labels
+  tl:let tl:let* tl:macrolet
   ;; multiple-value-call not implemented
-  gl:multiple-value-bind gl:values
-  gl:multiple-value-prog1 gl:progn
+  tl:multiple-value-bind tl:values
+  tl:multiple-value-prog1 tl:progn
   ;; progv not implemented
-  gl:quote gl:return-from gl:setq gl:throw gl:unwind-protect
+  tl:quote tl:return-from tl:setq tl:throw tl:unwind-protect
   ;; generic-flet, generic-labels not implemented
   ;; with-added-methods not implemented
-  gl:locally
+  tl:locally
   ;; load-time-eval not implemented
-  gl:and gl:or
+  tl:and tl:or
   )
 
 
 
 
-;;; The function `special-form-p' is a non-translatable GL function that returns
-;;; whether or not a symbol is a GL special-form.
+;;; The function `special-form-p' is a non-translatable TL function that returns
+;;; whether or not a symbol is a TL special-form.
 
-(defun gl:special-form-p (symbol)
-  (eq (gl:function-information symbol) :special-form))
+(defun tl:special-form-p (symbol)
+  (eq (tl:function-information symbol) :special-form))
 
 
 
@@ -96,20 +96,20 @@
 ;;; arguments, and a body of forms.  The function defined will be called with a
 ;;; form, an environment, and a walker-function.  This function should augment
 ;;; the environment in whatever way is required by this special form, call
-;;; gl:walk on all subforms, and return two values.  The first value is an
+;;; tl:walk on all subforms, and return two values.  The first value is an
 ;;; s-expression within orginal subforms replaced by the result of calling
-;;; gl:walk on them.  The second value is the augmented environment in effect
+;;; tl:walk on them.  The second value is the augmented environment in effect
 ;;; for walking the subforms, or NIL if the subforms were walked with the env
 ;;; given to the walker function.  (If there are several environments that could
 ;;; be returned, the most augmented should generally be chosen.)  The
-;;; walker-function is only passed on to calls to gl:walk from this function,
+;;; walker-function is only passed on to calls to tl:walk from this function,
 ;;; the caller of this function is reponsible for calling the walker function on
 ;;; the result of this function.
 
 (defmacro def-special-form-walker (name lambda-list &body body)
-  (let ((function-name (intern (format nil "WALK-~a" name) *gli-package*)))
+  (let ((function-name (intern (format nil "WALK-~a" name) *tli-package*)))
     `(progn
-       (gl:declaim (special-form-walker ,name ,function-name))
+       (tl:declaim (special-form-walker ,name ,function-name))
        (defun ,function-name ,lambda-list ,@body))))
 
 
@@ -145,13 +145,13 @@
      (let ((l-expr-type? (funcall trivial-lisp-result-type-function expr)))
        (upgraded-optimizable-type
 	 (or l-expr-type?
-	     (gl-type-of (eval expr))))))
+	     (tl-type-of (eval expr))))))
     ((and (consp expr)
 	  (symbolp (car expr)))
      (let ((operator (car expr)))
-       (cond ((eq operator 'gl:the)
+       (cond ((eq operator 'tl:the)
 	      (upgraded-optimizable-type (second expr)))
-	     ((eq operator 'gl:if)
+	     ((eq operator 'tl:if)
 	      (let* ((then-cons (cons-cddr expr))
 		     (else-cons? (cons-cdr then-cons)))
 		(most-specific-common-supertype
@@ -160,9 +160,9 @@
 		      (expression-result-type (cons-car else-cons?) env)
 		      'null)
  		  t)))
-	     ((memqp operator '(gl:progn gl:let gl:let* gl:multiple-value-bind))
+	     ((memqp operator '(tl:progn tl:let tl:let* tl:multiple-value-bind))
 	      (expression-result-type (car (last expr)) env))
-	     ((eq operator 'gl:multiple-value-prog1)
+	     ((eq operator 'tl:multiple-value-prog1)
 	      (expression-result-type (cons-second expr) env))
 	     (t
 	      (let ((ftype? (function-decl operator 'ftype env)))
@@ -181,7 +181,7 @@
 
 
 
-;;; This section implements the walker functions for all GL special forms.
+;;; This section implements the walker functions for all TL special forms.
 
 ;;; The function `walk-progn-body' is used by many of the special form walkers
 ;;; to walk a list of forms where the result of the last of them must satisfy
@@ -195,7 +195,7 @@
 	while form-cons
 	for next-form-cons? = (cdr form-cons)
 	for sub-form = (car form-cons)
-	collect (gl:walk sub-form env walker
+	collect (tl:walk sub-form env walker
 			 (if next-form-cons?
 			     'void
 			     required-type))))
@@ -203,14 +203,14 @@
 
 
 
-;;; The walker for `gl:block' adds information to the environment about the
+;;; The walker for `tl:block' adds information to the environment about the
 ;;; availability of the block with the given name and a given block-struct, and
 ;;; then it walks all its subforms.
 
-(def-special-form-walker gl:block (form env walker type)
+(def-special-form-walker tl:block (form env walker type)
   (let* ((name (cons-second form))
 	 (block-struct (make-block-scope type))
-	 (new-env (gl:augment-environment
+	 (new-env (tl:augment-environment
 		    env
 		    :declare `((block ,name ,block-struct))))
 	 (walked-forms
@@ -218,23 +218,23 @@
     (unless (symbolp name)
       (error "Block names must be symbols, not ~s" name))
     (if (= (block-scope-return-from-count block-struct) 0)
-	(cons 'gl:progn walked-forms)
-	(values `(gl:block ,name ,@walked-forms) new-env))))
+	(cons 'tl:progn walked-forms)
+	(values `(tl:block ,name ,@walked-forms) new-env))))
 
 
 
 
-;;; The walker for `gl:catch' treats it like a function.  It established no new
+;;; The walker for `tl:catch' treats it like a function.  It established no new
 ;;; environment and walks all subforms, including the evaluated catch tag form.
 
-(def-special-form-walker gl:catch (form env walker required-type)
-  (let ((inner-env (gl:augment-environment env :declare '((catch)))))
-    (unless (gl:declaration-information 'gl:allow-unwind-protect env)
+(def-special-form-walker tl:catch (form env walker required-type)
+  (let ((inner-env (tl:augment-environment env :declare '((catch)))))
+    (unless (tl:declaration-information 'tl:allow-unwind-protect env)
       (translation-warning
 	"Calling catch without an allow-unwind-protect declaration."))
     (values
-      `(gl:catch
-	   ,(gl:walk (cons-second form) env walker 't)
+      `(tl:catch
+	   ,(tl:walk (cons-second form) env walker 't)
 	 ,@(walk-progn-body
 	     (or (cons-cddr form) '(nil))
 	     inner-env walker required-type))
@@ -248,12 +248,12 @@
 
 
 
-;;; The walker for `gl:declare' should never be called.  If it is, then it means
+;;; The walker for `tl:declare' should never be called.  If it is, then it means
 ;;; that a surrounding form that could include declarations did not check for
 ;;; and previously process these declarations, or it means that a user placed a
 ;;; declaration in an inappropriate place in their code.
 
-(def-special-form-walker gl:declare (form env walker type)
+(def-special-form-walker tl:declare (form env walker type)
   (declare (ignore walker env type))
   (warn "The declare form ~s was placed in an inappropriate place or the ~
          surrounding form improperly handled it.  Ignoring it."
@@ -263,16 +263,16 @@
 
 
 
-;;; The walker for `gl:eval-when' walks the body forms and returns them as for
+;;; The walker for `tl:eval-when' walks the body forms and returns them as for
 ;;; progn.  The translator performs any needed compile-time evaluations.  Note
-;;; that the macro defining gl:eval-when is defined in ENV to resolve forward
+;;; that the macro defining tl:eval-when is defined in ENV to resolve forward
 ;;; referencing problems.
 
-(gl:declaim (special-form gl:eval-when))
+(tl:declaim (special-form tl:eval-when))
 
-(def-special-form-walker gl:eval-when (form env walker required-type)
+(def-special-form-walker tl:eval-when (form env walker required-type)
   (let ((situations (cons-second form)))
-    `(gl:eval-when ,situations
+    `(tl:eval-when ,situations
        ,@(walk-progn-body
 	   (or (cons-cddr form) '(nil)) env walker required-type))))
 
@@ -294,7 +294,7 @@
 (defun generate-local-function-name (prefix name env)
   (intern (format nil "~a~a-IN-~a-~a"
 		  prefix name
-		  (gl:declaration-information 'scope-name env)
+		  (tl:declaration-information 'scope-name env)
 		  (length (if (boundp 'local-functions-queue)
 			      local-functions-queue
 			      nil)))))
@@ -302,15 +302,15 @@
 
 
 
-;;; The walker for `gl:flet' defines new global functions to implement the local
+;;; The walker for `tl:flet' defines new global functions to implement the local
 ;;; functions, walks them, then augments the current environment and walks the
 ;;; body of the flet.  The FLET defined functions are walked within the current
 ;;; environment to pick up any lexical function definitions surrounding this
 ;;; one, however any lexical variable references won't work out.  We haven't
-;;; implemented true lexical closures in GL, so these functions just become new
+;;; implemented true lexical closures in TL, so these functions just become new
 ;;; global functions that are aliased to within the scope of the flet form.
 
-(def-special-form-walker gl:flet (form env walker required-type)
+(def-special-form-walker tl:flet (form env walker required-type)
   (multiple-value-bind (decl-forms body)
       (split-declarations-and-body (cons-cddr form))
     (let* ((func-forms (cons-second form))
@@ -324,24 +324,24 @@
 		   for named-form
 		       = (multiple-value-bind (decls body)
 			     (split-declarations-and-body (cons-cddr func-form))
-			   `(gl:defun ,new-name ,(cons-second func-form)
+			   `(tl:defun ,new-name ,(cons-second func-form)
 			      ,@decls
-			      (gl:block ,func-name
+			      (tl:block ,func-name
 				,@body)))
 		   do
 	       (when (boundp 'local-functions-queue)
 		 (setq local-functions-queue
 		       (nconc local-functions-queue
-			      (list (gl:walk named-form env walker t))))
+			      (list (tl:walk named-form env walker t))))
 		 (push `(local-function-global-name ,func-name ,new-name)
 		       new-func-name-decls))
 		   collect func-name))
 	   (new-env
-	     (gl:augment-environment
+	     (tl:augment-environment
 	       env :function func-names
 	       :declare (append decls new-func-name-decls))))
       (values
-	`(gl:flet ,(cond ((boundp 'local-functions-queue)
+	`(tl:flet ,(cond ((boundp 'local-functions-queue)
 			  nil)
 			 (t
 			  (when func-forms
@@ -356,17 +356,17 @@
 
 
 
-;;; The special form `named-lambda' is used in the expansion of the gl:defun
+;;; The special form `named-lambda' is used in the expansion of the tl:defun
 ;;; macro.  Since this macro is expanded for every function during the compile
 ;;; of a system, this is the place where we register which system and module
 ;;; this symbol is being defined within.
 
-(gl:declaim (special-form named-lambda))
+(tl:declaim (special-form named-lambda))
 
 (defmacro named-lambda (name lambda-list &body decls-and-body)
   `(progn
      ,@(when (and *current-system-name* *current-module-name*)
-	 `((gl:declaim (function-home ,(cons *current-system-name*
+	 `((tl:declaim (function-home ,(cons *current-system-name*
 					     *current-module-name*)
 				      ,name))))
      (defun ,name ,lambda-list ,@decls-and-body)))
@@ -377,21 +377,21 @@
 ;;; The constant `lambda-parameters-limit' is used in the implementation of
 ;;; apply to determine how many cases are needed for dispatching to
 ;;; funcall-internal.  Changed this to 20.  There is some overhead within
-;;; gl:apply for each possible argument, regardless of whether it is actually
+;;; tl:apply for each possible argument, regardless of whether it is actually
 ;;; passed.  CL says that this should be at least 50, which is fine for
 ;;; non-funcalled functions, but this variable is used to limit funcalled
 ;;; functions, and 20 works out just fine.  -jallard 7/17/97
 
-(defconstant gl:lambda-parameters-limit 20)
+(defconstant tl:lambda-parameters-limit 20)
 
 
 
 
 ;;; The value multiple-values-limit is reflected in the size of Values_buffer,
-;;; defined in glt/c/glt.c.  If this value changes here, it must be updated into
+;;; defined in tlt/c/tlt.c.  If this value changes here, it must be updated into
 ;;; the definition of Values_buffer.
 
-(defconstant gl:multiple-values-limit 20)
+(defconstant tl:multiple-values-limit 20)
 
 
 
@@ -408,8 +408,8 @@
 (defun lambda-list-names-and-specials (lambda-list)
   (when (loop for elt in lambda-list
 	      always (and (symbolp elt)
-			  (not (memqp elt gl:lambda-list-keywords))
-			  (not (eq (gl:variable-information elt) :special))))
+			  (not (memqp elt tl:lambda-list-keywords))
+			  (not (eq (tl:variable-information elt) :special))))
     (return-from lambda-list-names-and-specials
       (values lambda-list lambda-list nil)))
   (loop with new-lambda-list = nil
@@ -420,10 +420,10 @@
 			((symbolp (cons-car lambda-elt)) (cons-car lambda-elt))
 			(t (cons-second (cons-car lambda-elt))))
 	do
-    (cond ((memqp lambda-elt gl:lambda-list-keywords)
+    (cond ((memqp lambda-elt tl:lambda-list-keywords)
 	   (push lambda-elt new-lambda-list))
-	  ((eq (gl:variable-information var) :special)
-	   (let ((new-arg (intern (format nil "~a-INIT" var) *gli-package*))
+	  ((eq (tl:variable-information var) :special)
+	   (let ((new-arg (intern (format nil "~a-INIT" var) *tli-package*))
 		 (new-lambda-elt
 		   (if (consp lambda-elt) (copy-list lambda-elt) lambda-elt)))
 	     (push new-arg variables)
@@ -445,7 +445,7 @@
 
 (def-special-form-walker named-lambda (form env walker required-type)
   (declare (ignore required-type))
-  (gl:destructuring-bind-strict (nil name original-lambda-list . decls-and-body)
+  (tl:destructuring-bind-strict (nil name original-lambda-list . decls-and-body)
     form
     (multiple-value-bind (decl-forms body)
 	(split-declarations-and-body decls-and-body)
@@ -456,16 +456,16 @@
 		 (nconc
 		   (list `(scope-name ,name)
 			 ;; Mask the top-level permanent area.
-			 '(gl:consing-area nil))
+			 '(tl:consing-area nil))
 		   (loop for decl in decl-forms appending (cons-cdr decl))
 		   (loop for var in variables
 			 collect
 			 (list 'variable-binding-structure
 			       var (make-variable-binding nil)))))
-	       (declared-env (gl:augment-environment
+	       (declared-env (tl:augment-environment
 			       env :variable variables :declare declares))
 	       (return-type?
-		 (or (gl:declaration-information 'gl:return-type declared-env)
+		 (or (tl:declaration-information 'tl:return-type declared-env)
 		     (third (function-decl name 'ftype declared-env))
 		     '*)))
 	  (values
@@ -485,7 +485,7 @@
 				(init (if (consp lambda-elt)
 					  (cons-second lambda-elt)
 					  nil))
-				(walked-init (gl:walk init env walker type)))
+				(walked-init (tl:walk init env walker type)))
 			   (additional-variable-setter-type
 			     var declared-env
 			     (expression-result-type walked-init env))
@@ -495,29 +495,29 @@
 			   (setq optional? t))
 			 lambda-elt)))
 	       ,@decl-forms
-	       ,(gl:walk
+	       ,(tl:walk
 		  (if specials-and-inits
-		      `(gl:let* ,specials-and-inits
-			 (gl:block ,name ,@body))
-		      `(gl:block ,name ,@body))
+		      `(tl:let* ,specials-and-inits
+			 (tl:block ,name ,@body))
+		      `(tl:block ,name ,@body))
 		  declared-env walker return-type?))
 	    declared-env))))))
 
 
 
 
-;;; The walker for `gl:function' transforms embedded lambdas into functions
+;;; The walker for `tl:function' transforms embedded lambdas into functions
 ;;; bound on the local-functions-queue, and then returns a function form
 ;;; referencing that new function.  If the embedded reference is a symbol naming
 ;;; a local function within the current environment, the function form is
 ;;; transformed into a reference to the global function name of that local
-;;; function.  Note that a macro for this is not needed, since gl:function is EQ
+;;; function.  Note that a macro for this is not needed, since tl:function is EQ
 ;;; to lisp:function.  This is required unless we attempt to change the
-;;; readtable to have #' turn into gl:function, which is unneccessary.
+;;; readtable to have #' turn into tl:function, which is unneccessary.
 
-(gl:declaim (special-form gl:function))
+(tl:declaim (special-form tl:function))
 
-(def-special-form-walker gl:function (form env walker required-type)
+(def-special-form-walker tl:function (form env walker required-type)
   (declare (ignore required-type))
   (let ((func (cons-second form)))
     (cond
@@ -529,17 +529,17 @@
 		   (nconc
 		     local-functions-queue
 		     (list
-		       (gl:walk `(gl:defun ,new-name ,@(cons-cdr func))
+		       (tl:walk `(tl:defun ,new-name ,@(cons-cdr func))
 				env walker t))))
-	     `(gl:function ,new-name))
+	     `(tl:function ,new-name))
 	   form))
       ((symbolp func)
        (multiple-value-bind (type? local? decls?)
-	   (gl:function-information func env)
+	   (tl:function-information func env)
 	 (if (and local?
 		  (eq type? :function)
 		  (assq 'local-function-global-name decls?))
-	     `(gl:function ,(cdr (assq 'local-function-global-name decls?)))
+	     `(tl:function ,(cdr (assq 'local-function-global-name decls?)))
 	     form)))
       (t
        ;; Can we get this case?
@@ -550,14 +550,14 @@
 
 
 
-;;; The walker for `gl:go' attempts to find an enter in the env for the given
+;;; The walker for `tl:go' attempts to find an enter in the env for the given
 ;;; tag and if found enters itself as a user of that tag (the user of tag stuff
 ;;; isn't ready yet  -jra 4/12/95).
 
-(def-special-form-walker gl:go (form env walker required-type)
+(def-special-form-walker tl:go (form env walker required-type)
   (declare (ignore walker required-type))
   (let* ((tag-name (cons-second form))
-	 (exit-scope (gl:declaration-information 'exit-scope env))
+	 (exit-scope (tl:declaration-information 'exit-scope env))
 	 (found-tag? (loop for entry in exit-scope
 			   thereis (and (eq (cons-car entry) 'tagbody-tags)
 					(assq tag-name (cons-cdr entry))))))
@@ -578,25 +578,25 @@
 
 
 
-;;; The walker for `gl:if' walks its subforms and returns them.  If there is no
+;;; The walker for `tl:if' walks its subforms and returns them.  If there is no
 ;;; else clause, a NIL clause is given.
 
-(def-special-form-walker gl:if (form env walker required-type)
+(def-special-form-walker tl:if (form env walker required-type)
   (when (cddddr form)
     (error "Too many forms in IF, only one else clause allowed: ~s"
 	   form))
-  `(gl:if ,(gl:walk (cons-second form) env walker t)
-	  ,(gl:walk (cons-third form) env walker required-type)
-	  ,(gl:walk (fourth form) env walker required-type)))
+  `(tl:if ,(tl:walk (cons-second form) env walker t)
+	  ,(tl:walk (cons-third form) env walker required-type)
+	  ,(tl:walk (fourth form) env walker required-type)))
 
 
 
 
-;;; The walker for `gl:labels' defines a set of local potentially mutually
+;;; The walker for `tl:labels' defines a set of local potentially mutually
 ;;; recursive functions, walking them in an environment that defines each of
 ;;; them, and then it walks its subforms.
 
-(def-special-form-walker gl:labels (form env walker required-type)
+(def-special-form-walker tl:labels (form env walker required-type)
   (multiple-value-bind (decl-forms body)
       (split-declarations-and-body (cons-cddr form))
     (let* ((func-forms (cons-second form))
@@ -607,7 +607,7 @@
 				    "LABELS-" func-name env)
 		   collect `(local-function-global-name ,func-name ,new-name)))
 	   (labeled-functions-env
-	     (gl:augment-environment
+	     (tl:augment-environment
 	       env
 	       :function (loop for (func-name) in func-forms collect func-name)
 	       :declare (append
@@ -616,11 +616,11 @@
 				(loop for decl in (cons-cdr form)
 				      when (and (consp decl)
 						(memq (car decl)
-						      '(gl:inline gl:notinline gl:ftype)))
+						      '(tl:inline tl:notinline tl:ftype)))
 					collect decl))
 			  new-func-name-decls)))
 	   (new-env
-	     (gl:augment-environment
+	     (tl:augment-environment
 	       env
 	       :function (loop for (func-name) in func-forms collect func-name)
 	       :declare (append decls new-func-name-decls))))
@@ -631,16 +631,16 @@
 	  (setq local-functions-queue
 		(nconc local-functions-queue
 		       (list
-			 (gl:walk
+			 (tl:walk
 			   (multiple-value-bind (decls body)
 			       (split-declarations-and-body (cons-cddr func-form))
-			     `(gl:defun ,new-name ,(cons-second func-form)
+			     `(tl:defun ,new-name ,(cons-second func-form)
 				,@decls
 				(block ,(cons-first func-form)
 				  ,@body)))
 			   labeled-functions-env walker t))))))
       (values
-	`(gl:labels ,(if (boundp 'local-functions-queue)
+	`(tl:labels ,(if (boundp 'local-functions-queue)
 			 nil
 			 func-forms)
 	   ,@decl-forms
@@ -663,8 +663,8 @@
 
 ;;; The following forms can be transformed into dynamic-extent consing.
 
-;;;   gl:list  => list-dynamic-extent
-;;;   gl:cons  => cons-dynamic-extent
+;;;   tl:list  => list-dynamic-extent
+;;;   tl:cons  => cons-dynamic-extent
 
 ;;; This function is given the variable symbol being initialized, the init-form
 ;;; given by the user, the environment in which the init-form will be evaluated,
@@ -678,10 +678,10 @@
     ;; Attempt a transform.
     (when (consp given-init)
       (case (cons-car given-init)
-	((gl:list)
+	((tl:list)
 	 (setq transformed-form?
 	       (cons 'list-dynamic-extent (cons-cdr given-init))))
-	((gl:cons)
+	((tl:cons)
 	 (setq transformed-form?
 	       (cons 'cons-dynamic-extent (cons-cdr given-init))))))
     ;; If a transform was found, return it.  Else, perform one macroexpansion
@@ -690,7 +690,7 @@
     (if transformed-form?
 	transformed-form?
 	(multiple-value-bind (expanded-form any-expansion?)
-	    (gl:macroexpand-1 given-init env)
+	    (tl:macroexpand-1 given-init env)
 	  (cond (any-expansion?
 		 (transform-init-for-dynamic-extent
 		   var expanded-form env new-env))
@@ -715,11 +715,11 @@
 
 
 
-;;; The special form walker for `gl:let' walks each variable initialization form
+;;; The special form walker for `tl:let' walks each variable initialization form
 ;;; in the surrounding environment of the entire let form, then walks the body
 ;;; in the scope of the new variable bindings and the declarations in the body.
 
-(def-special-form-walker gl:let (form env walker required-type)
+(def-special-form-walker tl:let (form env walker required-type)
   (multiple-value-bind (decl-forms body)
       (split-declarations-and-body (cons-cddr form))
     (let* ((bindings (cons-second form))
@@ -727,7 +727,7 @@
 	     (loop for bind in bindings
 		   collect (if (consp bind) (car bind) bind)))
 	   (env-with-decls
-	     (gl:augment-environment
+	     (tl:augment-environment
 	       env :variable variables
 	       :declare
 	       (append
@@ -739,7 +739,7 @@
 		       for var-init-struct?
 			   = (if var-init?
 				 (multiple-value-bind (b l d)
-				     (gl:variable-information var-init? env)
+				     (tl:variable-information var-init? env)
 				   (declare (ignore l))
 				   (if (eq b :lexical)
 				       (cdr (assq 'variable-binding-structure d)))))
@@ -764,12 +764,12 @@
 	   ;; this loop.
 	   (special-variables
 	     (loop for var in variables
-		   when (eq (gl:variable-information var env-with-decls)
+		   when (eq (tl:variable-information var env-with-decls)
 			    :special)
 		     collect var))
 	   (new-env
 	     (if special-variables
-		 (gl:augment-environment
+		 (tl:augment-environment
 		   env-with-decls
 		   :declare `((global-variable-binding ,@special-variables)))
 		 env-with-decls)))
@@ -777,13 +777,13 @@
 	(cond
 	  ((and (null bindings)
 		(null decl-forms))
-	   `(gl:progn
+	   `(tl:progn
 	      ,@(walk-progn-body body new-env walker required-type)))
 	  ((null bindings)
-	   `(gl:locally ,@decl-forms
+	   `(tl:locally ,@decl-forms
 	      ,@(walk-progn-body body new-env walker required-type)))
 	  (t
-	   `(gl:let ,(loop for bind in bindings
+	   `(tl:let ,(loop for bind in bindings
 			   for var = (if (consp bind) (car bind) bind)
 			   for var-type = (or (variable-decl var 'type new-env)
 					      t)
@@ -791,7 +791,7 @@
 			       = (if (and (consp bind)
 					  (or (not (null (second bind)))
 					      (eq var-type t)
-					      (gl-typep nil var-type)))
+					      (tl-typep nil var-type)))
 				     (second bind)
 				     (default-init-for-lisp-type var-type))
 			   for transformed-init
@@ -800,7 +800,7 @@
 				       var given-init env new-env)
 				     given-init)
 			   for walked-init
-			       = (gl:walk transformed-init env walker var-type)
+			       = (tl:walk transformed-init env walker var-type)
 			   do
 		       (additional-variable-setter-type
 			 var new-env
@@ -821,7 +821,7 @@
 
 (defun decls-for-variable (var decls env)
   (let ((variable-declarations
-	  (gl:declaration-information 'gl:variable-declaration env))
+	  (tl:declaration-information 'tl:variable-declaration env))
 	(decls-to-return nil))
     (loop for decl in decls
 	  for decl-type = (cons-car decl)
@@ -837,11 +837,11 @@
 
 
 
-;;; The special form walker for `gl:let*' walks each variable init form in turn,
+;;; The special form walker for `tl:let*' walks each variable init form in turn,
 ;;; incrementally building up the environment with the declarations that apply
 ;;; to the variables being bound.
 
-(def-special-form-walker gl:let* (form env walker required-type)
+(def-special-form-walker tl:let* (form env walker required-type)
   (multiple-value-bind (decl-forms body)
       (split-declarations-and-body (cons-cddr form))
     (loop with decls = (loop for form in decl-forms append (cons-cdr form))
@@ -857,7 +857,7 @@
 	  for var-init-struct?
 	      = (if var-init?
 		    (multiple-value-bind (b l d)
-			(gl:variable-information var-init? init-env)
+			(tl:variable-information var-init? init-env)
 		      (declare (ignore l))
 		      (if (eq b :lexical)
 			  (cdr (assq 'variable-binding-structure d)))))
@@ -866,7 +866,7 @@
 		    (list var-init? var-init-struct? (list 0) (list 0)))
 	  for struct = (make-variable-binding nil)
 	  for init-env-with-decls
-	      = (gl:augment-environment
+	      = (tl:augment-environment
 		  init-env :variable (list var)
 		  :declare
 		  `(,@(decls-for-variable var decls init-env)
@@ -875,9 +875,9 @@
 			    `((setq-counter ,var ,(third init-info?))
 			      (setq-counter ,var-init? ,(fourth init-info?))))))
 	  for next-env
-	      = (if (eq (gl:variable-information var init-env-with-decls)
+	      = (if (eq (tl:variable-information var init-env-with-decls)
 			:special)
-		    (gl:augment-environment
+		    (tl:augment-environment
 		      init-env-with-decls
 		      :declare `((global-variable-binding ,var)))
 		    init-env-with-decls)
@@ -891,7 +891,7 @@
 		      var init init-env next-env)
 		    init)
 	  for walked-init
-	      = (gl:walk transformed-init init-env walker var-type)
+	      = (tl:walk transformed-init init-env walker var-type)
 	  do
       (when init-info?
 	(setf (variable-binding-init-info? struct) init-info?))
@@ -900,20 +900,20 @@
 	(expression-result-type walked-init init-env))
 	  collect (list var walked-init) into walked-bindings
 	  finally
-	    (setq final-env (gl:augment-environment final-env :declare decls))
+	    (setq final-env (tl:augment-environment final-env :declare decls))
 	    (return
 	      (values
 		(cond
 		  ((and (null walked-bindings)
 			(null decl-forms))
-		   `(gl:progn
+		   `(tl:progn
 		      ,@(walk-progn-body body final-env walker required-type)))
 		  ((null walked-bindings)
-		   `(gl:locally
+		   `(tl:locally
 			,@decl-forms
 		      ,@(walk-progn-body body final-env walker required-type)))
 		  (t
-		   `(gl:let* ,walked-bindings
+		   `(tl:let* ,walked-bindings
 		      ,@decl-forms
 		      ,@(walk-progn-body body final-env walker required-type))))
 		final-env)))))
@@ -923,23 +923,23 @@
 ;;; The special form walker for macrolet augments the environment to contain the
 ;;; new macro definitions, then walks its body.
 
-(def-special-form-walker gl:macrolet (form env walker required-type)
+(def-special-form-walker tl:macrolet (form env walker required-type)
   (multiple-value-bind (decl-forms body)
       (split-declarations-and-body (cons-cddr form))
     (loop with macro-forms = (cons-second form)
 	  with decls = (loop for form in decl-forms append (cons-cdr form))
 	  for macro-form in macro-forms
 	  for macro-name = (cons-car macro-form)
-	  for parsed-defn = (gl:parse-macro macro-name (cons-second macro-form)
+	  for parsed-defn = (tl:parse-macro macro-name (cons-second macro-form)
 					    (cons-cddr macro-form) env)
 	  for macro-defn = (eval `(function ,parsed-defn))
 	  collect (list macro-name macro-defn) into new-macros
 	  finally
-	    (let ((new-env (gl:augment-environment
+	    (let ((new-env (tl:augment-environment
 			     env :macro new-macros :declare decls)))
 	      (return
 		(values
-		  `(gl:macrolet ,macro-forms
+		  `(tl:macrolet ,macro-forms
 		     ,@decl-forms
 		     ,@(walk-progn-body body new-env walker required-type))
 		  new-env))))))
@@ -949,27 +949,27 @@
 ;; p. 153.  This loses the use of local macros and symbol-macros within the body
 ;; of the new local macros, though local macros and symbols-macros are applied
 ;; to the expansion results of the macros.  If we feel compelled to fix this,
-;; then gl:parse-macro should be expanded to perform a walk of the body of the
+;; then tl:parse-macro should be expanded to perform a walk of the body of the
 ;; macro within the scope of the given environment.  -jra 5/4/95
 
 
 
 
-;;; The walker for `gl:multiple-value-bind' walks the value initialization form
+;;; The walker for `tl:multiple-value-bind' walks the value initialization form
 ;;; in the surrounding environment and then walks the body in the scope of the
 ;;; new variable bindings and declarations in the body.  Note that
 ;;; multiple-value-bind is not specifically a special form, though a comment at
 ;;; the bottom of CLtL2, p. 72 indicates that it is generally a good idea for
 ;;; compilers to treat it that way.  I agree.  -jra 11/9/95
 
-(def-special-form-walker gl:multiple-value-bind (form env walker required-type)
+(def-special-form-walker tl:multiple-value-bind (form env walker required-type)
   (multiple-value-bind (decl-forms body)
       (split-declarations-and-body (cons-cdddr form))
     (let* ((variables (cons-second form))
 	   (decls (loop for form in decl-forms
 			append (cons-cdr form)))
 	   (env-with-decls
-	     (gl:augment-environment
+	     (tl:augment-environment
 	       env :variable variables
 	       :declare
 	       (append decls (loop for var in variables
@@ -981,7 +981,7 @@
 	   ;; this loop.
 	   (special-variables
 	     (loop for var in variables
-		   when (eq (gl:variable-information var env-with-decls)
+		   when (eq (tl:variable-information var env-with-decls)
 			    :special)
 		     collect var
 		   do
@@ -992,7 +992,7 @@
 		   var))))
 	   (new-env
 	     (if special-variables
-		 (gl:augment-environment
+		 (tl:augment-environment
 		   env-with-decls
 		   :declare `((global-variable-binding ,@special-variables)))
 		 env-with-decls))
@@ -1006,7 +1006,7 @@
 		(or (variable-decl (car variables) 'type new-env) t))
 	       (t 'void)))
 	   (walked-init-form
-	     (gl:walk (cons-third form) env walker init-required-type))
+	     (tl:walk (cons-third form) env walker init-required-type))
 	   (walked-init-result-type (expression-result-type walked-init-form env)))
       (cond ((and (consp walked-init-result-type)
 		  (eq (cons-car walked-init-result-type) 'values))
@@ -1018,7 +1018,7 @@
 	     (additional-variable-setter-type
 	       (car variables) new-env walked-init-result-type)))
       (values
-	`(gl:multiple-value-bind ,variables ,walked-init-form
+	`(tl:multiple-value-bind ,variables ,walked-init-form
 	   ,@decl-forms
 	   ,@(walk-progn-body body new-env walker required-type))
 	new-env))))
@@ -1026,49 +1026,49 @@
 
 
 
-;;; The walker for `gl:multiple-value-prog1' walks the first form given the required
+;;; The walker for `tl:multiple-value-prog1' walks the first form given the required
 ;;; type of the walker as a whole.  The remaining forms are then walked with a
 ;;; void required type.
 
-(def-special-form-walker gl:multiple-value-prog1 (form env walker required-type)
-  `(gl:multiple-value-prog1
-       ,(gl:walk (cons-second form) env walker required-type)
+(def-special-form-walker tl:multiple-value-prog1 (form env walker required-type)
+  `(tl:multiple-value-prog1
+       ,(tl:walk (cons-second form) env walker required-type)
      ,@(walk-progn-body (cons-cddr form) env walker 'void)))
 
 
 
 
-;;; The walker for `gl:progn' is a simple as they get (though I got it wrong the
-;;; first time by expanding into a let, not a gl:let  -jra 11/9/95).
+;;; The walker for `tl:progn' is a simple as they get (though I got it wrong the
+;;; first time by expanding into a let, not a tl:let  -jra 11/9/95).
 
-(def-special-form-walker gl:progn (form env walker required-type)
-  `(gl:progn ,@(walk-progn-body (cons-cdr form) env walker required-type)))
-
-
+(def-special-form-walker tl:progn (form env walker required-type)
+  `(tl:progn ,@(walk-progn-body (cons-cdr form) env walker required-type)))
 
 
-;;; The walker for `gl:quote' returns the given form with no walking done.
 
-(def-special-form-walker gl:quote (form env walker required-type)
+
+;;; The walker for `tl:quote' returns the given form with no walking done.
+
+(def-special-form-walker tl:quote (form env walker required-type)
   (declare (ignore env walker))
-  (gl:destructuring-bind-strict (nil value) form
+  (tl:destructuring-bind-strict (nil value) form
     (unless (or (explicit-lisp-to-c-type-p required-type)
-		(gl-typep value required-type))
+		(tl-typep value required-type))
       (warn "~s does not return a value of type ~s." form required-type))
     form))
 
 
 
 
-;;; The walker for `gl:return-from' finds the surrounding block structure that
+;;; The walker for `tl:return-from' finds the surrounding block structure that
 ;;; matches the named block, fetches its required type, and walks the value
 ;;; returning form giving that required type.  Note that the value form is
 ;;; optional, defaulting to NIL.
 
-(def-special-form-walker gl:return-from (form env walker required-type)
+(def-special-form-walker tl:return-from (form env walker required-type)
   (declare (ignore required-type))
   (let* ((tag (cons-second form))
-	 (exit-scope (gl:declaration-information 'exit-scope env))
+	 (exit-scope (tl:declaration-information 'exit-scope env))
 	 (block-struct? (loop for decl in exit-scope
 			      when (and (eq (cons-car decl) 'block)
 					(eq (cons-second decl) tag))
@@ -1076,8 +1076,8 @@
       (cond
 	(block-struct?
 	 (incf (block-scope-return-from-count block-struct?))
-	 `(gl:return-from ,tag
-	    ,(gl:walk
+	 `(tl:return-from ,tag
+	    ,(tl:walk
 	       (third form) env walker
 	       (block-scope-lisp-required-type block-struct?))))
 	(t
@@ -1086,13 +1086,13 @@
 	 ;; complain and just return the walked form.
 	 (unless (global-environment-p env)
 	   (warn "~s unable to find block for ~s." form tag))
-	 `(gl:return-from ,tag
-	    ,(gl:walk (third form) env walker '*))))))
+	 `(tl:return-from ,tag
+	    ,(tl:walk (third form) env walker '*))))))
 
 
 
 
-;;; The walker for `gl:setq' first checks if there are multiple setting pairs.
+;;; The walker for `tl:setq' first checks if there are multiple setting pairs.
 ;;; If so, it then recurses into a walk of a progn with one call to setq for
 ;;; each pair.  If there is only one pair, it then checks if the variable to be
 ;;; set is defined as a symbol-macro.  If so, then this call it transformed into
@@ -1101,25 +1101,25 @@
 ;;; is walked and the binding structure for the variable is updated with the
 ;;; result type of the new value form.
 
-(def-special-form-walker gl:setq (form env walker required-type)
+(def-special-form-walker tl:setq (form env walker required-type)
   (let ((forms-count (length (cons-cdr form))))
     (cond ((oddp forms-count)
 	   (error "~s contains an odd number of arguments." form))
 	  ((/= forms-count 2)
-	   `(gl:progn
+	   `(tl:progn
 	      ,@(loop for (var value) on (cons-cdr form) by #'cddr
-		      collect (gl:walk `(gl:setq ,var ,value)
+		      collect (tl:walk `(tl:setq ,var ,value)
 				       env walker required-type))))
 	  (t
 	   (let ((var (cons-second form))
 		 (value (cons-third form)))
 	     (multiple-value-bind (type? local? decls?)
-		 (gl:variable-information var env)
+		 (tl:variable-information var env)
 	       (declare (ignore local?))
 	       (ecase type?
 		 ((:lexical :special)
 		  (let ((walked-new-value
-			  (gl:walk value env walker
+			  (tl:walk value env walker
 				   (duplicate-type-declaration
 				     (or (cdr (assq 'type decls?)) t)
 				     required-type))))
@@ -1129,9 +1129,9 @@
 		    (additional-variable-setter-type
 		      var env
 		      (expression-result-type walked-new-value env))
-		    `(gl:setq ,var ,walked-new-value)))
+		    `(tl:setq ,var ,walked-new-value)))
 		 ((:symbol-macro)
-		  `(gl:progn ,(gl:walk `(gl:setf ,var ,value)
+		  `(tl:progn ,(tl:walk `(tl:setf ,var ,value)
 				       env walker required-type)))
 		 ((nil)
 		  ;; Give a warning for variables that seem clearly undefined.
@@ -1140,29 +1140,29 @@
 		  ;; development only code.
 		  (unless (boundp var)
 		    (warn "~s setting an undefined variable." form))
-		  `(gl:setq ,var ,(gl:walk value env walker required-type)))
+		  `(tl:setq ,var ,(tl:walk value env walker required-type)))
 		 ((:constant)
 		  (warn "~s setting constant variable." form)
-		  `(gl:setq ,var
-			    ,(gl:walk value env walker required-type))))))))))
+		  `(tl:setq ,var
+			    ,(tl:walk value env walker required-type))))))))))
 
 
 
 
-;;; The walker for `gl:tagbody' registers as tags all symbols and fixnums found
+;;; The walker for `tl:tagbody' registers as tags all symbols and fixnums found
 ;;; at its top level, then walks the remaining forms inside the augmented
 ;;; environment.  It also loops for tag and go signatures that indicate looping
 ;;; statements.  If found, these are rewritten to use the for-loop or while-loop
 ;;; special forms.
 
-(gl:declaim (special-form gl:tagbody))
+(tl:declaim (special-form tl:tagbody))
 
-(defmacro gl:tagbody (&rest tags-and-forms)
+(defmacro tl:tagbody (&rest tags-and-forms)
   `(tagbody
       ,@(loop for tag-or-form in tags-and-forms
 	      when tag-or-form collect tag-or-form)))
 
-(def-special-form-walker gl:tagbody (form env walker required-type)
+(def-special-form-walker tl:tagbody (form env walker required-type)
   (declare (ignore required-type))
   ;; Eliminate NILs at top level, Lucid complains about them.  Also eliminate
   ;; any go statements to tags that immediately follow the go.
@@ -1172,7 +1172,7 @@
 		    for tagbody-elt = (cons-car elt-cons)
 		    when (and tagbody-elt
 			      (not (and (consp tagbody-elt)
-					(eq (car tagbody-elt) 'gl:go)
+					(eq (car tagbody-elt) 'tl:go)
 					(consp (cdr tagbody-elt))
 					(eq (second tagbody-elt)
 					    (second elt-cons)))))
@@ -1182,45 +1182,45 @@
   (when (loop for subform-cons = (cons-cdr form) then (cons-cdr subform-cons)
 	      while subform-cons
 	      do
-	  (when (eq (cons-car subform-cons) 'gl::next-loop)
+	  (when (eq (cons-car subform-cons) 'tl::next-loop)
 	    (setq subform-cons (cons-cdr subform-cons))
 	    (return (loop while subform-cons
 			  for subform = (cons-car subform-cons)
 			  never (atom subform)
-			  thereis (equal subform '(gl:go gl::next-loop))
+			  thereis (equal subform '(tl:go tl::next-loop))
 			  do
 		      (setf subform-cons (cons-cdr subform-cons))))))
     (setq form (rewrite-tagbody-for-loops form env)))
   (let* ((tag-decls (loop for item in (cons-cdr form)
 			  when (atom item)
 			    collect (list item (make-tagbody-scope item))))
-	 (new-env (gl:augment-environment
+	 (new-env (tl:augment-environment
 		    env :declare (list (cons 'tagbody-tags tag-decls)))))
     (values
-      `(gl:tagbody
+      `(tl:tagbody
 	  ,@(loop for item in (cons-cdr form)
 		  collect
 		  (if (atom item)
 		      item
-		      (gl:walk item new-env walker 'void))))
+		      (tl:walk item new-env walker 'void))))
       new-env)))
 
 (defun rewritable-when-end-test-p (form env)
   (and (consp form)
-       (eq (cons-car form) 'gl:when)
+       (eq (cons-car form) 'tl:when)
        (= (length form) 3)
-       (gl:destructuring-bind-strict (nil test body)
+       (tl:destructuring-bind-strict (nil test body)
 	 form
-	 (and (equal body '(gl:go gl::end-loop))
+	 (and (equal body '(tl:go tl::end-loop))
 	      (translates-as-c-expr-p test env)))))
 
 (defun rewritable-unless-end-test-p (form env)
   (and (consp form)
-       (eq (cons-car form) 'gl:unless)
+       (eq (cons-car form) 'tl:unless)
        (= (length form) 3)
-       (gl:destructuring-bind-strict (nil test body)
+       (tl:destructuring-bind-strict (nil test body)
 	 form
-	 (and (equal body '(gl:go gl::end-loop))
+	 (and (equal body '(tl:go tl::end-loop))
 	      (translates-as-c-expr-p test env)))))
 
 (defun translates-as-c-expr-p (form env)
@@ -1229,18 +1229,18 @@
       (and (consp form)
 	   (let ((operator (cons-car form)))
 	     (and (or (memqp operator
-			     '(gl:null gl:atom gl:consp gl:eq gl:eql gl:equal
+			     '(tl:null tl:atom tl:consp tl:eq tl:eql tl:equal
 			       eq-trans eql-trans equal-trans
-			       gl:and gl:or gl:not not-unbound-value-p))
+			       tl:and tl:or tl:not not-unbound-value-p))
 		      ;; For the following operators, type restrictions on
 		      ;; arguments could cause type check statements when we are
 		      ;; translating safe.  Only allow these when unsafe.  -jra
 		      ;; 2/23/96
-		      (and (/= (gl:optimize-information 'safety env) 3)
+		      (and (/= (tl:optimize-information 'safety env) 3)
 			   (memqp operator
-				  '(gl:< gl:<= gl:= gl:>= gl:> gl:+ gl:- gl:1+
-				    gl:1- gl:car-of-cons gl:cdr-of-cons
-				    gl:plusp))))
+				  '(tl:< tl:<= tl:= tl:>= tl:> tl:+ tl:- tl:1+
+				    tl:1- tl:car-of-cons tl:cdr-of-cons
+				    tl:plusp))))
 		  (loop for subform in (cons-cdr form)
 			always (translates-as-c-expr-p subform env)))))))
 
@@ -1251,11 +1251,11 @@
     (let ((form (cons-car forms-cons)))
       (when (consp form)
 	(let ((form-car (cons-car form)))
-	  (cond ((eq form-car 'gl:loop-finish)
+	  (cond ((eq form-car 'tl:loop-finish)
 		 (return t))
-		((eq form-car 'gl:go)
+		((eq form-car 'tl:go)
 		 (return (and (consp (cons-cdr form))
-			      (eq (cons-second form) 'gl::end-loop))))
+			      (eq (cons-second form) 'tl::end-loop))))
 		(t
 		 (when (end-loop-used-p form)
 		   (return t)))))))))
@@ -1272,17 +1272,17 @@
 		 for subform in (cons-cdr form)
 		 when (not in-body?)
 		   collect (if (and (not past-body?)
-				    (eq subform 'gl::next-loop))
+				    (eq subform 'tl::next-loop))
 			       new-loop-form
 			       subform)
 		 do
 	     (cond (in-body?
-		    (if (equal subform '(gl:go gl::next-loop))
+		    (if (equal subform '(tl:go tl::next-loop))
 			(setq in-body? nil
 			      past-body? t)
 			(push subform loop-body)))
 		   ((and (not past-body?)
-			 (eq subform 'gl::next-loop))
+			 (eq subform 'tl::next-loop))
 		    (setq in-body? t))))))
     (setq loop-body (nreverse loop-body))
     (cond ((rewritable-when-end-test-p (car loop-body) env)
@@ -1290,92 +1290,92 @@
 		  (test (cons-second end-test-form)))
 	     (setq end-test
 		   (if (and (consp test)
-			    (memqp (cons-car test) '(gl:null gl:not)))
+			    (memqp (cons-car test) '(tl:null tl:not)))
 		       (cons-second test)
-		       `(gl:not ,test)))
+		       `(tl:not ,test)))
 	     (setq loop-body (cons-cdr loop-body))))
 	  ((rewritable-unless-end-test-p (car loop-body) env)
 	   (setq end-test (cons-second (cons-car loop-body)))
 	   (setq loop-body (cons-cdr loop-body))))
-    ;; Attempt to find a final GL:SETQ in the body, and rotate that into the
+    ;; Attempt to find a final TL:SETQ in the body, and rotate that into the
     ;; iteration step form to make a for-loop instead of a while-loop
     (let ((last-form (car (last loop-body))))
       (when (and (consp last-form)
-		 (eq (cons-car last-form) 'gl:setq)
+		 (eq (cons-car last-form) 'tl:setq)
 		 (cons-cdr last-form)
 		 (translates-as-c-expr-p (car (last last-form)) env))
 	(setq iteration-form
-	      `(gl:setq ,@(nthcdr (- (length last-form) 2) last-form)))
+	      `(tl:setq ,@(nthcdr (- (length last-form) 2) last-form)))
 	(setq loop-body
 	      (if (= (length last-form) 3)
 		  (butlast loop-body)
 		  (nconc (butlast loop-body)
-			 `((gl:setq ,@(butlast (cons-cdr last-form) 2))))))))
+			 `((tl:setq ,@(butlast (cons-cdr last-form) 2))))))))
     (cond (iteration-form
 	   (setf (car new-loop-form) 'for-loop)
 	   (setf (cdr new-loop-form)
 		 (cons (list nil end-test iteration-form)
-		       (list (cons 'gl:tagbody loop-body)))))
+		       (list (cons 'tl:tagbody loop-body)))))
 	  (t
 	   (setf (cdr new-loop-form)
 		 (cons end-test
-		       (list (cons 'gl:tagbody loop-body))))))
-    (cons 'gl:tagbody 
+		       (list (cons 'tl:tagbody loop-body))))))
+    (cons 'tl:tagbody 
 	  (if (end-loop-used-p new-tagbody-body)
 	      new-tagbody-body
-	    (delq 'gl::end-loop new-tagbody-body)))))
+	    (delq 'tl::end-loop new-tagbody-body)))))
 
 
 
 
-;;; The special form walker for `gl:the' walks its subform given the
+;;; The special form walker for `tl:the' walks its subform given the
 ;;; intersection of the required-type given this form as a whole and the type
 ;;; given as the first argument to this form.
 
-(gl:declaim (special-form gl:the))
+(tl:declaim (special-form tl:the))
 
-(defmacro gl:the (type form)
+(defmacro tl:the (type form)
   `(the ,(expand-type type) ,form))
 
-(def-special-form-walker gl:the (form env walker required-type)
-  (gl:destructuring-bind-strict (nil type subform) form
-    `(gl:the ,(expand-type type)
-	     ,(gl:walk subform env walker
+(def-special-form-walker tl:the (form env walker required-type)
+  (tl:destructuring-bind-strict (nil type subform) form
+    `(tl:the ,(expand-type type)
+	     ,(tl:walk subform env walker
 		       (duplicate-type-declaration type required-type)))))
 
 
 
 
-;;; The special form walker for `gl:throw' walks all subforms, ignoring the
+;;; The special form walker for `tl:throw' walks all subforms, ignoring the
 ;;; required type, since this expression will never return to its direct caller.
 
-(def-special-form-walker gl:throw (form env walker required-type)
+(def-special-form-walker tl:throw (form env walker required-type)
   (declare (ignore required-type))
-  (gl:destructuring-bind-strict (nil tag result) form
-    `(gl:throw
-	 ,(gl:walk tag env walker 't)
-       ,(gl:walk result env walker '*))))
+  (tl:destructuring-bind-strict (nil tag result) form
+    `(tl:throw
+	 ,(tl:walk tag env walker 't)
+       ,(tl:walk result env walker '*))))
 
 
 
 
-;;; The special form walker for `gl:unwind-protect' declares an unwind-protect
+;;; The special form walker for `tl:unwind-protect' declares an unwind-protect
 ;;; scope around the protected form, walks it giving the passed in required
 ;;; type, then walks the cleanup forms with a required-type of void and in the
 ;;; environment scope that was passed in to this function.
 
-(def-special-form-walker gl:unwind-protect (form env walker required-type)
-  (let ((new-env (gl:augment-environment
+(def-special-form-walker tl:unwind-protect (form env walker required-type)
+  (let ((new-env (tl:augment-environment
 		   env :declare (list (list 'unwind-protect (make-protect))))))
-    (unless (gl:declaration-information 'gl:allow-unwind-protect env)
+    (unless (tl:declaration-information 'tl:allow-unwind-protect env)
       (translation-warning
 	"Calling unwind-protect without an allow-unwind-protect declaration."))
     (values
-      `(gl:unwind-protect
-	    ,(gl:walk (cons-second form) new-env walker required-type)
-	 ,(gl:walk
-	    `(gl:locally
-		 (gl:declare (gl:require-local-exit
+      `(tl:unwind-protect
+	    ,(tl:walk (cons-second form) new-env walker required-type)
+	 ,(tl:walk
+	    `(tl:locally
+		 (tl:declare (tl:require-local-exit
 			       "Returning through an unwind protect cleanup scope."))
 	       ,@(cons-cddr form))
 	    env walker 'void))
@@ -1384,27 +1384,27 @@
 
 
 
-;;; The special form walker for `gl:symbol-macrolet' declares the given symbol
+;;; The special form walker for `tl:symbol-macrolet' declares the given symbol
 ;;; macros into the environment, augments the environment with any declarations
 ;;; given on the body, and then processed the forms of the body.
 
-(gl:declaim (special-form gl:symbol-macrolet))
+(tl:declaim (special-form tl:symbol-macrolet))
 
-(defmacro gl:symbol-macrolet (symbol-decls &body decls-and-body-forms)
+(defmacro tl:symbol-macrolet (symbol-decls &body decls-and-body-forms)
   `(#+lucid lcl::symbol-macrolet #-lucid symbol-macrolet
 	    ,symbol-decls
 	    ,@decls-and-body-forms))
 	    
 
-(def-special-form-walker gl:symbol-macrolet (form env walker required-type)
+(def-special-form-walker tl:symbol-macrolet (form env walker required-type)
   (multiple-value-bind (decl-forms body)
       (split-declarations-and-body (cons-cddr form))
     (let* ((decls (loop for form in decl-forms append (cons-cdr form)))
-	   (new-env (gl:augment-environment
+	   (new-env (tl:augment-environment
 		      env :symbol-macro (cons-second form)
 		      :declare decls)))
       (values
-	`(gl:symbol-macrolet
+	`(tl:symbol-macrolet
 	   ,(cons-second form)
 	   ,@decl-forms
 	   ,@(walk-progn-body body new-env walker required-type))
@@ -1413,17 +1413,17 @@
 
 
 
-;;; The special form walker for `gl:locally' asserts any declarations in the
+;;; The special form walker for `tl:locally' asserts any declarations in the
 ;;; body into the environment, then walks all further subforms giving the passed
 ;;; in required-type.
 
-(def-special-form-walker gl:locally (form env walker required-type)
+(def-special-form-walker tl:locally (form env walker required-type)
   (multiple-value-bind (decl-forms body)
       (split-declarations-and-body (cons-cdr form))
     (let* ((decls (loop for form in decl-forms append (cons-cdr form)))
-	   (new-env (gl:augment-environment env :declare decls)))
+	   (new-env (tl:augment-environment env :declare decls)))
       (values
-	`(gl:locally
+	`(tl:locally
 	     ,@decl-forms
 	   ,@(walk-progn-body body new-env walker required-type))
 	new-env))))
@@ -1435,18 +1435,18 @@
 ;;; required type of fixnum, and then each of the case tags and forms requiring
 ;;; the passed in required type.
 
-(gl:declaim (special-form fixnum-case))
+(tl:declaim (special-form fixnum-case))
 
 (defmacro fixnum-case (fixnum-keyform &body clauses)
   `(case ,fixnum-keyform ,@clauses))
 
 (def-special-form-walker fixnum-case (form env walker required-type)
-  `(fixnum-case ,(gl:walk (cons-second form) env walker 'fixnum)
+  `(fixnum-case ,(tl:walk (cons-second form) env walker 'fixnum)
      ,@(loop for (keys . forms) in (cons-cddr form)
 	     collect
 	     `(,(cond ((fixnump keys)
 		       (list keys))
-		      ((memqp keys '(t gl:otherwise))
+		      ((memqp keys '(t tl:otherwise))
 		       t)
 		      ((and (consp keys)
 			    (loop for x in keys always (fixnump x)))
@@ -1458,8 +1458,8 @@
      ,@(let ((last-clause? (car (last (cons-cddr form)))))
 	 (when (or (null last-clause?)
 		   (and (not (eq (car last-clause?) 't))
-			(not (eq (car last-clause?) 'gl:otherwise))))
-	   `((t ,(gl:walk nil env walker required-type)))))))
+			(not (eq (car last-clause?) 'tl:otherwise))))
+	   `((t ,(tl:walk nil env walker required-type)))))))
 
 
 
@@ -1468,7 +1468,7 @@
 ;;; and a body of loop forms.  It walks both of these in the given environment.
 ;;; Note that this macro always returns NIL
 
-(gl:declaim (special-form while-loop))
+(tl:declaim (special-form while-loop))
 
 (defmacro while-loop (continue-looping-form &body body)
   ;; Using tagbody to avoid the extra (block nil ...) that loop gives you.
@@ -1482,7 +1482,7 @@
 (def-special-form-walker while-loop (form env walker required-type)
   (declare (ignore required-type))
   `(while-loop
-     ,(gl:walk (cons-second form) env walker 't)
+     ,(tl:walk (cons-second form) env walker 't)
      ,@(walk-progn-body (cons-cddr form) env walker 'void)))
 
 
@@ -1498,7 +1498,7 @@
 ;;; evaluated and its value is discarded, and then we go back up to the point
 ;;; where we evaluate the control expression.
 
-(gl:declaim (special-form for-loop))
+(tl:declaim (special-form for-loop))
 
 (defmacro for-loop ((init control step) &body forms)
   ;; Using tagbody to avoid the extra (block nil ...) that loop gives you.
@@ -1513,46 +1513,46 @@
 
 (def-special-form-walker for-loop (form env walker required-type)
   (declare (ignore required-type))
-  (gl:destructuring-bind-strict
+  (tl:destructuring-bind-strict
       (nil (init control step) &body body)
     form
-    `(for-loop (,(if init (gl:walk init env walker 'void) nil)
-		 ,(gl:walk control env walker 't)
-		 ,(if step (gl:walk step env walker 'void) nil))
+    `(for-loop (,(if init (tl:walk init env walker 'void) nil)
+		 ,(tl:walk control env walker 't)
+		 ,(if step (tl:walk step env walker 'void) nil))
 	       ,@(walk-progn-body body env walker 'void))))
 
 
 
 
-;;; The `gl:values' operation is defined as a function in Common Lisp, but it
+;;; The `tl:values' operation is defined as a function in Common Lisp, but it
 ;;; needs to be a special form.  Note that in the case of a values call with no
 ;;; arguments, this will constant fold into a NIL.  We do not implement a
 ;;; multiple-value-list, so these are semantically equivalent.  -jra 2/1/96
 
-(def-special-form-walker gl:values (form env walker required-type)
+(def-special-form-walker tl:values (form env walker required-type)
   (if (null (cons-cdr form))
       nil
-      `(gl:values
+      `(tl:values
 	 ,@(cond
 	     ((and (consp required-type) (eq (cons-car required-type) 'values))
 	      (loop for arg in (cons-cdr form)
 		    for type-cons = (cons-cdr required-type)
 				  then (cdr type-cons)
 		    for type = (or (car type-cons) 'void)
-		    collect (gl:walk arg env walker type)))
+		    collect (tl:walk arg env walker type)))
 	     ((eq required-type '*)
 	      (loop for arg in (cons-cdr form)
-		    collect (gl:walk arg env walker 't)))
+		    collect (tl:walk arg env walker 't)))
 	     (t
 	      (loop for arg in (cons-cdr form)
 		    for type = required-type then 'void
-		    collect (gl:walk arg env walker type)))))))
+		    collect (tl:walk arg env walker type)))))))
 
 
 
 
 ;;; The special-form `def-named-variable' is used to define variables and
-;;; parameters in GL.  It takes the name of the new variable; a keyword
+;;; parameters in TL.  It takes the name of the new variable; a keyword
 ;;; indicating whether it is a variable, parameter, constant, or
 ;;; underlying-lisp-variable; and either an initialization form or the value of
 ;;; the no-initial-value parameter.
@@ -1566,12 +1566,12 @@
 
 (defparameter no-initial-value (make-symbol "UNBOUND"))
 
-(gl:declaim (special-form def-named-variable))
+(tl:declaim (special-form def-named-variable))
 
 (defmacro def-named-variable (name var-type init)
   `(progn
      ,@(when (and *current-system-name* *current-module-name*)
-	 `((gl:declaim (variable-home ,(cons *current-system-name*
+	 `((tl:declaim (variable-home ,(cons *current-system-name*
 					     *current-module-name*)
 				      ,name))))
      ,(ecase var-type
@@ -1588,27 +1588,27 @@
 
 (def-special-form-walker def-named-variable (form env walker required-type)
   (declare (ignore required-type))
-  (gl:destructuring-bind-strict
+  (tl:destructuring-bind-strict
       (nil name var-type init)
     form
     (let ((type (or (variable-decl name 'type env) t)))
       `(def-named-variable ,name ,var-type
 	 ,(if (eq init no-initial-value)
 	      init
-	      (gl:walk init env walker type))))))
+	      (tl:walk init env walker type))))))
 
 
 
 
 ;;; The special-form `inlined-typep' takes an object and a quoted Lisp type.
 ;;; This form emits code to check if the object is an instance of that type.
-;;; Note that gl:typep will already have expanded the type and will have
+;;; Note that tl:typep will already have expanded the type and will have
 ;;; stripped off any combinations using AND, OR, or NOT.  Note that for certain
 ;;; types we optimize the Lisp runtime speed of this operation by macroexpanding
 ;;; into calls to type predicate functions that have been compiled for inlined
 ;;; speed.
 
-(gl:declaim (special-form inlined-typep))
+(tl:declaim (special-form inlined-typep))
 
 #+lucid
 (proclaim '(optimize (compilation-speed 0))) ; cause TYPEP to be inlined
@@ -1635,71 +1635,71 @@
 (defmacro inlined-typep (object type-arg)
   ;; In this macro we are guaranteed that type is a constant.
   (let ((type (eval type-arg)))
-    (cond ((gl-subtypep type 'fixnum)
+    (cond ((tl-subtypep type 'fixnum)
 	   `(inline-fixnum-p ,object))
-	  ((gl-subtypep type 'double-float)
+	  ((tl-subtypep type 'double-float)
 	   `(inline-double-float-p ,object))
-	  ((gl-subtypep type '(array double-float))
+	  ((tl-subtypep type '(array double-float))
 	   `(inline-float-vector-p ,object))
-	  ((gl-subtypep type 'cons)
+	  ((tl-subtypep type 'cons)
 	   `(inline-consp ,object))
-	  ((gl-subtypep type '(array (unsigned-byte 16)))
+	  ((tl-subtypep type '(array (unsigned-byte 16)))
 	   `(inline-uint16-array-p ,object))
-	  ((gl-subtypep type '(array (unsigned-byte 8)))
+	  ((tl-subtypep type '(array (unsigned-byte 8)))
 	   `(inline-uint8-array-p ,object))
-	  ((gl-subtypep type 'string)
+	  ((tl-subtypep type 'string)
 	   `(inline-stringp ,object))
-	  ((gl-subtypep type 'simple-vector)
+	  ((tl-subtypep type 'simple-vector)
 	   `(inline-simple-vector-p ,object))
 	  (t
-	   `(gl-typep ,object ,type-arg)))))
+	   `(tl-typep ,object ,type-arg)))))
 
 (def-special-form-walker inlined-typep (form env walker required-type)
   (declare (ignore required-type))
-  (gl:destructuring-bind-strict
+  (tl:destructuring-bind-strict
       (nil object type)
     form
     (unless (symbolp object)
       (error "Type checking can only handle variable object references, not ~s"
 	     object))
-    (unless (gl:constantp type)
+    (unless (tl:constantp type)
       (error "Inlined type checking can only handle constant type forms, not ~s."
 	     type))
-    `(inlined-typep ,(gl:walk object env walker 't) ,type)))
+    `(inlined-typep ,(tl:walk object env walker 't) ,type)))
 
 
 
 
-;;; The `gl:and' and `gl:or' special form walkers are implemented to get
+;;; The `tl:and' and `tl:or' special form walkers are implemented to get
 ;;; appropriate type propagation when these expressions are evaluated only for
 ;;; boolean results.
 
-(def-special-form-walker gl:and (form env walker required-type)
+(def-special-form-walker tl:and (form env walker required-type)
   (cond ((null (cons-cdr form))
 	 't)
 	((null (cons-cddr form))
-	 `(gl:progn ,(gl:walk (cons-second form) env walker required-type)))
+	 `(tl:progn ,(tl:walk (cons-second form) env walker required-type)))
 	(t
-	 `(gl:and
+	 `(tl:and
 	    ,@(loop for arg-cons = (cons-cdr form) then next-cons?
 		    while arg-cons
 		    for next-cons? = (cons-cdr arg-cons)
 		    for arg = (cons-car arg-cons)
-		    collect (gl:walk arg env walker
+		    collect (tl:walk arg env walker
 				     (if next-cons? 't required-type)))))))
 
-(def-special-form-walker gl:or (form env walker required-type)
+(def-special-form-walker tl:or (form env walker required-type)
   (cond ((null (cons-cdr form))
 	 nil)
 	((null (cons-cddr form))
-	 `(gl:progn ,(gl:walk (cons-second form) env walker required-type)))
+	 `(tl:progn ,(tl:walk (cons-second form) env walker required-type)))
 	(t
-	 `(gl:or
+	 `(tl:or
 	    ,@(loop for arg-cons = (cons-cdr form) then next-cons?
 		    while arg-cons
 		    for next-cons? = (cons-cdr arg-cons)
 		    for arg = (cons-car arg-cons)
-		    collect (gl:walk arg env walker
+		    collect (tl:walk arg env walker
 				     (if next-cons? 't required-type)))))))
 
 
@@ -1715,7 +1715,7 @@
 ;;; cons-dynamic-extent, which depends on the scope expanding to the entire
 ;;; surrounding function.
 
-(gl:declaim (special-form list-dynamic-extent))
+(tl:declaim (special-form list-dynamic-extent))
 
 (defmacro list-dynamic-extent (&rest list-elements)
   `(list ,@list-elements))
@@ -1725,7 +1725,7 @@
   (if (cons-cdr form)
       `(list-dynamic-extent
 	 ,@(loop for arg in (cons-cdr form)
-		 collect (gl:walk arg env walker 't)))
+		 collect (tl:walk arg env walker 't)))
       nil))
 
 
@@ -1739,10 +1739,10 @@
 ;;; of list-dynamic-extent extending through the entire surrounding
 ;;; function. -jra 1/17/97
 
-(def-gl-macro cons-dynamic-extent (car cdr)
+(def-tl-macro cons-dynamic-extent (car cdr)
   (let ((temp (gensym)))
-    `(gl:let ((,temp (list-dynamic-extent ,car)))
-       (gl:setf (gl:cdr ,temp) ,cdr)
+    `(tl:let ((,temp (list-dynamic-extent ,car)))
+       (tl:setf (tl:cdr ,temp) ,cdr)
        ,temp)))
 
 
@@ -1756,7 +1756,7 @@
 ;;; value from the dispatched-to function, even if it actually does set the
 ;;; values count and returns more values.
 
-(gl:declaim (special-form funcall-internal))
+(tl:declaim (special-form funcall-internal))
 
 (defmacro funcall-internal
     (sets-values-count? compiled-function &rest function-args)
@@ -1766,35 +1766,35 @@
 
 (def-special-form-walker funcall-internal (form env walker required-type)
   (declare (ignore required-type))
-  (gl:destructuring-bind-strict
+  (tl:destructuring-bind-strict
       (nil sets-values-count? compiled-function &rest function-args)
     form
     `(funcall-internal
        ,sets-values-count?
-       ,(gl:walk compiled-function env walker 'compiled-function)
+       ,(tl:walk compiled-function env walker 'compiled-function)
        ,@(loop for arg in function-args
-	       collect (gl:walk arg env walker 't)))))
+	       collect (tl:walk arg env walker 't)))))
 
 
 
-;;; The numeric operations `+' and `*' have to be done as speical forms in GL in
+;;; The numeric operations `+' and `*' have to be done as speical forms in TL in
 ;;; order to allow the use of lisp:+ and lisp:* within the read-eval-print loop
 ;;; of the Lisp development environment.  The implementations of the walkers for
-;;; these special forms will always expand into the GLI package symbols that
-;;; implement these operations for us.  Note that spurious but harmless gl:progn
+;;; these special forms will always expand into the TLI package symbols that
+;;; implement these operations for us.  Note that spurious but harmless tl:progn
 ;;; forms get wrapped around the result so that these special form walkers are
 ;;; always returning a form with walked contents rather than just the walked
 ;;; thing itself.
 
-(gl:declaim (special-form + *))
+(tl:declaim (special-form + *))
 
 (def-special-form-walker + (form env walker required-type)
-  `(gl:progn
-     ,(gl:walk (cons 'plus (cons-cdr form)) env walker required-type)))
+  `(tl:progn
+     ,(tl:walk (cons 'plus (cons-cdr form)) env walker required-type)))
 
 (def-special-form-walker * (form env walker required-type)
-  `(gl:progn
-     ,(gl:walk (cons 'multiply (cons-cdr form)) env walker required-type)))
+  `(tl:progn
+     ,(tl:walk (cons 'multiply (cons-cdr form)) env walker required-type)))
 
 
 
@@ -1811,19 +1811,19 @@
 ;;; the argument expression, but cause a C comment to be placed onto the same
 ;;; line as the translation of the given form.
 
-(gl:declaim (special-form gl:c-comment-form))
+(tl:declaim (special-form tl:c-comment-form))
 
-(defmacro gl:c-comment-form (comment-string form)
+(defmacro tl:c-comment-form (comment-string form)
   (declare (ignore comment-string))
   form)
 
-(def-special-form-walker gl:c-comment-form (form env walker required-type)
+(def-special-form-walker tl:c-comment-form (form env walker required-type)
   (unless (stringp (second form))
     (error "C-comment-form requires a string as its first argument, not ~s."
 	   (second form)))
-  `(gl:c-comment-form
+  `(tl:c-comment-form
      ,(second form)
-     ,(gl:walk (third form) env walker required-type)))
+     ,(tl:walk (third form) env walker required-type)))
 
 
 

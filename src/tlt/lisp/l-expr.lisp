@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module L-EXPR
 
@@ -50,7 +50,7 @@
 
 (defun print-l-expr (l-expr stream level)
   (with-printing-wrapper (l-expr stream)
-    (prin1 (gl-type-of l-expr) stream)
+    (prin1 (tl-type-of l-expr) stream)
     (if (and (numberp *print-level*) (> level *print-level*))
 	(write-string " ..." stream)
 	(format stream " ~s" (l-expr-form l-expr)))))
@@ -378,9 +378,9 @@
 ;;; The following section implements the l-expr types and walker functions.
 ;;; Comments are only given where the l-expr is not obvious.
 
-(def-l-expr gl:block (1 nil)
+(def-l-expr tl:block (1 nil)
   (let* ((form (l-expr-form block-l-expr))
-	 (exit-scope (gl:declaration-information
+	 (exit-scope (tl:declaration-information
 		       'exit-scope (l-expr-aug-env block-l-expr)))
 	 (block-name (cons-second form))
 	 (block-struct?
@@ -409,7 +409,7 @@
 ;;; are ignored.  If the type is void, then the body is compiled requiring that
 ;;; type.
 
-(def-l-expr gl:catch (2 nil)
+(def-l-expr tl:catch (2 nil)
   (let ((form (l-expr-form catch-l-expr))
 	(l-type (if (eq lisp-required-type 'void) 'void '*))
 	(c-type (if (eq c-required-type 'void) 'void 'obj)))
@@ -418,14 +418,14 @@
     (funcall function catch-l-expr l-type c-type)))
 
 
-(def-l-expr gl:declare (3 nil)
+(def-l-expr tl:declare (3 nil)
   (declare (ignore function lisp-required-type c-required-type))
   (translation-error
     "A declare form ~s became structurized as an l-expr.  Either the ~
      declare was misplaced or the surrounding form has mishandled it."
     (l-expr-form declare-l-expr)))
 
-(def-l-expr gl:eval-when (4 nil)
+(def-l-expr tl:eval-when (4 nil)
   (walk-block-like-l-expr
     eval-when-l-expr function lisp-required-type c-required-type))
 
@@ -435,13 +435,13 @@
 	  (loop for situation in (second form)
 		collect (or (cdr (assq situation 
 				       #+lucid
-				       '((gl:compile . compile)
-					 (gl:load . load)
-					 (gl:eval . eval))
+				       '((tl:compile . compile)
+					 (tl:load . load)
+					 (tl:eval . eval))
 				       #-lucid
-				       '((gl:compile . :compile-toplevel)
-					 (gl:load    . :load-toplevel)
-					 (gl:eval    . :execute)
+				       '((tl:compile . :compile-toplevel)
+					 (tl:load    . :load-toplevel)
+					 (tl:eval    . :execute)
 					 (compile    . :compile-toplevel)
 					 (load       . :load-toplevel)
 					 (eval       . :execute))))
@@ -454,7 +454,7 @@
 ;;; already been split off into separate top-level named-lambdas which will be
 ;;; walked on their own.
 
-(def-l-expr gl:flet (5 nil)
+(def-l-expr tl:flet (5 nil)
   (walk-block-like-l-expr
     flet-l-expr function lisp-required-type c-required-type))
 
@@ -478,7 +478,7 @@
 	 (name (cons-second form))
 	 (env (l-expr-env named-lambda-l-expr)))
     (multiple-value-bind (func-type? local? decls)
-	(gl:function-information name env)
+	(tl:function-information name env)
       (declare (ignore local?))
       (unless (eq func-type? :function)
 	(translation-error
@@ -488,13 +488,13 @@
       (setf (named-lambda-l-expr-decls named-lambda-l-expr) decls)
       (remove-declares-from-defun-like-form form))))
 
-(def-l-expr gl:function (7 nil)
+(def-l-expr tl:function (7 nil)
   (funcall function function-l-expr lisp-required-type c-required-type))
 
-(def-l-expr gl:go (8 nil)
+(def-l-expr tl:go (8 nil)
   (funcall function go-l-expr lisp-required-type c-required-type))
 
-(def-l-expr gl:if (9 nil)
+(def-l-expr tl:if (9 nil)
   (let* ((form (l-expr-form if-l-expr))
 	 (test (cons-cdr form))
 	 (then (cons-cdr test))
@@ -509,7 +509,7 @@
 			 lisp-required-type c-required-type)))
     (funcall function if-l-expr lisp-required-type c-required-type)))
 
-(def-l-expr gl:labels (10 nil)
+(def-l-expr tl:labels (10 nil)
   (walk-block-like-l-expr labels-l-expr function lisp-required-type c-required-type))
 
 (def-l-expr-method initialize-l-expr (labels-l-expr)
@@ -529,7 +529,7 @@
 	      (walk-l-expr (cons-second binding) function lisp-type c-type)))))
   (walk-block-like-l-expr l-expr function lisp-required-type c-required-type))
 
-(def-l-expr gl:let (11 nil)
+(def-l-expr tl:let (11 nil)
   (walk-let-like-l-expr let-l-expr function lisp-required-type c-required-type))
 
 (defun initialize-let-like-l-expr (let-like-l-expr)
@@ -548,20 +548,20 @@
 (def-l-expr-method initialize-l-expr (let-l-expr)
   (initialize-let-like-l-expr let-l-expr))
 
-(def-l-expr gl:let* (12 nil)
+(def-l-expr tl:let* (12 nil)
   (walk-let-like-l-expr let*-l-expr function lisp-required-type c-required-type))
 
 (def-l-expr-method initialize-l-expr (let*-l-expr)
   (initialize-let-like-l-expr let*-l-expr))
 
-(def-l-expr gl:macrolet (13 nil)
+(def-l-expr tl:macrolet (13 nil)
   (walk-block-like-l-expr
     macrolet-l-expr function lisp-required-type c-required-type))
 
 (def-l-expr-method initialize-l-expr (macrolet-l-expr)
   (remove-declares-from-let-like-form (l-expr-form macrolet-l-expr)))
 
-(def-l-expr gl:multiple-value-bind (14 nil)
+(def-l-expr tl:multiple-value-bind (14 nil)
   (let* ((form (l-expr-form multiple-value-bind-l-expr))
 	 (aug-env (l-expr-aug-env multiple-value-bind-l-expr))
 	 (volatile? (env-requires-volatile-p aug-env))
@@ -605,7 +605,7 @@
       (setf (variable-binding-lisp-type binding) lisp-type)
       (setf (variable-binding-c-type binding) c-type))))
 
-(def-l-expr gl:multiple-value-prog1 (15 nil)
+(def-l-expr tl:multiple-value-prog1 (15 nil)
   (let* ((form (l-expr-form multiple-value-prog1-l-expr))
 	 (value-cons (cons-cdr form)))
     (setf (car value-cons)
@@ -618,17 +618,17 @@
     (funcall function multiple-value-prog1-l-expr
 	     lisp-required-type c-required-type)))
 
-(def-l-expr gl:progn (16 nil) :default)
+(def-l-expr tl:progn (16 nil) :default)
 
-(def-l-expr gl:quote (17 nil)
+(def-l-expr tl:quote (17 nil)
   (funcall function quote-l-expr lisp-required-type c-required-type))
 
 (def-l-expr-method initialize-l-expr (quote-l-expr)
   (let ((constant-value (eval (l-expr-form quote-l-expr))))
     ;; If the constant is a string with a fill-pointer (which would be true if
     ;; this were a computed constant from a macro expansion, replace it with a
-    ;; simple-string.  There is no change in semantics since GL string all
-    ;; logically have fill pointers, but the GL C emitters use simple strings.
+    ;; simple-string.  There is no change in semantics since TL string all
+    ;; logically have fill pointers, but the TL C emitters use simple strings.
     (when (and (stringp constant-value)
 	       (not (simple-string-p constant-value)))
       (let ((new-string (make-string (length constant-value))))
@@ -645,10 +645,10 @@
         walked form instead of a form with walked subparts."
 	(l-expr-form quote-l-expr)))))
 
-(def-l-expr gl:return-from (18 nil)
+(def-l-expr tl:return-from (18 nil)
   (let* ((form (l-expr-form return-from-l-expr))
 	 (env (l-expr-env return-from-l-expr))
-	 (exit-scope (gl:declaration-information 'exit-scope env))
+	 (exit-scope (tl:declaration-information 'exit-scope env))
 	 (block-name (cons-second form))
 	 (intervening-unwind-protect? nil)
 	 (block-struct?
@@ -676,12 +676,12 @@
 		'obj)))
     (funcall function return-from-l-expr lisp-required-type c-required-type)))
 
-(def-l-expr gl:setq (19 nil)
+(def-l-expr tl:setq (19 nil)
   (let* ((form (l-expr-form setq-l-expr))
 	 (symbol (cons-second form))
 	 (env (l-expr-env setq-l-expr))
 	 (decls (multiple-value-bind (bind-type? local? declarations)
-		    (gl:variable-information symbol env)
+		    (tl:variable-information symbol env)
 		  (declare (ignore bind-type? local?))
 		  declarations))
 	 (binding? (cdr (assq 'variable-binding-structure decls)))
@@ -706,7 +706,7 @@
 	    (if binding? (variable-binding-c-type binding?) 'obj)))
     (funcall function setq-l-expr lisp-required-type c-required-type)))
 
-(def-l-expr gl:tagbody (20 nil)
+(def-l-expr tl:tagbody (20 nil)
   (let ((form (l-expr-form tagbody-l-expr)))
     ;; First, walk the body eliminating all dead code between unconditional go
     ;; statements and the next tag where processing could start again.
@@ -743,14 +743,14 @@
 	      required-type (type-of-first-value declared-type))
 	    (duplicate-type-declaration required-type declared-type)))))
 
-(def-l-expr gl:the (21 nil)
+(def-l-expr tl:the (21 nil)
   (walk-block-like-l-expr
     the-l-expr
     function
     (combine-required-and-declared-type lisp-required-type (cons-second (l-expr-form the-l-expr)))
     c-required-type))
 
-(def-l-expr gl:throw (22 nil)
+(def-l-expr tl:throw (22 nil)
   (let ((form (l-expr-form throw-l-expr)))
     (setf (second form)
 	  (walk-l-expr (cons-second form) function 't 'obj))
@@ -758,7 +758,7 @@
 	  (walk-l-expr (cons-third form) function '* 'obj))
     (funcall function throw-l-expr lisp-required-type c-required-type)))
 
-(def-l-expr gl:unwind-protect (23 nil)
+(def-l-expr tl:unwind-protect (23 nil)
   (let ((form (l-expr-form unwind-protect-l-expr)))
     (setf (second form)
 	  (walk-l-expr
@@ -767,11 +767,11 @@
     (funcall function unwind-protect-l-expr
 	     lisp-required-type c-required-type)))
 
-(def-l-expr gl:symbol-macrolet (24 nil)
+(def-l-expr tl:symbol-macrolet (24 nil)
   (walk-block-like-l-expr symbol-macrolet-l-expr function
 			  lisp-required-type c-required-type))
 
-(def-l-expr gl:locally (25 nil) :default)
+(def-l-expr tl:locally (25 nil) :default)
 
 (def-l-expr-method initialize-l-expr (locally-l-expr)
   (remove-declares-from-progn-like-form (l-expr-form locally-l-expr)))
@@ -854,7 +854,7 @@
 	 (env (l-expr-env function-call-l-expr)))
     (declare (fixnum arg-count))
     (multiple-value-bind (func-type? local? decls local-func?)
-	(gl:function-information name env)
+	(tl:function-information name env)
       (unless (eq func-type? :function)
 	(translation-error
 	  "Calling ~s, which does not name a defined function."
@@ -890,7 +890,7 @@
 			     when (null arg-cons)
 			       collect
 			       ;; Using funcall to avoid the forward reference.
-			       (gl:walk
+			       (tl:walk
 				 default-form (l-expr-env function-call-l-expr)
 				 'walk-form-into-l-expr
 				 't)))))
@@ -927,7 +927,7 @@
 (def-l-expr-method initialize-l-expr (implicit-symbol-value-l-expr)
   (let ((symbol (l-expr-form implicit-symbol-value-l-expr)))
     (multiple-value-bind (binding-type? local-binding decl-alist)
-	(gl:variable-information
+	(tl:variable-information
 	  symbol (l-expr-env implicit-symbol-value-l-expr))
       (unless binding-type?
 	(setq binding-type? :special)
@@ -964,13 +964,13 @@
 
 
 
-;;; The `gl:values' l-expr structure represents a call to values.  Note that
+;;; The `tl:values' l-expr structure represents a call to values.  Note that
 ;;; when the required type does not need the values count to be returned, then
 ;;; this should behave just like a prog1, passing through the first value,
 ;;; discarded the remainder, and ignoring the values count since the caller of
 ;;; this operation intends to ignore the values count anyway.
 
-(def-l-expr gl:values (32 nil)
+(def-l-expr tl:values (32 nil)
   (let ((args (cons-cdr (l-expr-form values-l-expr))))
     (cond
       ((and (consp lisp-required-type)
@@ -1031,7 +1031,7 @@
     (setf (car type-cons)
 	  (eval (car type-cons)))))
 
-(def-l-expr gl:and (35 nil)
+(def-l-expr tl:and (35 nil)
   (loop with test-only? = (satisfies-c-required-type-p c-required-type 'boolean)
 	for arg-cons = (cons-cdr (l-expr-form and-l-expr)) then next-cons?
 	while arg-cons
@@ -1044,7 +1044,7 @@
 		       (if test-arg? 'boolean 'obj))))
   (funcall function and-l-expr lisp-required-type c-required-type))
 
-(def-l-expr gl:or (36 nil)
+(def-l-expr tl:or (36 nil)
   (loop with test-only? = (satisfies-c-required-type-p c-required-type 'boolean)
 	for arg-cons = (cons-cdr (l-expr-form or-l-expr)) then next-cons?
 	while arg-cons
@@ -1076,7 +1076,7 @@
     (funcall function funcall-internal-l-expr
 	     lisp-required-type c-required-type)))
 
-(def-l-expr gl:c-comment-form (39 nil)
+(def-l-expr tl:c-comment-form (39 nil)
   (let ((arg-cons (cons-cddr (l-expr-form c-comment-form-l-expr))))
     (setf (car arg-cons)
 	  (walk-l-expr (cons-car arg-cons) function

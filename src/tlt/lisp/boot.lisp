@@ -30,43 +30,43 @@
 
 
 
-;;; Loading this module will load bootstrapping functions for GLT, including
-;;; compile-glt, which you should call to complete the compiling and loading of
-;;; the GLT system..  This file sets implementation specific switches, creates
-;;; all needed packages, and defines compile-glt.  Note that this does not occur
-;;; through glt:def-system, but through minimal code that is made and used only
+;;; Loading this module will load bootstrapping functions for TLT, including
+;;; compile-tlt, which you should call to complete the compiling and loading of
+;;; the TLT system..  This file sets implementation specific switches, creates
+;;; all needed packages, and defines compile-tlt.  Note that this does not occur
+;;; through tlt:def-system, but through minimal code that is made and used only
 ;;; within this file.
 
 ;;; You should bootstrap your Lisp environment with the following code (which
 ;;; requries that the base level of your sandbox is the current working
 ;;; directory, e.g. /bt/jra/).
 
-;;; (progn (load "glt/lisp/boot") (compile-glt) (compile-system <system>))
+;;; (progn (load "tlt/lisp/boot") (compile-tlt) (compile-system <system>))
 
 
 
 
 
 
-;;;; GLT System Support
+;;;; TLT System Support
 
 
 
 
-;;; For bootstrapping purposes within this file, the parameter `glt-modules',
-;;; and the functions `compile-glt' and `load-glt' are defined.
+;;; For bootstrapping purposes within this file, the parameter `tlt-modules',
+;;; and the functions `compile-tlt' and `load-tlt' are defined.
 ;;; They provide the most minimal system defining support I can get away with to
-;;; load GLT itself and to perform "make-like" minimal compiles and loads of
+;;; load TLT itself and to perform "make-like" minimal compiles and loads of
 ;;; this system.  Note that all files are expected to be within the same
 ;;; directory and that this will be the default directory when these functions
 ;;; are executed.
 
-;;; The parameter `glt-modules' contains a list of all lisp file modules in the
-;;; GLT system, with the notable exception of this file BOOT.
+;;; The parameter `tlt-modules' contains a list of all lisp file modules in the
+;;; TLT system, with the notable exception of this file BOOT.
 
-(defparameter glt-modules
+(defparameter tlt-modules
   '(exports
-    gli-util
+    tli-util
     system
     destruct
     env
@@ -94,10 +94,10 @@
     l-trans
     symbols
     l-top
-    glt-foreign
-    glt-prim
-    glt-math
-    glt-out
+    tlt-foreign
+    tlt-prim
+    tlt-math
+    tlt-out
     makefiles
     trans
     ))
@@ -105,21 +105,21 @@
 
 
 
-;;; The function `compile-glt' will compile and load all modules in GLT as
+;;; The function `compile-tlt' will compile and load all modules in TLT as
 ;;; necessary.  A module is compiled if the corresponding binary file for it
 ;;; does not exist or if the binary file isn't newer than the lisp file.  A
-;;; module is loaded if the :glt-load-date property of the module symbol is
+;;; module is loaded if the :tlt-load-date property of the module symbol is
 ;;; absent or if the file write date within that property is less than the file
 ;;; write date of the binary file.  Note that this file, BOOT, is handled
-;;; specially, and that the value of the parameter glt-modules is not read until
+;;; specially, and that the value of the parameter tlt-modules is not read until
 ;;; after any new versions of BOOT have already been compiled and loaded.
 
-(defun compile-glt (&key recompile from (safe t))
+(defun compile-tlt (&key recompile from (safe t))
   ;; If BOOT is not compiled, or the compile is out of date, compile and load
   ;; it.  Otherwise don't bother to compile or load it, since we are already
   ;; running within a function within that file, and so can assume that it has
   ;; been loaded.
-  (write-line "Compiling and loading GLT...")
+  (write-line "Compiling and loading TLT...")
   (unwind-protect
        (progn
 	 (if safe
@@ -127,42 +127,42 @@
 	   (fastest-compilations))
 	 (loop while recompile
 	       with delete-from-preventer = from
-	       for module in glt-modules 
+	       for module in tlt-modules 
 	       do
 	   (when (and delete-from-preventer
 		      (string= (symbol-name delete-from-preventer) 
 			       (symbol-name module)))
 	     (setq delete-from-preventer nil))
 	   (unless delete-from-preventer
-	     (delete-glt-module-binary module)))
-	 (compile-load-glt-module 'boot (and recompile (null from)) 
-				  1 (1+ (length glt-modules)))
+	     (delete-tlt-module-binary module)))
+	 (compile-load-tlt-module 'boot (and recompile (null from)) 
+				  1 (1+ (length tlt-modules)))
 	 ;; After loading BOOT, call this function to get into the
 	 ;; newest compiled form.
-	 (compile-glt-modules recompile from))
+	 (compile-tlt-modules recompile from))
     (safest-compilations)))
 
-(defun compile-glt-modules (recompile from)
+(defun compile-tlt-modules (recompile from)
   (with-compilation-unit ()
     (loop with *readtable* = (copy-readtable nil)
 	with recompile-module? = (and recompile (null from))
-	with total-modules = (1+ (length glt-modules))
-	for module in glt-modules 
+	with total-modules = (1+ (length tlt-modules))
+	for module in tlt-modules 
 	for module-count from 2 do
       (when (and recompile
 		 (null recompile-module?)
 		 (string= (symbol-name from) (symbol-name module)))
 	(setq recompile-module? t))
-      (compile-load-glt-module module recompile-module? 
+      (compile-load-tlt-module module recompile-module? 
 			       module-count total-modules)))
-  (let ((gli-compile-glt (intern "COMPILE-GLT" "GLI"))
-	(gl-compile-glt (intern "COMPILE-GLT" "GL")))
-    (unless (fboundp gli-compile-glt)
-      (setf (symbol-function gli-compile-glt)
-	(symbol-function 'compile-glt)))
-    (unless (fboundp gl-compile-glt)
-      (setf (symbol-function gl-compile-glt)
-	(symbol-function 'compile-glt)))))
+  (let ((tli-compile-tlt (intern "COMPILE-TLT" "TLI"))
+	(tl-compile-tlt (intern "COMPILE-TLT" "TL")))
+    (unless (fboundp tli-compile-tlt)
+      (setf (symbol-function tli-compile-tlt)
+	(symbol-function 'compile-tlt)))
+    (unless (fboundp tl-compile-tlt)
+      (setf (symbol-function tl-compile-tlt)
+	(symbol-function 'compile-tlt)))))
 
 (defconstant lisp-file-type 
    #-aclpc "lisp"
@@ -180,13 +180,13 @@
 
 
 ;;; The function `fastest-compilations' will set the optimize flags to get the
-;;; fastest code out of compilations.  Typically this will be the case for GLT
+;;; fastest code out of compilations.  Typically this will be the case for TLT
 ;;; itself.  The function `safest-compilations' sets the optimize flags for
 ;;; safest code, at the expense of speed.  This will typically be used for
-;;; systems defined within GL.
+;;; systems defined within TL.
 
 (defun fastest-compilations ()
-  (pushnew :fastest-glt *features*)
+  (pushnew :fastest-tlt *features*)
   (proclaim
 ;    '(optimize
 ;      (compilation-speed 3)
@@ -199,7 +199,7 @@
     ))
 
 (defun safest-compilations ()
-  (setq *features* (delete :fastest-glt (the list *features*)))
+  (setq *features* (delete :fastest-tlt (the list *features*)))
   (proclaim '(optimize
 	      #+cmu(debug 3)
 	      (compilation-speed #-cmu 3 #+cmu 2)
@@ -227,23 +227,23 @@
 
 
 ;;; The variable `exports-file-write-date' contains the file write date of the
-;;; file glt/lisp/exports.lisp.  Any Lisp, C, or GLT file that is not compiled
-;;; up to date with this file will be recompiled.  Since exports of the GL
+;;; file tlt/lisp/exports.lisp.  Any Lisp, C, or TLT file that is not compiled
+;;; up to date with this file will be recompiled.  Since exports of the TL
 ;;; package are included here, this is a reasonable precaution and is a nice
 ;;; feature -- it gives us a way to force full recompiles of everything.
 
 (defvar exports-file-write-date nil)
 
-(defun compile-load-glt-module (module force-recompile? count total)
+(defun compile-load-tlt-module (module force-recompile? count total)
   (let* ((file-name (string-downcase (symbol-name module)))
 	 (lisp-file 
 	   (finalize-pathname
-	     (make-pathname :directory '(:relative "glt" "lisp")
+	     (make-pathname :directory '(:relative "tlt" "lisp")
 			    :name file-name
 			    :type lisp-file-type)))
 	 (bin-file 
 	  (finalize-pathname (make-pathname
-			      :directory '(:relative "glt" "lisp" "dev")
+			      :directory '(:relative "tlt" "lisp" "dev")
 			      :name file-name
 			      :type binary-file-type)))
 	 (relative-bin-file 
@@ -256,7 +256,7 @@
 	  bin-file)
 	 (lisp-date (file-write-date lisp-file))
 	 (bin-date? (file-write-date bin-file))
-	 (load-date? (get module :glt-load-date)))
+	 (load-date? (get module :tlt-load-date)))
     (when (null lisp-date)
       (warn "Module ~a does not have a corresponding lisp file ~a."
 	    module lisp-file))
@@ -277,21 +277,21 @@
       (format t "Loading   ~40a  [~3d/~3d] ~%" bin-file count total)
       (force-output)
       (load bin-file)
-      (setf (get module :glt-load-date) bin-date?))))
+      (setf (get module :tlt-load-date) bin-date?))))
 
 
 
 
-;;; The function `delete-glt-module-binary' takes a symbol naming a GLT module.
+;;; The function `delete-tlt-module-binary' takes a symbol naming a TLT module.
 ;;; If the binary file for that module exists, it will be deleted.  This is used
 ;;; when recompiling, so that a failed recompile can't play gotcha with old
 ;;; binary files when you attempt to continue compiling after fixing a bug.
 
-(defun delete-glt-module-binary (module)
+(defun delete-tlt-module-binary (module)
   (let* ((file-name (string-downcase (symbol-name module)))
 	 (bin-file 
 	  (finalize-pathname 
-	   (make-pathname :directory '(:relative "glt" "lisp" "dev")
+	   (make-pathname :directory '(:relative "tlt" "lisp" "dev")
 			  :name file-name
 			  :type binary-file-type))))
     (when (probe-file bin-file)
@@ -465,10 +465,10 @@
 
 
 
-;;; The :gl feature is pushed onto features to represent that this translator
+;;; The :tl feature is pushed onto features to represent that this translator
 ;;; has been loaded into the environment.
 
-(pushnew :gl *features*)
+(pushnew :tl *features*)
 
 
 
@@ -496,31 +496,30 @@
 
 
 
-;;; The GLI (Gensym Language Internals) package is used to implement the
-;;; translator.  Users of the translator can find all of its interfacing
-;;; functions within the GLT (Gensym Lanaguage Translator) package.  The
-;;; language implemented by this translator is found in the GL (Gensym Language)
-;;; package.  All symbols exported from these packages are found in the module
-;;; EXPORTS.
+;;; The TLI (ThinLisp Internals) package is used to implement the translator.
+;;; Users of the translator can find all of its interfacing functions within the
+;;; TLT (ThinLisp Translator) package.  The language implemented by this
+;;; translator is found in the TL (ThinLisp) package.  All symbols
+;;; exported from these packages are found in the module EXPORTS.
 
-(unless (find-package "GLI")
-  (make-package "GLI"     :use '("LISP")))
+(unless (find-package "TLI")
+  (make-package "TLI"     :use '("LISP")))
 
-(unless (find-package "GLT")
-  (make-package "GLT"     :use nil))
+(unless (find-package "TLT")
+  (make-package "TLT"     :use nil))
 
-(unless (find-package "GL")
-  (make-package "GL"      :use nil))
+(unless (find-package "TL")
+  (make-package "TL"      :use nil))
 
 (unless (find-package "AB-LISP")
   (make-package "AB-LISP" :use '("LISP")))
 
-(unless (find-package "GL-USER")
-  (make-package "GL-USER" :use '("GL")))
+(unless (find-package "TL-USER")
+  (make-package "TL-USER" :use '("TL")))
 
-(unless (fboundp (intern "COMPILE-GLT" (find-package "GLI")))
-  (setf (symbol-function (intern "COMPILE-GLT" (find-package "GLI")))
-	(symbol-function 'compile-glt)))
+(unless (fboundp (intern "COMPILE-TLT" (find-package "TLI")))
+  (setf (symbol-function (intern "COMPILE-TLT" (find-package "TLI")))
+	(symbol-function 'compile-tlt)))
 
 
 
@@ -533,12 +532,12 @@
      (defmacro ,name ,arglist ,@decls-and-forms)))
 
 (defun install-replacement-defmacro ()
-  (let ((gli-package (find-package "GLI"))
+  (let ((tli-package (find-package "TLI"))
 	(ab-lisp-package (find-package "AB-LISP"))
 	(replacement (macro-function 'defmacro-replacement)))
-    (shadow '(DEFMACRO) gli-package)
+    (shadow '(DEFMACRO) tli-package)
     (shadow '(DEFMACRO) ab-lisp-package)
-    (setf (macro-function (find-symbol "DEFMACRO" gli-package))
+    (setf (macro-function (find-symbol "DEFMACRO" tli-package))
           replacement)
     (setf (macro-function (find-symbol "DEFMACRO" ab-lisp-package))
           replacement)

@@ -1,6 +1,6 @@
-(in-package "GL")
+(in-package "TL")
 
-;;;; Module GL-BASICS
+;;;; Module TL-BASICS
 
 ;;; Copyright (c) 1999 The ThinLisp Group
 ;;; Copyright (c) 1996 Gensym Corporation.
@@ -30,7 +30,7 @@
 
 
 
-;;; This module implements more basic level operations for GL.  At this point
+;;; This module implements more basic level operations for TL.  At this point
 ;;; DO, DOTIMES, and DOLIST are available, but LOOP is not.
 
 
@@ -55,15 +55,15 @@
 	   count)
        (declare (fixnum count))))
     (simple-vector
-     (gli::length-trans (the simple-vector sequence)))
+     (tli::length-trans (the simple-vector sequence)))
     (string
-     (gli::length-trans (the string sequence)))
+     (tli::length-trans (the string sequence)))
     ((array (unsigned-byte 8))
-     (gli::length-trans (the (array (unsigned-byte 8)) sequence)))
+     (tli::length-trans (the (array (unsigned-byte 8)) sequence)))
     ((array (unsigned-byte 16))
-     (gli::length-trans (the (array (unsigned-byte 16)) sequence)))
+     (tli::length-trans (the (array (unsigned-byte 16)) sequence)))
     ((array double-float)
-     (gli::length-trans (the (array double-float) sequence)))
+     (tli::length-trans (the (array double-float) sequence)))
     (t
      (error "Non-sequence object ~a given to length." sequence)
      0)))
@@ -80,7 +80,7 @@
 	    (string
 	     (and (stringp b)
 		  ;; String= is not defined until further down in this file.
-		  (= (gli::string-compare a b) 0)))
+		  (= (tli::string-compare a b) 0)))
 	    (cons
 	     (do* ((a-cons a (cdr-of-cons a-cons))
 		   (b-cons b (cdr-of-cons b-cons)))
@@ -363,7 +363,7 @@
   (declare (return-type void))
   (error "ENDP requires a list argument, received ~s" arg))
 
-(defun gli::generic-array-dimension (array)
+(defun tli::generic-array-dimension (array)
   (declare (type t array)
 	   (return-type fixnum))
   (typecase array
@@ -381,7 +381,7 @@
      (error "Non-array object ~a given to array-dimension." array)
      0)))
 
-(defun gli::generic-fill-pointer (vector)
+(defun tli::generic-fill-pointer (vector)
   (declare (type t vector)
 	   (return-type fixnum))
   (typecase vector
@@ -395,7 +395,7 @@
      (error "~a does not have a fill-pointer." vector)
      0)))
 
-(defun gli::generic-set-fill-pointer (vector new-fill-pointer)
+(defun tli::generic-set-fill-pointer (vector new-fill-pointer)
   (declare (type t vector)
 	   (fixnum new-fill-pointer)
 	   (return-type fixnum))
@@ -451,8 +451,8 @@
     coerced-string))
 
 (defmacro string (&environment env string-or-symbol)
-  (if (gli::gl-subtypep
-	(gli::expression-result-type string-or-symbol env)
+  (if (tli::tl-subtypep
+	(tli::expression-result-type string-or-symbol env)
 	'string)
       string-or-symbol
       `(coerce-to-string ,string-or-symbol)))
@@ -473,7 +473,7 @@
 	   (b (gensym)))
        `(let ((,a (string ,string-or-symbol-a))
 	      (,b (string ,string-or-symbol-b)))
-	  (,',operation (gli::string-compare ,a ,b) 0)))))
+	  (,',operation (tli::string-compare ,a ,b) 0)))))
 
 (def-string-comparitor string= =)
 
@@ -643,7 +643,7 @@
 
 
 
-;;; The function `apply' implements all generic dispatching in GL, including
+;;; The function `apply' implements all generic dispatching in TL, including
 ;;; dispathing through funcall.  These are all shuffled through apply since only
 ;;; apply implements optional arguments.
 
@@ -653,7 +653,7 @@
 
 (defmacro apply (function &rest args)
   (if (eval-feature :translator)
-      `(apply-1 ,function (gli::list-dynamic-extent ,@args))
+      `(apply-1 ,function (tli::list-dynamic-extent ,@args))
       `(ab-lisp::apply ,function ,@args)))
 
 
@@ -666,13 +666,13 @@
 
 
 
-;;; GL has its own reader macros for backquote and comma, to produce
+;;; TL has its own reader macros for backquote and comma, to produce
 ;;; translatable Lisp forms.  These get installed into the readtable during Lisp
 ;;; load time for this file, but are not translated.
 
 
 #-translator
-(lisp:set-macro-character #\` #'gli::read-backquote)
+(lisp:set-macro-character #\` #'tli::read-backquote)
 
 #-translator
-(lisp:set-macro-character #\, #'gli::read-comma)
+(lisp:set-macro-character #\, #'tli::read-comma)

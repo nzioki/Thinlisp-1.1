@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module SETF
 
@@ -41,7 +41,7 @@
 ;;; implementations provide anyway, we are only declining to add the function
 ;;; interface to this batch of information.
 
-;;; The macro `gl:defsetf' associates a
+;;; The macro `tl:defsetf' associates a
 
 (defmacro simple-setf-update-fn (access-fn)
   `(get ,access-fn :simple-setf-update-fn))
@@ -49,7 +49,7 @@
 (defmacro setf-method (access-fn)
   `(get ,access-fn :setf-method))
 
-(defmacro gl:define-modify-macro (name lambda-list function)
+(defmacro tl:define-modify-macro (name lambda-list function)
   (let* ((env (gensym))
 	 (access-function-returning-form
 	   `(append
@@ -76,32 +76,32 @@
 				   `(list ,arg-symbol)))
 			    (t
 			     (list `(list ,arg-symbol))))))))
-    `(gl:defmacro ,name ,(append `(&environment ,env place) lambda-list)
+    `(tl:defmacro ,name ,(append `(&environment ,env place) lambda-list)
        (cond
 	 ((and (symbolp place)
-	       (not (eq (gl:variable-information place ,env)
+	       (not (eq (tl:variable-information place ,env)
 			:symbol-macro)))
-	  `(gl:setf ,place ,,access-function-returning-form))
+	  `(tl:setf ,place ,,access-function-returning-form))
 	 ((and (consp place)
-	       (eq (cons-car place) 'gl:the))
+	       (eq (cons-car place) 'tl:the))
 	  (multiple-value-bind (vars vals stores store-form access-form)
-	      (gl:get-setf-expansion (cons-third place) ,env)
-	    `(gl:let* ,(loop for var in (append vars stores)
+	      (tl:get-setf-expansion (cons-third place) ,env)
+	    `(tl:let* ,(loop for var in (append vars stores)
 			     for value
 				 in (append
 				      vals
 				      (let* ((type (cons-second place))
-					     (place `(gl:the ,type ,access-form)))
-					`((gl:the
+					     (place `(tl:the ,type ,access-form)))
+					`((tl:the
 					    ,type
 					    ,,access-function-returning-form))))
 			     collect `(,var ,value))
-	       (gl:declare (gl:type ,(cons-second place) ,(car stores)))
+	       (tl:declare (tl:type ,(cons-second place) ,(car stores)))
 	       ,store-form)))
 	 (t
 	  (multiple-value-bind (vars vals stores store-form access-form)
-	      (gl:get-setf-expansion place ,env)
-	    `(gl:let* ,(loop for var in (append vars stores)
+	      (tl:get-setf-expansion place ,env)
+	    `(tl:let* ,(loop for var in (append vars stores)
 			     for value
 				 in (append
 				      vals
@@ -110,24 +110,24 @@
 			     collect `(,var ,value))
 	       ,store-form)))))))
 
-(def-gl-macro gl:define-setf-method (name lambda-list &body body)
+(def-tl-macro tl:define-setf-method (name lambda-list &body body)
   (when (eval-feature :translator)
-    (return-from gl:define-setf-method nil))
+    (return-from tl:define-setf-method nil))
   (let ((setf-method-name (intern (format nil "~a-SETF-METHOD" name))))
     `(progn
        (eval-when (:compile-toplevel :load-toplevel :execute)
 	 (defun ,setf-method-name
-	     ,@(cons-cdr (gl:parse-macro name lambda-list body)))
+	     ,@(cons-cdr (tl:parse-macro name lambda-list body)))
 	 (setf (setf-method ',name)
 	       (function ,setf-method-name)))
        ',name)))
 
 
-(def-gl-macro gl:defsetf (access-fn update-fn-or-lambda-list
+(def-tl-macro tl:defsetf (access-fn update-fn-or-lambda-list
 				    &rest store-var-and-body)
   (when (eval-feature :translator)
-    (return-from gl:defsetf nil))
-  `(gl:eval-when (:compile-toplevel :load-toplevel :execute)
+    (return-from tl:defsetf nil))
+  `(tl:eval-when (:compile-toplevel :load-toplevel :execute)
      ,(cond
 	((null store-var-and-body)
 	 `(setf (simple-setf-update-fn ',access-fn)
@@ -143,48 +143,48 @@
 			     (setq arg (cons-car arg-cons)))
 			       unless (memqp arg '(&optional &rest &key))
 				 collect (if (consp arg) (car arg) arg))))
-	   `(gl:define-setf-method ,access-fn ,update-fn-or-lambda-list
+	   `(tl:define-setf-method ,access-fn ,update-fn-or-lambda-list
 	      (let ((temps (list ,@(loop repeat (length arg-vars)
 					 collect '(gensym))))
 		    (value-var (gensym)))
 		(values temps
 			(list ,@arg-vars)
 			(list value-var)
-			(gl:destructuring-bind-strict
+			(tl:destructuring-bind-strict
 			  ,(cons store-var arg-vars)
 			  (cons value-var temps)
 			  ,@body)
 			`(,',access-fn ,@temps)))))))))
 
 
-(def-gl-macro gl:setf (&environment env &rest places-and-values)
+(def-tl-macro tl:setf (&environment env &rest places-and-values)
   (cond
     ((null places-and-values)
      nil)
     ((/= (length places-and-values) 2)
-     `(gl:progn
+     `(tl:progn
 	,@(loop for pair-cons on places-and-values by #'cddr
 		for place = (cons-car pair-cons)
 		for value = (if (consp (cons-cdr pair-cons))
 				(cons-second pair-cons)
 				(error "Uneven number of arguments to setf ~s"
 				       places-and-values))
-		collect `(gl:setf ,place ,value))))
+		collect `(tl:setf ,place ,value))))
     (t
      (let ((place (cons-car places-and-values))
 	   (value (cons-second places-and-values)))
        (cond
 	 ((symbolp place)
 	  (multiple-value-bind (binding-type local-binding)
-	      (gl:variable-information place env)
+	      (tl:variable-information place env)
 	    (cond ((not (eq binding-type :symbol-macro))
-		   `(gl:setq ,place ,value))
+		   `(tl:setq ,place ,value))
 		  (t
-		   `(gl:setf ,local-binding ,value)))))
+		   `(tl:setf ,local-binding ,value)))))
 	 ((or (not (consp place)) (not (symbolp (cons-car place))))
 	  (error "SETF place ~s was not a valid form." place))
-	 ((eq (cons-car place) 'gl:the)
-	  `(gl:setf ,(cons-third place) (gl:the ,(cons-second place) ,value)))
+	 ((eq (cons-car place) 'tl:the)
+	  `(tl:setf ,(cons-third place) (tl:the ,(cons-second place) ,value)))
 	 (t
 	  (let* ((op (cons-car place))
 		 (simple-update? (simple-setf-update-fn op))
@@ -195,16 +195,16 @@
 	      (setf-method?
 	       (multiple-value-bind (vars vals stores store-form)
 		   (funcall setf-method? place env)
-		 `(gl:let* ,(loop for var in (append vars stores)
+		 `(tl:let* ,(loop for var in (append vars stores)
 				  for value in (append vals (list value))
 				  collect (list var value))
 		    ,store-form)))
 	      (t
 	       (multiple-value-bind (new-place expanded?)
-		   (gl:macroexpand-1 place env)
+		   (tl:macroexpand-1 place env)
 		 (cond
 		   (expanded?
-		     `(gl:setf ,new-place ,value))
+		     `(tl:setf ,new-place ,value))
 		   ((not (eval-feature :translator))
 		    ;; Give the underlying Lisp level a shot at setfing this form.
 		    `(setf ,place ,value))
@@ -216,20 +216,20 @@
 
 ;;; See setf and get-setf-expansion documentation in CLtL2, p. 140.
 
-(defun gl:get-setf-method (place &optional env)
-  (gl:get-setf-expansion place env))
+(defun tl:get-setf-method (place &optional env)
+  (tl:get-setf-expansion place env))
 
-(defun gl:get-setf-expansion (place &optional env)
+(defun tl:get-setf-expansion (place &optional env)
   (cond
     ((symbolp place)
      (multiple-value-bind (binding-type local-binding)
-	 (gl:variable-information place env)
+	 (tl:variable-information place env)
        (cond ((eq binding-type :symbol-macro)
-	      (gl:get-setf-expansion local-binding env))
+	      (tl:get-setf-expansion local-binding env))
 	     (t
 	      (let ((new-value (gensym)))
 		(values nil nil (list new-value)
-			`(gl:setq ,place ,new-value)
+			`(tl:setq ,place ,new-value)
 			place))))))
     ((or (not (consp place)) (not (symbolp (cons-car place))))
      (error "GET-SETF-EXPANSION place ~s was not a valid form." place))
@@ -252,10 +252,10 @@
 	  (funcall setf-method? place env))
 	 (t
 	  (multiple-value-bind (new-place expanded?)
-	      (gl:macroexpand-1 place env)
+	      (tl:macroexpand-1 place env)
 	    (cond
 	      (expanded?
-	       (gl:get-setf-expansion new-place env))
+	       (tl:get-setf-expansion new-place env))
 	      ((not (eval-feature :translator))
 	       ;; When we are not translating, let the underlying Lisp
 	       ;; implementation have a shot at the expansion.

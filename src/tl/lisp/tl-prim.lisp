@@ -1,6 +1,6 @@
-(in-package "GL")
+(in-package "TL")
 
-;;;; Module GL-PRIM
+;;;; Module TL-PRIM
 
 ;;; Copyright (c) 1999 The ThinLisp Group
 ;;; Copyright (c) 1996 Gensym Corporation.
@@ -25,14 +25,14 @@
 
 
 
-;;;; Miscellaneous Primitive GL Operations
+;;;; Miscellaneous Primitive TL Operations
 
 
 
 
-;;; This module implements some primitive operations for GL.  Note that this is
+;;; This module implements some primitive operations for TL.  Note that this is
 ;;; loaded after the types defintions but before LOOP or DO, so only tagbody and
-;;; the GLI built-in looping special forms are available.
+;;; the TLI built-in looping special forms are available.
 
 
 
@@ -66,7 +66,7 @@
 ;;; is EQ to the Lisp package symbol, but in translation the following form
 ;;; provides a C global variable.
 
-(def-translatable-lisp-var *features* '(:gl))
+(def-translatable-lisp-var *features* '(:tl))
 
 (def-translatable-lisp-var * nil)
 
@@ -81,7 +81,7 @@
 (defun eval-feature (feature-form)
   (let ((loop-var nil))
     (cond ((symbolp feature-form)
-	   (gli::for-loop
+	   (tli::for-loop
 	     ((setq loop-var *features*)
 	      loop-var
 	      (setq loop-var (cdr (the cons loop-var))))
@@ -95,7 +95,7 @@
 	  (t
 	   (case (car (the cons feature-form))
 	     ((and)
-	      (gli::for-loop
+	      (tli::for-loop
 		((setq loop-var (cdr (the cons feature-form)))
 		 loop-var
 		 (setq loop-var (cdr (the cons loop-var))))
@@ -103,7 +103,7 @@
 		    (return-from eval-feature nil)))
 	      feature-form)
 	     ((or)
-	      (gli::for-loop
+	      (tli::for-loop
 		((setq loop-var (cdr (the cons feature-form)))
 		 loop-var
 		 (setq loop-var (cdr (the cons loop-var))))
@@ -126,10 +126,10 @@
 
 
 
-;;; The underlying Lisp constant `gl:lambda-list-keywords' is needed at runtime
+;;; The underlying Lisp constant `tl:lambda-list-keywords' is needed at runtime
 ;;; for some compiler work in NEW-MENUS.
 
-(gli::def-translatable-lisp-constant gl:lambda-list-keywords
+(tli::def-translatable-lisp-constant tl:lambda-list-keywords
   '(&optional &rest &key &aux &body &whole &allow-other-keys &environment))
 
 
@@ -167,19 +167,19 @@
 (defmacro make-symbol (string)
   (if (eval-feature :translator)
       (if (or (constantp string) (symbolp string))
-	  `(gli::init-symbol
-	     (gli::make-empty-symbol)
+	  `(tli::init-symbol
+	     (tli::make-empty-symbol)
 	     ,string (sxhash-string ,string))
 	  (let ((var (gensym)))
 	    `(let ((,var ,string))
-	       (gli::init-symbol
-		 (gli::make-empty-symbol)
+	       (tli::init-symbol
+		 (tli::make-empty-symbol)
 		 ,var (sxhash-string ,var)))))
-      `(gli::make-symbol-safely ,string)))
+      `(tli::make-symbol-safely ,string)))
 
 (defmacro boundp (symbol)
   (if (eval-feature :translator)
-      `(gli::not-unbound-value-p (symbol-value ,symbol))
+      `(tli::not-unbound-value-p (symbol-value ,symbol))
       `(lisp:boundp ,symbol)))
 
 (defmacro getf-macro (property-list property &optional default)
@@ -188,7 +188,7 @@
     `(let ((,plist ,property-list)
 	   (,prop ,property))
        (block nil
-	 (gli::for-loop
+	 (tli::for-loop
 	   (nil ,plist (setq ,plist (cdr (the cons (cdr (the cons ,plist))))))
 	   ;; "When" isn't defined until further on in this file, use "if"
 	   ;; instead.
@@ -207,25 +207,25 @@
 (defun set-get (symbol property new-value)
   (declare (return-type t))
   (if symbol
-      (let* ((original-plist (gli::non-null-symbol-plist symbol))
+      (let* ((original-plist (tli::non-null-symbol-plist symbol))
 	     (plist original-plist))
 	(block nil
-	  (gli::for-loop
+	  (tli::for-loop
 	    (nil plist (setq plist (cdr (the cons (cdr (the cons plist))))))
 	    (cond ((eq (car (the cons plist)) property)
 		   (setf (car (the cons (cdr (the cons plist)))) new-value)
 		   (return-from nil nil))))
-	  (gli::set-non-null-symbol-plist
+	  (tli::set-non-null-symbol-plist
 	    symbol (cons property (cons new-value original-plist)))))
-      (let ((plist gli::symbol-plist-of-nil))
+      (let ((plist tli::symbol-plist-of-nil))
 	(block nil
-	  (gli::for-loop
+	  (tli::for-loop
 	    (nil plist (setq plist (cdr (the cons (cdr (the cons plist))))))
 	    (cond ((eq (car (the cons plist)) property)
 		   (setf (car (the cons (cdr (the cons plist)))) new-value)
 		   (return-from nil nil))))
-	  (setq gli::symbol-plist-of-nil
-		(cons property (cons new-value gli::symbol-plist-of-nil))))))
+	  (setq tli::symbol-plist-of-nil
+		(cons property (cons new-value tli::symbol-plist-of-nil))))))
   new-value)
 
 (defmacro set-get-with-default-value
@@ -253,11 +253,11 @@
 ;;; second allows multiple returned values.
 
 (defmacro funcall-simple-compiled-function (compiled-function &rest args)
-  `(gli::funcall-internal nil ,compiled-function ,@args))
+  `(tli::funcall-internal nil ,compiled-function ,@args))
 
 (defmacro funcall-simple-multi-valued-compiled-function
     (compiled-function &rest args)
-  `(gli::funcall-internal t ,compiled-function ,@args))
+  `(tli::funcall-internal t ,compiled-function ,@args))
 
 
 
@@ -284,7 +284,7 @@
 ;;; The macro def-car-cdr-suite defines functions for accessors and macros for
 ;;; mutators.
 
-(gli::def-car-cdr-suite 2 4)
+(tli::def-car-cdr-suite 2 4)
 
 (declaim (functional first rest second third fourth fifth sixth seventh eighth ninth tenth)
 	 (inline first rest second third))
@@ -425,7 +425,7 @@
   `(cadr-of-conses (cddddr-of-conses (cddddr-of-conses ,list))))
 
 (defmacro make-list (length &key (initial-element nil))
-  `(gli::make-list-1 ,length 1 ,initial-element))
+  `(tli::make-list-1 ,length 1 ,initial-element))
 
 (defmacro list (&rest elements)
   (cond
@@ -434,8 +434,8 @@
     ((null (cdr elements))
      `(cons ,@elements nil))
     (t
-     `(gli::set-list-contents
-	(gli::make-list-1 ,(gli::length-trans elements) 0 nil)
+     `(tli::set-list-contents
+	(tli::make-list-1 ,(tli::length-trans elements) 0 nil)
 	,@elements))))
 
 (defmacro list* (element &rest elements)
@@ -444,8 +444,8 @@
 	((null (cdr elements))
 	 `(cons ,element ,(car elements)))
 	(t
-	 `(gli::set-list-contents*
-	    (gli::make-list-1 ,(gli::length-trans elements) 0 nil)
+	 `(tli::set-list-contents*
+	    (tli::make-list-1 ,(tli::length-trans elements) 0 nil)
 	    ,element ,@elements))))
 
 (declaim (functional last))
@@ -453,12 +453,12 @@
 (defun last (list)
   (declare (list list)
 	   (return-type list))
-  ;; Note that gl:loop is not yet defined.
+  ;; Note that tl:loop is not yet defined.
   (if list
       (let* ((current-cons list)
 	     (next-cons? (cdr current-cons)))
 	(declare (cons current-cons))
-	(gli::while-loop
+	(tli::while-loop
 	  next-cons?
 	  (setq current-cons next-cons?)
 	  (setq next-cons? (cdr current-cons)))
@@ -472,7 +472,7 @@
     (list (reverse-list (the list sequence)))
     (string (reverse-string (the string sequence)))
     (t
-     (gli::gli-simple-error "REVERSE argument was not a string or list."))))
+     (tli::tli-simple-error "REVERSE argument was not a string or list."))))
 
 (defun reverse-list (list)
   (declare (consing-area permanent)
@@ -482,7 +482,7 @@
       (let* ((current-cons list)
 	     (reversed-list nil))
 	(declare (list current-cons reversed-list))
-	(gli::while-loop
+	(tli::while-loop
 	  current-cons
 	  (setf reversed-list
 		(cons (car-of-cons current-cons) reversed-list))
@@ -494,13 +494,13 @@
   (declare (consing-area permanent)
 	   (string string)
 	   (return-type string))
-  (let* ((length (gli::length-trans string))
+  (let* ((length (tli::length-trans string))
 	 (new-string (make-string length))
 	 (index 0)
 	 (reverse-index (1- length)))
     (declare (fixnum length index reverse-index)
 	     (string new-string))
-    (gli::while-loop
+    (tli::while-loop
       (< index length)
       (setf (char new-string reverse-index)
 	    (char string index))
@@ -514,7 +514,7 @@
   (if list
       (let ((current-cdr (cdr-of-cons list)))
 	(setf (cdr list) nil)
-	(gli::while-loop
+	(tli::while-loop
 	  current-cdr
 	  (let ((next-cdr (cdr-of-cons current-cdr)))
 	    (setf (cdr current-cdr) list)

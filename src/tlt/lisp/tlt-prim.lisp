@@ -1,6 +1,6 @@
-(in-package "GLI")
+(in-package "TLI")
 
-;;;; Module GL-PRIM
+;;;; Module TL-PRIM
 
 ;;; Copyright (c) 1999 The ThinLisp Group
 ;;; Copyright (c) 1995 Gensym Corporation.
@@ -25,12 +25,12 @@
 
 
 
-;;;; Primitive Operations for GL
+;;;; Primitive Operations for TL
 
 
 
 
-;;; This module implements facilities in GL that have direct translations into C
+;;; This module implements facilities in TL that have direct translations into C
 ;;; code or are present at compile time only.
 
 
@@ -40,10 +40,10 @@
 
 ;;;; Arrays
 
-(gl:declaim (gl:functional length-trans gl:fill-pointer gl:aref gl:elt
-			   gl:svref gl:schar))
+(tl:declaim (tl:functional length-trans tl:fill-pointer tl:aref tl:elt
+			   tl:svref tl:schar))
 
-(gl:define-compiler-macro gl:length (sequence)
+(tl:define-compiler-macro tl:length (sequence)
   `(length-trans ,sequence))
 
 (def-c-translation length-trans (sequence)
@@ -82,12 +82,12 @@
    (make-c-function-call-expr
      (make-c-name-expr "length") (list sequence))))
 
-(def-gl-macro gl:array-dimension (vector axis)
+(def-tl-macro tl:array-dimension (vector axis)
   (unless (eql axis 0)
-    (error "Arrays in GL are all vectors, so the axis must be 0."))
+    (error "Arrays in TL are all vectors, so the axis must be 0."))
   `(array-dimension-1 ,vector))
 
-(def-gl-macro gl:array-total-size (vector)
+(def-tl-macro tl:array-total-size (vector)
   `(array-dimension-1 ,vector))
 
 (def-c-translation array-dimension-1 (vector)
@@ -125,7 +125,7 @@
    (make-c-function-call-expr
      (make-c-name-expr "generic_array_dimension") (list vector))))
 
-(def-c-translation gl:fill-pointer (vector)
+(def-c-translation tl:fill-pointer (vector)
   ((lisp-specs :ftype ((array) fixnum))
    `(fill-pointer ,vector))
   ((trans-specs :lisp-type ((string) fixnum)
@@ -151,7 +151,7 @@
    (make-c-function-call-expr
      (make-c-name-expr "generic_fill_pointer") (list vector))))
 
-(gl:defsetf gl:fill-pointer set-fill-pointer)
+(tl:defsetf tl:fill-pointer set-fill-pointer)
 
 (def-c-translation set-fill-pointer (vector new-fill-pointer)
   ((lisp-specs :ftype ((t fixnum) fixnum))
@@ -226,7 +226,7 @@
      (make-c-name-expr "generic_set_fill_pointer")
      (list vector new-fill-pointer))))
 
-(def-c-translation gl:elt (sequence index)
+(def-c-translation tl:elt (sequence index)
   ((lisp-specs :ftype ((sequence fixnum) t))
    `(elt ,sequence ,index))
   ((trans-specs :lisp-type ((list fixnum) t)
@@ -253,7 +253,7 @@
   ((trans-specs :lisp-type ((sequence fixnum) t)
 		:c-type ((obj sint32) obj))
    (fat-and-slow-warning
-     (l-expr-env function-call-l-expr) 'gl:elt
+     (l-expr-env function-call-l-expr) 'tl:elt
      (l-expr-pretty-form function-call-l-expr))
    (register-needed-function-extern
      (c-func-c-file c-func) '("extern") 'obj "generic_elt" '(obj sint32))
@@ -304,9 +304,9 @@
    (make-c-function-call-expr
      (make-c-name-expr "generic_set_elt") (list sequence index value))))
 
-(gl:defsetf gl:elt set-elt)
+(tl:defsetf tl:elt set-elt)
 
-(def-c-translation gl:aref (array index)
+(def-c-translation tl:aref (array index)
   ((lisp-specs :ftype ((array fixnum) t))
    `(aref ,array ,index))
   ((trans-specs :lisp-type ((simple-vector fixnum) t)
@@ -327,7 +327,7 @@
   ((trans-specs :lisp-type ((array fixnum) t)
 		:c-type ((obj sint32) obj))
    (fat-and-slow-warning
-     (l-expr-env function-call-l-expr) 'gl:aref
+     (l-expr-env function-call-l-expr) 'tl:aref
      (l-expr-pretty-form function-call-l-expr))
    (register-needed-function-extern
      (c-func-c-file c-func) '("extern") 'obj "generic_aref" '(obj sint32))
@@ -376,9 +376,9 @@
    (make-c-function-call-expr
      (make-c-name-expr "generic_set_aref") (list array index value))))
 
-(gl:defsetf gl:aref set-aref)
+(tl:defsetf tl:aref set-aref)
 
-(def-c-translation gl:svref (simple-vector index)
+(def-c-translation tl:svref (simple-vector index)
   ((lisp-specs :ftype ((simple-vector fixnum) t))
    `(svref ,simple-vector ,index))
   ((trans-specs :c-type (((array obj) sint32) obj))
@@ -390,10 +390,10 @@
   ((trans-specs :c-type (((array obj) sint32 obj) obj))
    (make-c-infix-expr (make-c-subscript-expr simple-vector index) "=" value)))
 
-(gl:defsetf gl:svref set-svref)
+(tl:defsetf tl:svref set-svref)
 
-(def-c-translation gl:schar (string index)
-  ;; Note that within GL, schar can be applied to strings with fill-pointers.
+(def-c-translation tl:schar (string index)
+  ;; Note that within TL, schar can be applied to strings with fill-pointers.
   ;; This means that in development Lisp images, we must always use char to
   ;; implement this operation.
   ((lisp-specs :ftype ((string fixnum) character))
@@ -401,11 +401,11 @@
   ((trans-specs :c-type (((array unsigned-char) sint32) unsigned-char))
    (make-c-subscript-expr string index)))
 
-(def-gl-macro gl:char (string index)
-  `(gl:schar ,string ,index))
+(def-tl-macro tl:char (string index)
+  `(tl:schar ,string ,index))
 
 (def-c-translation set-schar (string index value)
-  ;; Note that within GL, schar can be applied to strings with fill-pointers.
+  ;; Note that within TL, schar can be applied to strings with fill-pointers.
   ;; This means that in development Lisp images, we must always use char to
   ;; implement this operation.
   ((lisp-specs :ftype ((string fixnum character) character))
@@ -414,7 +414,7 @@
 			 unsigned-char))
    (make-c-infix-expr (make-c-subscript-expr string index) "=" value)))
 
-(gl:defsetf gl:schar set-schar)
+(tl:defsetf tl:schar set-schar)
 
 
 
@@ -424,7 +424,7 @@
 ;;; less than string2, a zero means they are equal strings, and positive if
 ;;; string1 is greater than string2.
 
-(gl:declaim (gl:functional string-compare))
+(tl:declaim (tl:functional string-compare))
 
 (def-c-translation string-compare (string1 string2)
   ((lisp-specs :ftype ((string string) fixnum))
@@ -445,30 +445,30 @@
 
 
 
-;;; The macro `gl:replace-strings' is a version of replace optimized for string
+;;; The macro `tl:replace-strings' is a version of replace optimized for string
 ;;; copying.  Note that there is purposefully no :END1 argument.  There must be
 ;;; enough room in the first string to hold the values being copied, or else
 ;;; this operation will overwrite whatever object arbitrarily follows it in
 ;;; memory.
 
-(def-gl-macro gl:replace-strings
+(def-tl-macro tl:replace-strings
     (to-string from-string &key (start1 0) (start2 0) end2)
   (let ((to (gensym))
 	(from (gensym))
 	(s1 (if (constantp start1) start1 (gensym)))
 	(s2 (if (constantp start2) start2 (gensym)))
 	(e2 (gensym)))
-    `(gl:let* ((,to ,to-string)
+    `(tl:let* ((,to ,to-string)
 	       (,from ,from-string)
 	       ,@(if (symbolp s1) `((,s1 ,start1)))
 	       ,@(if (symbolp s2) `((,s2 ,start2)))
 	       (,e2 ,(or end2 `(length-trans ,from))))
-       (gl:declare (string ,to ,from)
+       (tl:declare (string ,to ,from)
 		   (fixnum ,@(if (symbolp s1) `(,s1))
 			   ,@(if (symbolp s2) `(,s2))
 			   ,e2))
        (replace-strings-1
-	 ,to ,from ,s1 ,s2 ,(if (eql s2 0) e2 `(gl:- ,e2 ,s2)))
+	 ,to ,from ,s1 ,s2 ,(if (eql s2 0) e2 `(tl:- ,e2 ,s2)))
        ,@(unless (eql s1 0)
 	   `(,to)))))
 
@@ -486,19 +486,19 @@
        (make-c-cast-expr '(pointer void) (make-c-add-expr from "+" start2))
        count))))
 
-(def-gl-macro gl:replace-simple-vectors
+(def-tl-macro tl:replace-simple-vectors
     (to-simple-vector from-simple-vector &key (start1 0) (start2 0) end2)
   (let ((to (gensym))
 	(from (gensym))
 	(s1 (if (constantp start1) start1 (gensym)))
 	(s2 (if (constantp start2) start2 (gensym)))
 	(e2 (gensym)))
-    `(gl:let* ((,to ,to-simple-vector)
+    `(tl:let* ((,to ,to-simple-vector)
 	       (,from ,from-simple-vector)
 	       ,@(if (symbolp s1) `((,s1 ,start1)))
 	       ,@(if (symbolp s2) `((,s2 ,start2)))
 	       (,e2 ,(or end2 `(length-trans ,from))))
-       (gl:declare (simple-vector ,to ,from)
+       (tl:declare (simple-vector ,to ,from)
 		   (fixnum ,@(if (symbolp s1) `(,s1))
 			   ,@(if (symbolp s2) `(,s2))
 			   ,e2))
@@ -527,30 +527,30 @@
 
 
 
-;;; The macro `gl:replace-uint16-arrays' is a version of replace optimized for
+;;; The macro `tl:replace-uint16-arrays' is a version of replace optimized for
 ;;; arrays of (unsigned-byte 16).  Note that there is purposefully no :END1
 ;;; argument.  There must be enough room in the first array to hold the values
 ;;; being copied, or else this operation will overwrite whatever object
 ;;; arbitrarily follows it in memory.
 
-(def-gl-macro gl:replace-uint16-arrays
+(def-tl-macro tl:replace-uint16-arrays
     (to-array from-array &key (start1 0) (start2 0) end2)
   (let ((to (gensym))
 	(from (gensym))
 	(s1 (if (constantp start1) start1 (gensym)))
 	(s2 (if (constantp start2) start2 (gensym)))
 	(e2 (gensym)))
-    `(gl:let ((,to ,to-array)
+    `(tl:let ((,to ,to-array)
 	      (,from ,from-array)
 	      ,@(if (symbolp s1) `((,s1 ,start1)))
 	      ,@(if (symbolp s2) `((,s2 ,start2)))
 	      (,e2 ,(or end2 `(length ,from))))
-       (gl:declare (type (array (unsigned-byte 16)) ,to ,from)
+       (tl:declare (type (array (unsigned-byte 16)) ,to ,from)
 		   (fixnum ,@(if (symbolp s1) `(,s1))
 			   ,@(if (symbolp s2) `(,s2))
 			   ,e2))
        (replace-uint16-arrays-1
-	 ,to ,from ,s1 ,s2 ,(if (eql s2 0) e2 `(gl:- ,e2 ,s2)))
+	 ,to ,from ,s1 ,s2 ,(if (eql s2 0) e2 `(tl:- ,e2 ,s2)))
        ,@(unless (eql s1 0)
 	   `(,to)))))
 
@@ -573,16 +573,16 @@
 	 (make-c-add-expr from "+" start2))
        (make-c-infix-expr count "*" 2)))))
 
-(def-gl-macro gl:fill-string (string character &key (start nil) (end nil))
+(def-tl-macro tl:fill-string (string character &key (start nil) (end nil))
   (if (and (null start) (null end))
       (if (symbolp string)
-	  `(gl:progn
+	  `(tl:progn
 	     (fill-string-1 ,string ,character 0
-			    (length-trans (gl:the string ,string)))
+			    (length-trans (tl:the string ,string)))
 	     ,string)
 	  (let ((string-var (gensym)))
-	    `(gl:let ((,string-var ,string))
-	       (gl:declare (string ,string-var))
+	    `(tl:let ((,string-var ,string))
+	       (tl:declare (string ,string-var))
 	       (fill-string-1
 		 ,string-var ,character 0 (length-trans ,string-var))
 	       ,string-var)))
@@ -590,12 +590,12 @@
 	    (char-var (gensym))
 	    (start-var (gensym))
 	    (end-var (gensym)))
-	`(gl:let* ((,string-var ,string)
+	`(tl:let* ((,string-var ,string)
 		   (,char-var ,character)
 		   (,start-var ,(or start 0))
 		   (,end-var
-		      ,(or end `(length-trans (gl:the string ,string-var)))))
-	   (gl:declare (string ,string-var)
+		      ,(or end `(length-trans (tl:the string ,string-var)))))
+	   (tl:declare (string ,string-var)
 		       (character ,char-var)
 		       (fixnum ,start-var ,end-var))
 	   (fill-string-1 ,string-var ,char-var
@@ -604,7 +604,7 @@
 
 (def-c-translation fill-string-1 (string char start count)
   ((lisp-specs :ftype ((string character fixnum fixnum) void))
-   ;; Note that gl:fill-string (the only caller for fill-string-1) guarantees
+   ;; Note that tl:fill-string (the only caller for fill-string-1) guarantees
    ;; that I can eval the start argument twice.
    `(fill ,string ,char :start ,start :end (+ ,start ,count)))
   ((trans-specs :c-type (((pointer unsigned-char) unsigned-char sint32 sint32)
@@ -615,7 +615,7 @@
 	     '(pointer void) (make-c-infix-expr string "+" start))
 	   char count))))
 
-(gl:declaim (gl:functional search-string-1 position-in-string-1))
+(tl:declaim (tl:functional search-string-1 position-in-string-1))
 
 (def-c-translation search-string-1 (pattern searched start1 start2)
   ((lisp-specs :ftype ((string string fixnum fixnum) t))
@@ -677,9 +677,9 @@
        (satisfies-c-required-type-p
 	 (uncoerced-l-expr-c-return-type l-expr) 'unsigned-char)))
 
-(gl:declaim (gl:functional gl:char-code gl:code-char))
+(tl:declaim (tl:functional tl:char-code tl:code-char))
 
-(def-c-translation gl:char-code (char)
+(def-c-translation tl:char-code (char)
   ((lisp-specs :ftype ((character) fixnum))
    `(char-code ,char))
   ;; Note that the existing type coercions will do exactly the right thing with
@@ -687,7 +687,7 @@
   ((trans-specs :c-type ((unsigned-char) sint32))
    (make-c-cast-expr 'sint32 char)))
 
-(def-c-translation gl:code-char (integer)
+(def-c-translation tl:code-char (integer)
   ((lisp-specs :ftype ((fixnum) character))
    `(code-char ,integer))
   ((trans-specs :c-type ((sint32) unsigned-char))
@@ -698,10 +698,10 @@
     'progn
     (loop for (lisp-op c-op) in lisp-and-c-op-pairs
 	  for lisp-sym = (intern (symbol-name lisp-op) *lisp-package*)
-	  for gl-sym = (intern (format nil "TWO-ARG-~a" (symbol-name lisp-sym)))
+	  for tl-sym = (intern (format nil "TWO-ARG-~a" (symbol-name lisp-sym)))
 	  append
-	  `((gl:declaim (gl:functional ,gl-sym))
-	    (def-c-translation ,gl-sym (char1 char2)
+	  `((tl:declaim (tl:functional ,tl-sym))
+	    (def-c-translation ,tl-sym (char1 char2)
 	     ((lisp-specs :ftype ((character character) t))
 	      `(,',lisp-sym ,char1 ,char2))
 	     ((trans-specs
@@ -747,14 +747,14 @@
 		 (l-expr-env function-call-l-expr) 'string)))
 	   (make-c-literal-expr (c-type-tag 'str))))))
 
-(def-gl-macro gl:make-string (length &key (initial-element #\null)
+(def-tl-macro tl:make-string (length &key (initial-element #\null)
 				     (dont-initialize nil))
   (if dont-initialize
       `(make-string-1 ,length)
       (let ((new-string (gensym)))
-	`(gl:let ((,new-string (make-string-1 ,length)))
-	   (gl:declare (string ,new-string))
-	   (gl:fill-string ,new-string ,initial-element)
+	`(tl:let ((,new-string (make-string-1 ,length)))
+	   (tl:declare (string ,new-string))
+	   (tl:fill-string ,new-string ,initial-element)
 	   ,new-string))))
 
 (def-c-translation make-uint8-array (length)
@@ -802,15 +802,15 @@
 		 '(array double-float))))
 	   (make-c-literal-expr (c-type-tag 'sa-double))))))
 
-(def-gl-macro gl:make-array
+(def-tl-macro tl:make-array
     (&environment env dimensions &key (element-type t)
 		  (initial-element nil element-supplied?)
 		  initial-contents fill-pointer)
-  (let* ((expanded-element-type (gl:macroexpand-all element-type env))
+  (let* ((expanded-element-type (tl:macroexpand-all element-type env))
 	 (upgraded-type
 	   (if (constantp expanded-element-type)
-	       (upgraded-gl-array-element-type (eval expanded-element-type))
-	       (error "GL:make-array :element-type arguments must be constants, was ~s"
+	       (upgraded-tl-array-element-type (eval expanded-element-type))
+	       (error "TL:make-array :element-type arguments must be constants, was ~s"
 		      element-type)))
 	 (array-var (gensym))
 	 (index-var (gensym))
@@ -824,7 +824,7 @@
 			   (car dim))
 		      (error "Bad make-array dimensions: ~s" dimensions)))))
 	 (fixnum-dims?
-	   (gl-subtypep (expression-result-type dimensions env) 'fixnum)))
+	   (tl-subtypep (expression-result-type dimensions env) 'fixnum)))
 	       
     ;; We have no fast implementation for initial-contents, so we should always
     ;; complain when it is used, unless the user has already admitted that this
@@ -836,7 +836,7 @@
     ;; Some varieties of our arrays have fill-pointers always, and some don't.
     ;; If they ask for a fill-pointer on an array type that doesn't support it,
     ;; complain here, else just do the default thing.
-    (when (and (memqp upgraded-type '(t gl:double-float))
+    (when (and (memqp upgraded-type '(t tl:double-float))
 	       fill-pointer)
       (error "Make-array with upgraded-array-element-type ~S can't have a fill-pointer."
 	     upgraded-type))
@@ -845,47 +845,47 @@
       (let ((length-form
 	      (cond (constant-length? constant-length?)
 		    (fixnum-dims? dimensions)
-		    (t `(gl::check-make-array-dimensions ,dimensions)))))
+		    (t `(tl::check-make-array-dimensions ,dimensions)))))
 	(cond (element-supplied?
-	       (if (eq array-type 'gl:string)
-		   `(gl:make-string ,length-form :initial-element ,initial-element)
-		 `(gl:let* ((,iteration-length-var ,length-form)
+	       (if (eq array-type 'tl:string)
+		   `(tl:make-string ,length-form :initial-element ,initial-element)
+		 `(tl:let* ((,iteration-length-var ,length-form)
 			    (,array-var (,maker-function ,iteration-length-var))
 			    (,initial-var ,initial-element))
-		   (gl:declare (gl:fixnum ,iteration-length-var)
-			       (gl:type ,array-type ,array-var)
-			       (gl:type ,upgraded-type ,initial-var))
-		   (gl:dotimes (,index-var ,iteration-length-var)
-		     (gl:declare (gl:fixnum ,index-var))
-		     (gl:setf (gl:aref ,array-var ,index-var) ,initial-var))
+		   (tl:declare (tl:fixnum ,iteration-length-var)
+			       (tl:type ,array-type ,array-var)
+			       (tl:type ,upgraded-type ,initial-var))
+		   (tl:dotimes (,index-var ,iteration-length-var)
+		     (tl:declare (tl:fixnum ,index-var))
+		     (tl:setf (tl:aref ,array-var ,index-var) ,initial-var))
 		   ,array-var)))
 	      (initial-contents
-	       `(gl:let* ((,iteration-length-var ,length-form)
+	       `(tl:let* ((,iteration-length-var ,length-form)
 			  (,array-var (,maker-function ,iteration-length-var))
 			  (,initial-var ,initial-contents))
-		  (gl:declare (gl:fixnum ,iteration-length-var)
-			      (gl:type ,array-type ,array-var))
-		  (gl:dotimes (,index-var ,iteration-length-var)
-		    (gl:declare (gl:fixnum ,index-var))
-		    (gl:setf (gl:aref ,array-var ,index-var)
-			     (gl:the ,upgraded-type
-				     (gl:car (gl:the gl:cons ,initial-var))))
-		    (gl:setq ,initial-var (gl:cdr (gl:the gl:cons ,initial-var))))
+		  (tl:declare (tl:fixnum ,iteration-length-var)
+			      (tl:type ,array-type ,array-var))
+		  (tl:dotimes (,index-var ,iteration-length-var)
+		    (tl:declare (tl:fixnum ,index-var))
+		    (tl:setf (tl:aref ,array-var ,index-var)
+			     (tl:the ,upgraded-type
+				     (tl:car (tl:the tl:cons ,initial-var))))
+		    (tl:setq ,initial-var (tl:cdr (tl:the tl:cons ,initial-var))))
 		  ,array-var))
 	      (t
 	       `(,maker-function ,length-form)))))))
 
 (defun array-maker-function-and-type-for-element-type (upgraded-type)
-  (cond ((eq upgraded-type 'gl:character)
-	 (values 'make-string-1 'gl:string))
-	((equal upgraded-type '(gl:unsigned-byte 8))
-	 (values 'make-uint8-array '(gl:array (gl:unsigned-byte 8))))
-	((equal upgraded-type '(gl:unsigned-byte 16))
-	 (values 'make-uint16-array '(gl:array (gl:unsigned-byte 16))))
-	((eq upgraded-type 'gl:double-float)
-	 (values 'make-double-array '(gl:array gl:double-float)))
+  (cond ((eq upgraded-type 'tl:character)
+	 (values 'make-string-1 'tl:string))
+	((equal upgraded-type '(tl:unsigned-byte 8))
+	 (values 'make-uint8-array '(tl:array (tl:unsigned-byte 8))))
+	((equal upgraded-type '(tl:unsigned-byte 16))
+	 (values 'make-uint16-array '(tl:array (tl:unsigned-byte 16))))
+	((eq upgraded-type 'tl:double-float)
+	 (values 'make-double-array '(tl:array tl:double-float)))
 	((eq upgraded-type t)
-	 (values 'make-simple-vector 'gl:simple-vector))
+	 (values 'make-simple-vector 'tl:simple-vector))
 	(t
 	 (error "Unrecognized upgraded-array-element-type ~s"
 		upgraded-type))))	  
@@ -901,19 +901,19 @@
 
 
 
-;;; The type `gl:managed-float' has been added to GL to provide low level
+;;; The type `tl:managed-float' has been added to TL to provide low level
 ;;; support for a type that can hold double-floats or a pointer to an object.
 ;;; The memory for these locations may be allowed to overlap if that aids in
 ;;; making these objects as small as possible.  The goal of this object is to
 ;;; store a floating point value as efficiently as possible while they are
 ;;; allocated and to store a pointer to the next managed-float in a resource
 ;;; pool while they are reclaimed.  The operations available on managed floats
-;;; are `gl:make-managed-float', `gl:managed-float-value' (which is setfable),
-;;; `gl:managed-float-next-object' (which is setfable), and
-;;; `gl:managed-float-p'.
+;;; are `tl:make-managed-float', `tl:managed-float-value' (which is setfable),
+;;; `tl:managed-float-next-object' (which is setfable), and
+;;; `tl:managed-float-p'.
 
 #+c-managed-floats
-(def-c-translation gl:make-managed-float (new-value)
+(def-c-translation tl:make-managed-float (new-value)
   ((lisp-specs :ftype ((double-float) managed-float))
    (let ((new-array (gensym))
 	 (new-obj (gensym)))
@@ -935,10 +935,10 @@
 	   (make-c-literal-expr (c-type-tag 'mdouble))))))
 
 #+c-managed-floats
-(gl:declaim (gl:side-effect-free gl:managed-float-value))
+(tl:declaim (tl:side-effect-free tl:managed-float-value))
 
 #+c-managed-floats
-(def-c-translation gl:managed-float-value (managed-float)
+(def-c-translation tl:managed-float-value (managed-float)
   ((lisp-specs :ftype ((managed-float) double-float))
    `(aref (the (array double-float) (car ,managed-float)) 0))
   ((trans-specs :c-type ((obj) double))
@@ -949,7 +949,7 @@
      "value")))
 
 #+c-managed-floats
-(gl:defsetf gl:managed-float-value set-managed-float-value)
+(tl:defsetf tl:managed-float-value set-managed-float-value)
 
 #+c-managed-floats
 (def-c-translation set-managed-float-value (managed-float new-value)
@@ -969,17 +969,17 @@
      "=" new-value)))
 
 #-c-managed-floats
-(def-gl-macro set-managed-float-value (managed-float new-value)
-  `(gl:setf (gl:aref (gl:the (gl:array gl:double-float)
-			     (gl:car (gl:the gl:cons ,managed-float)))
+(def-tl-macro set-managed-float-value (managed-float new-value)
+  `(tl:setf (tl:aref (tl:the (tl:array tl:double-float)
+			     (tl:car (tl:the tl:cons ,managed-float)))
 		     0)
-	    (gl:the gl:double-float ,new-value)))
+	    (tl:the tl:double-float ,new-value)))
 
 #+c-managed-floats
-(gl:declaim (gl:side-effect-free gl:managed-float-next-object))
+(tl:declaim (tl:side-effect-free tl:managed-float-next-object))
 
 #+c-managed-floats
-(def-c-translation gl:managed-float-next-object (managed-float)
+(def-c-translation tl:managed-float-next-object (managed-float)
   ((lisp-specs :ftype ((managed-float) t))
    `(cdr ,managed-float))
   ((trans-specs :c-type ((obj) obj))
@@ -990,7 +990,7 @@
      "next_object")))
 
 #+c-managed-floats
-(gl:defsetf gl:managed-float-next-object set-managed-float-next-object)
+(tl:defsetf tl:managed-float-next-object set-managed-float-next-object)
 
 #+c-managed-floats
 (def-c-translation set-managed-float-next-object (managed-float new-value)
@@ -1006,10 +1006,10 @@
      "=" new-value)))
 
 #+c-managed-floats
-(gl:declaim (gl:functional gl:managed-float-p))
+(tl:declaim (tl:functional tl:managed-float-p))
 
 #+c-managed-floats
-(def-c-translation gl:managed-float-p (object)
+(def-c-translation tl:managed-float-p (object)
   ((lisp-specs :ftype ((t) t))
    (let ((thing (gensym)))
      `(let ((,thing ,object))
@@ -1038,48 +1038,46 @@
 
 
 
-;;; Within GL only two kinds of Common Lisp streams are implemented.  They are
+;;; Within TL only two kinds of Common Lisp streams are implemented.  They are
 ;;; string-streams and file-streams.  File-streams are currently only used to
-;;; implement the *terminal-io* stream to "stdout" and "stdin", though in the
-;;; future we may decide to make these the basis of the gensym-streams
-;;; implementation.
+;;; implement the *terminal-io* stream to "stdout" and "stdin".
 
-(def-c-translation gl:make-string-output-stream ()
-  ((lisp-specs :ftype (() gl-string-stream))
-   `(make-gl-string-stream))
+(def-c-translation tl:make-string-output-stream ()
+  ((lisp-specs :ftype (() tl-string-stream))
+   `(make-tl-string-stream))
   ((trans-specs :c-type (() obj))
    (make-c-function-call-expr
      (make-c-name-expr "alloc_string_strm")
      (list (make-c-literal-expr
 	     (region-number-for-type-and-area
-	       'gl-string-stream
+	       'tl-string-stream
 	       (declared-area-name
 		 (l-expr-env function-call-l-expr)
-		 'gl-string-stream)))
+		 'tl-string-stream)))
 	   (make-c-literal-expr (c-type-tag 'string-strm))))))
 
-(def-gl-macro gl:make-string-input-stream (string)
-  `(gl:let ((in-stream (gl:make-string-output-stream))
+(def-tl-macro tl:make-string-input-stream (string)
+  `(tl:let ((in-stream (tl:make-string-output-stream))
 	    (in-string ,string))
-    (gl:setf (string-stream-input-string in-stream) in-string)
-    (gl:setf (string-stream-input-index in-stream) 0)
-    (gl:setf (string-stream-input-index-bounds in-stream)
+    (tl:setf (string-stream-input-string in-stream) in-string)
+    (tl:setf (string-stream-input-index in-stream) 0)
+    (tl:setf (string-stream-input-index-bounds in-stream)
 	     (length-trans in-string))
     in-stream))
 
-(gl:declaim (gl:side-effect-free string-stream-strings))
+(tl:declaim (tl:side-effect-free string-stream-strings))
 
 (def-c-translation string-stream-strings (string-stream)
-  ((lisp-trans :ftype ((gl-string-stream) list))
-   `(gl-string-stream-strings ,string-stream))
+  ((lisp-trans :ftype ((tl-string-stream) list))
+   `(tl-string-stream-strings ,string-stream))
   ((trans-specs :c-type ((obj) obj))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer string-strm) string-stream)
      "strings")))
 
 (def-c-translation set-string-stream-strings (string-stream list)
-  ((lisp-trans :ftype ((gl-string-stream list) list))
-   `(setf (gl-string-stream-strings ,string-stream) ,list))
+  ((lisp-trans :ftype ((tl-string-stream list) list))
+   `(setf (tl-string-stream-strings ,string-stream) ,list))
   ((trans-specs :c-type ((obj obj) obj))
    (make-c-infix-expr
      (make-c-indirect-selection-expr
@@ -1087,21 +1085,21 @@
        "strings")
      "=" list)))
 
-(gl:defsetf string-stream-strings set-string-stream-strings)
+(tl:defsetf string-stream-strings set-string-stream-strings)
 
-(gl:declaim (gl:side-effect-free string-stream-input-string))
+(tl:declaim (tl:side-effect-free string-stream-input-string))
 
 (def-c-translation string-stream-input-string (string-stream)
-  ((lisp-trans :ftype ((gl-string-stream) string))
-   `(gl-string-stream-input-string ,string-stream))
+  ((lisp-trans :ftype ((tl-string-stream) string))
+   `(tl-string-stream-input-string ,string-stream))
   ((trans-specs :c-type ((obj) (array unsigned-char)))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer string-strm) string-stream)
      "input_string")))
 
 (def-c-translation set-string-stream-input-string (string-stream string)
-  ((lisp-trans :ftype ((gl-string-stream string) string))
-   `(setf (gl-string-stream-input-string ,string-stream)
+  ((lisp-trans :ftype ((tl-string-stream string) string))
+   `(setf (tl-string-stream-input-string ,string-stream)
 	  ,string))
   ((trans-specs :c-type ((obj (array unsigned-char)) (array unsigned-char)))
    (make-c-infix-expr
@@ -1110,21 +1108,21 @@
        "input_string")
      "=" string)))
 
-(gl:defsetf string-stream-input-string set-string-stream-input-string)
+(tl:defsetf string-stream-input-string set-string-stream-input-string)
 
-(gl:declaim (gl:side-effect-free string-stream-input-index))
+(tl:declaim (tl:side-effect-free string-stream-input-index))
 
 (def-c-translation string-stream-input-index (string-stream)
-  ((lisp-trans :ftype ((gl-string-stream) fixnum))
-   `(gl-string-stream-input-index ,string-stream))
+  ((lisp-trans :ftype ((tl-string-stream) fixnum))
+   `(tl-string-stream-input-index ,string-stream))
   ((trans-specs :c-type ((obj) sint32))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer string-strm) string-stream)
      "input_index")))
 
 (def-c-translation set-string-stream-input-index (string-stream fixnum)
-  ((lisp-trans :ftype ((gl-string-stream fixnum) fixnum))
-   `(setf (gl-string-stream-input-index ,string-stream)
+  ((lisp-trans :ftype ((tl-string-stream fixnum) fixnum))
+   `(setf (tl-string-stream-input-index ,string-stream)
 	  ,fixnum))
   ((trans-specs :c-type ((obj sint32) sint32))
    (make-c-infix-expr
@@ -1133,21 +1131,21 @@
        "input_index")
      "=" fixnum)))
 
-(gl:defsetf string-stream-input-index set-string-stream-input-index)
+(tl:defsetf string-stream-input-index set-string-stream-input-index)
 
-(gl:declaim (gl:side-effect-free string-stream-input-index-bounds))
+(tl:declaim (tl:side-effect-free string-stream-input-index-bounds))
 
 (def-c-translation string-stream-input-index-bounds (string-stream)
-  ((lisp-trans :ftype ((gl-string-stream) fixnum))
-   `(gl-string-stream-input-index-bounds ,string-stream))
+  ((lisp-trans :ftype ((tl-string-stream) fixnum))
+   `(tl-string-stream-input-index-bounds ,string-stream))
   ((trans-specs :c-type ((obj) sint32))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer string-strm) string-stream)
      "input_index_bounds")))
 
 (def-c-translation set-string-stream-input-index-bounds (string-stream fixnum)
-  ((lisp-trans :ftype ((gl-string-stream fixnum) fixnum))
-   `(setf (gl-string-stream-input-index-bounds ,string-stream)
+  ((lisp-trans :ftype ((tl-string-stream fixnum) fixnum))
+   `(setf (tl-string-stream-input-index-bounds ,string-stream)
 	  ,fixnum))
   ((trans-specs :c-type ((obj sint32) sint32))
    (make-c-infix-expr
@@ -1156,13 +1154,13 @@
        "input_index_bounds")
      "=" fixnum)))
 
-(gl:defsetf string-stream-input-index-bounds set-string-stream-input-index-bounds)
+(tl:defsetf string-stream-input-index-bounds set-string-stream-input-index-bounds)
 
 
 
 
 ;;; The following function is used to compute the initial value for
-;;; *terminal-io* in gl/lisp/format.lisp.
+;;; *terminal-io* in tl/lisp/format.lisp.
 
 (def-c-translation make-terminal-io-file-stream ()
   ((lisp-specs :ftype (() file-stream))
@@ -1192,13 +1190,13 @@
 
 
 
-;;; Note that GL:CONS is declared side-effect free since allocators modify no
+;;; Note that TL:CONS is declared side-effect free since allocators modify no
 ;;; existing structures.  This works fine as long as the memory meter functions
 ;;; (which are rarely called) are not declared side-effect free.
 
-(gl:declaim (gl:side-effect-free gl:cons))
+(tl:declaim (tl:side-effect-free tl:cons))
 
-(def-c-translation gl:cons (car cdr)
+(def-c-translation tl:cons (car cdr)
   ((lisp-specs :ftype ((t t) cons))
    `(cons ,car ,cdr))
   ((trans-specs :c-type ((obj obj) obj))
@@ -1210,7 +1208,7 @@
 	       'cons (declared-area-name
 		       (l-expr-env function-call-l-expr) 'cons)))))))
 
-(gl:declaim (gl:side-effect-free make-list-1))
+(tl:declaim (tl:side-effect-free make-list-1))
 
 (def-c-translation make-list-1 (length init-elements-p initial-elt)
   ;; Note that the result type is T since a zero elt list returns NIL.
@@ -1235,38 +1233,38 @@
 ;;; argument.  It is more efficient than calling setf on the first, then second,
 ;;; etc. in that it will not traverse the conses of a list more than once.  It
 ;;; returns the passed list.  This macro is used by the implementations of
-;;; GL:LIST and friends in glt/lisp/gl-types.lisp
+;;; TL:LIST and friends in tlt/lisp/tl-types.lisp
 
-(def-gl-macro set-list-contents (list &rest new-contents)
+(def-tl-macro set-list-contents (list &rest new-contents)
   (cond ((null new-contents)
 	 list)
 	((null (cdr new-contents))
 	 (if (symbolp list)
-	     `(gl:progn
-		(gl:setf (gl:car ,list) ,(car new-contents))
+	     `(tl:progn
+		(tl:setf (tl:car ,list) ,(car new-contents))
 		,list)
 	     (let ((list-evaled (gensym)))
-	       `(gl:let ((,list-evaled ,list))
-		  (gl:setf (gl:car ,list-evaled) ,(car new-contents))
+	       `(tl:let ((,list-evaled ,list))
+		  (tl:setf (tl:car ,list-evaled) ,(car new-contents))
 		  ,list-evaled))))
 	(t
 	 (let* ((eval-needed? (not (symbolp list)))
 		(new-list (if eval-needed? (gensym) list))
 		(current-cons (gensym)))
-	   `(gl:let* (,@(if eval-needed? `((,new-list ,list)))
+	   `(tl:let* (,@(if eval-needed? `((,new-list ,list)))
 			(,current-cons ,new-list))
-	      (gl:setf (gl:car ,current-cons) ,(car new-contents))
+	      (tl:setf (tl:car ,current-cons) ,(car new-contents))
 	      ,@(loop with lines = nil
 		      for element in (cdr new-contents)
 		      do
-		  (push `(gl:setq ,current-cons (gl:cdr-of-cons ,current-cons))
+		  (push `(tl:setq ,current-cons (tl:cdr-of-cons ,current-cons))
 			lines)
-		  (push `(gl:setf (gl:car ,current-cons) ,element) lines)
+		  (push `(tl:setf (tl:car ,current-cons) ,element) lines)
 		      finally
 			(return (nreverse lines)))
 	      ,new-list)))))
 
-(def-gl-macro set-list-contents* (list &rest new-contents)
+(def-tl-macro set-list-contents* (list &rest new-contents)
   (cond ((null (cdr new-contents))
 	 (error "SET-LIST-CONTENTS* must be called with at least 2 new-value ~
                  arguments."))
@@ -1274,27 +1272,27 @@
 	 (let* ((eval-needed? (not (symbolp list)))
 		(new-list (if eval-needed? (gensym) list))
 		(current-cons (gensym)))
-	   `(gl:let* (,@(if eval-needed? `((,new-list ,list)))
+	   `(tl:let* (,@(if eval-needed? `((,new-list ,list)))
 			(,current-cons ,new-list))
-	      (gl:setf (gl:car ,current-cons) ,(car new-contents))
+	      (tl:setf (tl:car ,current-cons) ,(car new-contents))
 	      ,@(loop with lines = nil
 		      for element-cons on (cdr new-contents)
 		      for element = (car element-cons)
 		      do
 		  (cond
 		    ((cons-cdr element-cons)
-		     (push `(gl:setq ,current-cons (gl:cdr-of-cons ,current-cons))
+		     (push `(tl:setq ,current-cons (tl:cdr-of-cons ,current-cons))
 			   lines)
-		     (push `(gl:setf (gl:car ,current-cons) ,element) lines))
+		     (push `(tl:setf (tl:car ,current-cons) ,element) lines))
 		    (t
-		     (push `(gl:setf (gl:cdr ,current-cons) ,element) lines)))
+		     (push `(tl:setf (tl:cdr ,current-cons) ,element) lines)))
 		      finally
 			(return (nreverse lines)))
 	      ,new-list)))))
 
 	       
 	       
-(gl:declaim (gl:functional car-trans cdr-trans))
+(tl:declaim (tl:functional car-trans cdr-trans))
 
 (def-c-translation car-trans (list)
   ((lisp-specs :ftype ((list) t))
@@ -1328,16 +1326,16 @@
      (make-c-function-call-expr (make-c-name-expr "CAR") (list cons))
      "=" value)))
 
-(gl:defsetf gl:car set-car)
+(tl:defsetf tl:car set-car)
 
-(def-gl-macro gl:rplaca (cons new-car)
+(def-tl-macro tl:rplaca (cons new-car)
   (if (symbolp cons)
-      `(gl:progn
-	 (gl:setf (gl:car ,cons) ,new-car)
+      `(tl:progn
+	 (tl:setf (tl:car ,cons) ,new-car)
 	 ,cons)
       (let ((cons-var (gensym)))
-	`(gl:let ((,cons-var ,cons))
-	   (gl:setf (gl:car ,cons-var) ,new-car)
+	`(tl:let ((,cons-var ,cons))
+	   (tl:setf (tl:car ,cons-var) ,new-car)
 	   ,cons-var))))
 
 (def-c-translation cdr-trans (list)
@@ -1370,35 +1368,35 @@
      (make-c-function-call-expr (make-c-name-expr "CDR") (list cons))
      "=" value)))
 
-(gl:defsetf gl:cdr set-cdr)
+(tl:defsetf tl:cdr set-cdr)
 
-(def-gl-macro gl:rplacd (cons new-car)
+(def-tl-macro tl:rplacd (cons new-car)
   (if (symbolp cons)
-      `(gl:progn
-	 (gl:setf (gl:cdr ,cons) ,new-car)
+      `(tl:progn
+	 (tl:setf (tl:cdr ,cons) ,new-car)
 	 ,cons)
       (let ((cons-var (gensym)))
-	`(gl:let ((,cons-var ,cons))
-	   (gl:setf (gl:cdr ,cons-var) ,new-car)
+	`(tl:let ((,cons-var ,cons))
+	   (tl:setf (tl:cdr ,cons-var) ,new-car)
 	   ,cons-var))))
 
-(def-gl-macro gl:car-of-cons (gl:cons)
-  `(gl:car (gl:the gl:cons ,gl:cons)))
+(def-tl-macro tl:car-of-cons (tl:cons)
+  `(tl:car (tl:the tl:cons ,tl:cons)))
 
-(def-gl-macro gl:cdr-of-cons (gl:cons)
-  `(gl:cdr (gl:the gl:cons ,gl:cons)))
-
-
+(def-tl-macro tl:cdr-of-cons (tl:cons)
+  `(tl:cdr (tl:the tl:cons ,tl:cons)))
 
 
 
-;;; The macro `def-car-cdr-suite' will be called from within GL, where the
+
+
+;;; The macro `def-car-cdr-suite' will be called from within TL, where the
 ;;; functions being defined here can be translated.  This macro is defined here
-;;; so that we can use Lisp, since the CxR suite must be defined before gl:loop.
+;;; so that we can use Lisp, since the CxR suite must be defined before tl:loop.
 
 (defmacro def-car-cdr-suite (from-level to-level)
   (cons
-    'gl:progn
+    'tl:progn
     (loop for levels from from-level to to-level
 	  append
 	  (loop for op-index from 0 below (expt 2 levels)
@@ -1408,81 +1406,81 @@
 		for car-cdr-list
 		    = (loop for char-index from 0 below levels
 			    collect (if (logbitp char-index op-index)
-					'gl:cdr
-					'gl:car))
+					'tl:cdr
+					'tl:car))
 		for op-name = (intern (concatenate
 					'string '(#\C) selector-list '(#\R))
-				      *gl-package*)
+				      *tl-package*)
 		for op-of-conses
-		    = (intern (format nil "~a-OF-CONSES" op-name) *gl-package*)
+		    = (intern (format nil "~a-OF-CONSES" op-name) *tl-package*)
 		for setter-name
-		    = (intern (format nil "SET-~a" op-name) *gli-package*)
+		    = (intern (format nil "SET-~a" op-name) *tli-package*)
 		for outer-op
 		    = (intern (format nil "C~aR" (car selector-list))
-			      *gl-package*)
+			      *tl-package*)
 		for inner-op
 		    = (intern (concatenate
 				'string '(#\C) (cdr selector-list) '(#\R))
-			      *gl-package*)
+			      *tl-package*)
 		for inner-op-of-conses
 		    = (intern (format nil "~a-OF-CONS~a"
 				      inner-op
 				      (if (cddr selector-list) "ES" ""))
-			      *gl-package*)
+			      *tl-package*)
 	      append
-		`((gl:declaim (gl:functional ,op-name)
+		`((tl:declaim (tl:functional ,op-name)
 			      ,@(if (<= levels 3)
-				    `((gl:inline ,op-name))
+				    `((tl:inline ,op-name))
 				    nil))
-		  (gl:defun ,op-name (gl:list)
-		    (gl:declare (gl:type gl:list gl:list)
-				(gl:return-type t))
+		  (tl:defun ,op-name (tl:list)
+		    (tl:declare (tl:type tl:list tl:list)
+				(tl:return-type t))
 		    ,@(loop for op-cons on (reverse car-cdr-list)
 			    for op = (car op-cons)
 			    collect
 			    (if (null (cons-cdr op-cons))
-				`(gl:if gl:list
-					(,op (gl:the gl:cons gl:list))
+				`(tl:if tl:list
+					(,op (tl:the tl:cons tl:list))
 					nil)
-				`(gl:if gl:list
-					(gl:setq
-					  gl:list
-					  (,op (gl:the gl:cons gl:list)))
-					(gl:return-from ,op-name nil)))))
-		  (gl:defmacro ,op-of-conses (gl:list)
+				`(tl:if tl:list
+					(tl:setq
+					  tl:list
+					  (,op (tl:the tl:cons tl:list)))
+					(tl:return-from ,op-name nil)))))
+		  (tl:defmacro ,op-of-conses (tl:list)
 		    `(,',outer-op
-			  (gl:the gl:cons (,',inner-op-of-conses ,gl:list))))
-		  (gl:defsetf ,op-name ,setter-name)
-		  (gl:defmacro ,setter-name (list value)
-		    `(gl:setf (,',outer-op (,',inner-op-of-conses ,list))
+			  (tl:the tl:cons (,',inner-op-of-conses ,tl:list))))
+		  (tl:defsetf ,op-name ,setter-name)
+		  (tl:defmacro ,setter-name (list value)
+		    `(tl:setf (,',outer-op (,',inner-op-of-conses ,list))
 			      ,value)))))))
 
-(def-gl-macro gl:push (&environment env item list-place)
+(def-tl-macro tl:push (&environment env item list-place)
   (if (and (symbolp list-place)
-	   (not (eq (gl:variable-information list-place env) :symbol-macro)))
-      `(gl:setf ,list-place (gl:cons ,item ,list-place))
+	   (not (eq (tl:variable-information list-place env) :symbol-macro)))
+      `(tl:setf ,list-place (tl:cons ,item ,list-place))
       (multiple-value-bind (temps vals stores store-form access-form)
-	  (gl:get-setf-expansion list-place env)
+	  (tl:get-setf-expansion list-place env)
 	(let ((item-var (gensym)))
-	  `(gl:let*
+	  `(tl:let*
 	       ,(cons (list item-var item)
 		      (loop for var in (append temps stores)
-			    for val in (append vals `((gl:cons ,item-var
+			    for val in (append vals `((tl:cons ,item-var
 							       ,access-form)))
 			    collect (list var val)))
 	     ,store-form)))))
 
-(def-gl-macro gl:pop (&environment env list-place)
+(def-tl-macro tl:pop (&environment env list-place)
   (if (and (symbolp list-place)
-	   (not (eq (gl:variable-information list-place env) :symbol-macro)))
-      `(gl:prog1 (gl:car ,list-place)
-	 (gl:setq ,list-place (gl:cdr ,list-place)))
+	   (not (eq (tl:variable-information list-place env) :symbol-macro)))
+      `(tl:prog1 (tl:car ,list-place)
+	 (tl:setq ,list-place (tl:cdr ,list-place)))
       (multiple-value-bind (temps vals stores store-form access-form)
-	  (gl:get-setf-expansion list-place env)
-	`(gl:let* ,(loop for var in (append temps stores)
-			 for val in (append vals `((gl:cdr ,access-form)))
+	  (tl:get-setf-expansion list-place env)
+	`(tl:let* ,(loop for var in (append temps stores)
+			 for val in (append vals `((tl:cdr ,access-form)))
 			 collect (list var val))
-	   (gl:prog1 (gl:car ,access-form)
+	   (tl:prog1 (tl:car ,access-form)
 	     ,store-form)))))
 
 
@@ -1497,11 +1495,11 @@
 
 ;;; This section implements the lowest level primitives for symbols.  Many other
 ;;; features, such as interning and gensyming, are implemented in
-;;; gl/lisp/packages.lisp.
+;;; tl/lisp/packages.lisp.
 
 ;;; The `make-empty-symbol' mallocs and type tags the memory for a symbol, but
 ;;; does not yet install a print-name or any other characteristics.  They all
-;;; happen in the GL libraries for packages.
+;;; happen in the TL libraries for packages.
 
 (def-c-translation make-empty-symbol ()
   ((lisp-specs :ftype (() symbol))
@@ -1538,7 +1536,7 @@
    
 
 
-(gl:declaim (gl:side-effect-free symbol-local-value))
+(tl:declaim (tl:side-effect-free symbol-local-value))
 
 (def-c-translation symbol-local-value (symbol)
   ((lisp-specs :ftype ((symbol) t))
@@ -1549,7 +1547,7 @@
      (make-c-cast-expr '(pointer sym) symbol)
      "local_value")))
 
-(gl:defsetf symbol-local-value set-symbol-local-value)
+(tl:defsetf symbol-local-value set-symbol-local-value)
 
 (def-c-translation set-symbol-local-value (symbol flag)
   ((lisp-specs :ftype ((symbol t) t))
@@ -1562,7 +1560,7 @@
        "local_value")
      "=" flag)))
 
-(gl:declaim (gl:side-effect-free symbol-external))
+(tl:declaim (tl:side-effect-free symbol-external))
 
 (def-c-translation symbol-external (symbol)
   ((lisp-specs :ftype ((symbol) t))
@@ -1576,7 +1574,7 @@
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer sym) symbol) "external")))
 
-(gl:defsetf symbol-external set-symbol-external)
+(tl:defsetf symbol-external set-symbol-external)
 
 (def-c-translation set-symbol-external (symbol flag)
   ((lisp-specs :ftype ((symbol t) t))
@@ -1588,7 +1586,7 @@
        (make-c-cast-expr '(pointer sym) symbol) "external")
      "=" flag)))
 
-(gl:declaim (gl:side-effect-free symbol-balance))
+(tl:declaim (tl:side-effect-free symbol-balance))
 
 (def-c-translation symbol-balance (symbol)
   ((lisp-specs :ftype ((symbol) fixnum))
@@ -1599,7 +1597,7 @@
      'sint32 (make-c-indirect-selection-expr
 	       (make-c-cast-expr '(pointer sym) symbol) "balance"))))
 
-(gl:defsetf symbol-balance set-symbol-balance)
+(tl:defsetf symbol-balance set-symbol-balance)
 
 (def-c-translation set-symbol-balance (symbol fixnum)
   ((lisp-specs :ftype ((symbol fixnum) fixnum))
@@ -1611,7 +1609,7 @@
        (make-c-cast-expr '(pointer sym) symbol) "balance")
      "=" fixnum)))
 
-(gl:declaim (gl:side-effect-free symbol-imported))
+(tl:declaim (tl:side-effect-free symbol-imported))
 
 (def-c-translation symbol-imported (symbol)
   ((lisp-specs :ftype ((symbol) t))
@@ -1621,7 +1619,7 @@
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer sym) symbol) "imported")))
 
-(gl:defsetf symbol-imported set-symbol-imported)
+(tl:defsetf symbol-imported set-symbol-imported)
 
 (def-c-translation set-symbol-imported (symbol flag)
   ((lisp-specs :ftype ((symbol t) t))
@@ -1632,7 +1630,7 @@
        (make-c-cast-expr '(pointer sym) symbol) "imported")
      "=" flag)))
 
-(gl:declaim (gl:side-effect-free symbol-name-hash))
+(tl:declaim (tl:side-effect-free symbol-name-hash))
 
 (def-c-translation symbol-name-hash (symbol)
   ((lisp-specs :ftype ((symbol) fixnum))
@@ -1643,7 +1641,7 @@
      'sint32 (make-c-indirect-selection-expr
 	       (make-c-cast-expr '(pointer sym) symbol) "name_hash"))))
 
-(gl:defsetf symbol-name-hash set-symbol-name-hash)
+(tl:defsetf symbol-name-hash set-symbol-name-hash)
 
 (def-c-translation set-symbol-name-hash (symbol fixnum)
   ((lisp-specs :ftype ((symbol fixnum) fixnum))
@@ -1655,17 +1653,17 @@
        (make-c-cast-expr '(pointer sym) symbol) "name_hash")
      "=" fixnum)))
 
-(def-gl-macro gl:symbol-name (symbol)
-  `(gl:the gl:string
+(def-tl-macro tl:symbol-name (symbol)
+  `(tl:the tl:string
 	   ,(if (or (symbolp symbol) (constantp symbol))
-		`(gl:if ,symbol
+		`(tl:if ,symbol
 			(non-null-symbol-name ,symbol)
 			"NIL")
 		(let ((sym (gensym)))
-		  `(gl:let ((,sym ,symbol))
-		     (gl:symbol-name ,sym))))))
+		  `(tl:let ((,sym ,symbol))
+		     (tl:symbol-name ,sym))))))
 
-(gl:declaim (gl:functional non-null-symbol-name))
+(tl:declaim (tl:functional non-null-symbol-name))
 
 (def-c-translation non-null-symbol-name (symbol)
   ((lisp-specs :ftype ((symbol) string))
@@ -1684,32 +1682,32 @@
        (make-c-cast-expr '(pointer sym) symbol) "symbol_name")
      "=" string)))
 
-(def-gl-macro gl:symbol-value (symbol)
+(def-tl-macro tl:symbol-value (symbol)
   (if (or (symbolp symbol) (constantp symbol))
-      `(gl:if ,symbol
-	      (gl:if (symbol-local-value ,symbol)
+      `(tl:if ,symbol
+	      (tl:if (symbol-local-value ,symbol)
 		     (symbol-value-pointer ,symbol)
 		     (symbol-non-local-value ,symbol))
 	      nil)
       (let ((var (gensym)))
-	`(gl:let ((,var ,symbol))
-	   (gl:symbol-value ,var)))))
+	`(tl:let ((,var ,symbol))
+	   (tl:symbol-value ,var)))))
 
-(gl:defsetf gl:symbol-value gl:set)
+(tl:defsetf tl:symbol-value tl:set)
 
-(def-gl-macro gl:set (symbol new-value)
+(def-tl-macro tl:set (symbol new-value)
   (let ((sym (gensym))
 	(val (gensym)))
-    `(gl:let ((,sym ,symbol)
+    `(tl:let ((,sym ,symbol)
 	      (,val ,new-value))
-       (gl:if ,sym
-	      (gl:if (symbol-local-value ,sym)
+       (tl:if ,sym
+	      (tl:if (symbol-local-value ,sym)
 		     (set-symbol-value-pointer ,sym ,val)
 		     (set-symbol-non-local-value ,sym ,val))
-	      (gl:error "Can't set the symbol-value of NIL."))
+	      (tl:error "Can't set the symbol-value of NIL."))
        ,val)))
 
-(gl:declaim (gl:side-effect-free symbol-value-pointer))
+(tl:declaim (tl:side-effect-free symbol-value-pointer))
 
 (def-c-translation symbol-value-pointer (symbol)
   ((lisp-specs :ftype ((symbol) t))
@@ -1718,7 +1716,7 @@
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer sym) symbol) "symbol_value")))
 
-(gl:defsetf symbol-value-pointer set-symbol-value-pointer)
+(tl:defsetf symbol-value-pointer set-symbol-value-pointer)
 
 (def-c-translation set-symbol-value-pointer (symbol new-value)
   ((lisp-specs :ftype ((symbol t) t))
@@ -1729,7 +1727,7 @@
        (make-c-cast-expr '(pointer sym) symbol) "symbol_value")
      "=" new-value)))
 
-(gl:declaim (gl:side-effect-free symbol-non-local-value))
+(tl:declaim (tl:side-effect-free symbol-non-local-value))
 
 (def-c-translation symbol-non-local-value (symbol)
   ((lisp-specs :ftype ((symbol) t))
@@ -1755,16 +1753,16 @@
 	       "symbol_value")))
      "=" new-value)))
 
-(def-gl-macro gl:symbol-plist (symbol)
+(def-tl-macro tl:symbol-plist (symbol)
   (if (or (symbolp symbol) (constantp symbol))
-      `(gl:if ,symbol
+      `(tl:if ,symbol
 	      (non-null-symbol-plist ,symbol)
 	      symbol-plist-of-nil)
       (let ((var (gensym)))
-	`(gl:let ((,var ,symbol))
-	   (gl:symbol-plist ,var)))))
+	`(tl:let ((,var ,symbol))
+	   (tl:symbol-plist ,var)))))
 
-(gl:declaim (gl:side-effect-free non-null-symbol-plist))
+(tl:declaim (tl:side-effect-free non-null-symbol-plist))
 
 (def-c-translation non-null-symbol-plist (symbol)
   ((lisp-specs :ftype ((symbol) t))
@@ -1774,16 +1772,16 @@
      (make-c-cast-expr '(pointer sym) symbol)
      "symbol_plist")))
 
-(gl:defsetf gl:symbol-plist set-symbol-plist)
+(tl:defsetf tl:symbol-plist set-symbol-plist)
 
-(def-gl-macro set-symbol-plist (symbol new-plist)
+(def-tl-macro set-symbol-plist (symbol new-plist)
   (let ((sym (gensym))
 	(new (gensym)))
-    `(gl:let ((,sym ,symbol)
+    `(tl:let ((,sym ,symbol)
 	      (,new ,new-plist))
-       (gl:if ,sym
+       (tl:if ,sym
 	      (set-non-null-symbol-plist ,sym ,new)
-	      (gl:setq symbol-plist-of-nil ,new)))))
+	      (tl:setq symbol-plist-of-nil ,new)))))
 
 (def-c-translation set-non-null-symbol-plist (symbol new-plist)
   ((lisp-specs :ftype ((symbol t) t))
@@ -1795,9 +1793,9 @@
        "symbol_plist")
      "=" new-plist)))
 
-(gl:declaim (gl:side-effect-free gl:symbol-package))
+(tl:declaim (tl:side-effect-free tl:symbol-package))
 
-(def-c-translation gl:symbol-package (symbol)
+(def-c-translation tl:symbol-package (symbol)
   ((lisp-specs :ftype ((symbol) t))
    `(symbol-package ,symbol))
   ((trans-specs :c-type ((obj) obj))
@@ -1817,9 +1815,9 @@
        "symbol_package")
      "=" package-or-nil)))
 
-(gl:declaim (gl:side-effect-free gl:symbol-function))
+(tl:declaim (tl:side-effect-free tl:symbol-function))
 
-(def-c-translation gl:symbol-function (symbol)
+(def-c-translation tl:symbol-function (symbol)
   ((lisp-specs :ftype ((symbol) t))
    `(symbol-function ,symbol))
   ((trans-specs :c-type ((obj) obj))
@@ -1837,21 +1835,21 @@
        "symbol_function")
      "=" function)))
 
-(gl:defsetf gl:symbol-function set-symbol-function)
+(tl:defsetf tl:symbol-function set-symbol-function)
 
-(gl:declaim (gl:side-effect-free symbol-left-branch))
+(tl:declaim (tl:side-effect-free symbol-left-branch))
 
 
 
 
 ;;; The macro `fboundp' takes a symbol and returns whether or not the
-;;; symbol-function cell of the symbol is to a compiled-function.  Note that GL
+;;; symbol-function cell of the symbol is to a compiled-function.  Note that TL
 ;;; does not allow function names of the (setf <symbol>) style, and so this
 ;;; function takes only symbols and not generalized function names.
 
-(def-gl-macro gl:fboundp (symbol)
+(def-tl-macro tl:fboundp (symbol)
   (if (eval-feature :translator)
-      `(gl:not (gl:eq (gl:symbol-function ,symbol) (the-unbound-value)))
+      `(tl:not (tl:eq (tl:symbol-function ,symbol) (the-unbound-value)))
       `(ab-lisp::fboundp ,symbol)))
 
 (def-c-translation symbol-left-branch (symbol)
@@ -1863,7 +1861,7 @@
      (make-c-cast-expr '(pointer sym) symbol)
      "left_branch")))
 
-(gl:defsetf symbol-left-branch set-symbol-left-branch)
+(tl:defsetf symbol-left-branch set-symbol-left-branch)
 
 (def-c-translation set-symbol-left-branch (symbol new-value)
   ((lisp-specs :ftype ((symbol t) t))
@@ -1876,7 +1874,7 @@
        "left_branch")
      "=" new-value)))
 
-(gl:declaim (gl:side-effect-free symbol-right-branch))
+(tl:declaim (tl:side-effect-free symbol-right-branch))
 
 (def-c-translation symbol-right-branch (symbol)
   ((lisp-specs :ftype ((symbol) t))
@@ -1887,7 +1885,7 @@
      (make-c-cast-expr '(pointer sym) symbol)
      "right_branch")))
 
-(gl:defsetf symbol-right-branch set-symbol-right-branch)
+(tl:defsetf symbol-right-branch set-symbol-right-branch)
 
 (def-c-translation set-symbol-right-branch (symbol new-value)
   ((lisp-specs :ftype ((symbol t) t))
@@ -1900,7 +1898,7 @@
        "right_branch")
      "=" new-value)))
 
-(gl:declaim (gl:side-effect-free not-unbound-value-p))
+(tl:declaim (tl:side-effect-free not-unbound-value-p))
 
 (def-c-translation not-unbound-value-p (value)
   ((lisp-specs :ftype ((t) t))
@@ -1912,7 +1910,7 @@
      (make-c-cast-expr 'obj (make-c-unary-expr
 			      #\& (make-c-name-expr "Unbound"))))))
 
-(gl:declaim (gl:side-effect-free the-unbound-value))
+(tl:declaim (tl:side-effect-free the-unbound-value))
 
 (def-c-translation the-unbound-value ()
   ((lisp-specs :ftype (() t))
@@ -1924,7 +1922,7 @@
 
 
 ;;; In CMU Lisp, if you give a fill-pointered string to make-symbol, the
-;;; compiler can croak on that later on.  Since GL always allocates
+;;; compiler can croak on that later on.  Since TL always allocates
 ;;; fill-pointered strings, this is especially a problem.  So, within the base
 ;;; Lisp environment, make sure that all strings given to make-symbol are in
 ;;; fact simple-strings.
@@ -1946,7 +1944,7 @@
 
 
 
-(gl:declaim (gl:side-effect-free compiled-function-arg-count
+(tl:declaim (tl:side-effect-free compiled-function-arg-count
 			   compiled-function-optional-arguments
 			   compiled-function-default-arguments
 			   compiled-function-name))
@@ -2025,18 +2023,18 @@
 
 
 
-;;; The macro `gl:make-package' takes a name and a :use keyword argument, and
+;;; The macro `tl:make-package' takes a name and a :use keyword argument, and
 ;;; returns a new package with that name.  If a package with that name already
 ;;; exists, this function signals an error.
 
-(def-gl-macro gl:make-package (name &key (use ''("GL")))
+(def-tl-macro tl:make-package (name &key (use ''("TL")))
   (if (eval-feature :translator)
-      `(gl::make-package-1 ,name ,use)
+      `(tl::make-package-1 ,name ,use)
       `(lisp:make-package ,name :use ,use)))
 
-(def-gl-macro gl:find-package (string-or-symbol-or-package)
+(def-tl-macro tl:find-package (string-or-symbol-or-package)
   (if (eval-feature :translator)
-      `(gl::find-package-1 ,string-or-symbol-or-package)
+      `(tl::find-package-1 ,string-or-symbol-or-package)
       ;; Note that the Lucid implementation of find-package has an error, in
       ;; that it signals an error when given a package object instead of just
       ;; returning it.  This macroexpansion will work around that bug.
@@ -2064,16 +2062,16 @@
 		 'package)))
 	   (make-c-literal-expr (c-type-tag 'pkg))))))
 
-(gl:declaim (gl:functional gl:package-name))
+(tl:declaim (tl:functional tl:package-name))
 
-(def-c-translation gl:package-name (package)
+(def-c-translation tl:package-name (package)
   ((lisp-specs :ftype ((package) string))
    `(package-name ,package))
   ((trans-specs :c-type ((obj) obj))
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer pkg) package) "name")))
 
-(gl:declaim (gl:side-effect-free package-use-list-internal))
+(tl:declaim (tl:side-effect-free package-use-list-internal))
 
 (def-c-translation package-use-list-internal (package)
   ((lisp-specs :ftype ((package) t))
@@ -2083,7 +2081,7 @@
      (make-c-cast-expr '(pointer pkg) package)
      "used_packages")))
 
-(gl:declaim (gl:side-effect-free package-root-symbol))
+(tl:declaim (tl:side-effect-free package-root-symbol))
 
 (def-c-translation package-root-symbol (package)
   ((lisp-specs :ftype ((package) t))
@@ -2093,7 +2091,7 @@
      (make-c-cast-expr '(pointer pkg) package)
      "root_symbol")))
 
-(gl:defsetf package-root-symbol set-package-root-symbol)
+(tl:defsetf package-root-symbol set-package-root-symbol)
 
 (def-c-translation set-package-root-symbol (package symbol)
   ((lisp-specs :ftype ((package t) t))
@@ -2117,34 +2115,34 @@
 
 
 
-(def-gl-macro gl:typep (&environment env object type)
-  (let ((expanded-type (gl:macroexpand type env)))
-    (unless (gl:constantp expanded-type)
-      (error "GL:typep can only handle constant types, not ~s" expanded-type))
+(def-tl-macro tl:typep (&environment env object type)
+  (let ((expanded-type (tl:macroexpand type env)))
+    (unless (tl:constantp expanded-type)
+      (error "TL:typep can only handle constant types, not ~s" expanded-type))
     (setq type (expand-type (eval expanded-type)))
     (if (and (symbolp object)
-	     (not (eq (gl:variable-information object env) :symbol-macro)))
+	     (not (eq (tl:variable-information object env) :symbol-macro)))
 	(cond ((consp type)
 	       (let ((first (cons-car type)))
 		 (case first
 		   ((and or not)
-		    `(,(cdr (assq first '((and . gl:and) (or . gl:or)
-					  (not . gl:not))))
+		    `(,(cdr (assq first '((and . tl:and) (or . tl:or)
+					  (not . tl:not))))
 		       ,@(loop for subtype in (cons-cdr type)
-			       collect `(gl:typep ,object (gl:quote ,subtype)))))
-		 ((satisfies gl:satisfies)
+			       collect `(tl:typep ,object (tl:quote ,subtype)))))
+		 ((satisfies tl:satisfies)
 		  `(,(cons-second type) ,object))
 		 ((unsigned-byte)
 		  `(and (inlined-typep ,object 'fixnum)
 			(>= (the fixnum ,object) 0)
 			(< (the fixnum ,object) ,(expt 2 (second type)))))
 		 (t
-		  `(inlined-typep ,object (gl:quote ,type))))))
+		  `(inlined-typep ,object (tl:quote ,type))))))
 	      (t
-	       `(inlined-typep ,object (gl:quote ,type))))
+	       `(inlined-typep ,object (tl:quote ,type))))
 	(let ((object-var (gensym)))
-	  `(gl:let ((,object-var ,object))
-	     (gl:typep ,object-var (gl:quote ,type)))))))
+	  `(tl:let ((,object-var ,object))
+	     (tl:typep ,object-var (tl:quote ,type)))))))
 
 (def-c-translation type-tag (object)
   ((lisp-specs :ftype ((t) fixnum))
@@ -2165,8 +2163,8 @@
 		     (make-c-cast-expr '(pointer hdr) object)
 		     "type")))))))
 
-(def-gl-macro gl:typecase (keyform &rest clauses)
-  ;; Note that gli::type-tag is not a proper macro, and can evaluate its
+(def-tl-macro tl:typecase (keyform &rest clauses)
+  ;; Note that tli::type-tag is not a proper macro, and can evaluate its
   ;; argument multiple times.
   (if (eval-feature :translator)
       (if (symbolp keyform)
@@ -2185,21 +2183,21 @@
 		     when (and (not (eq type t)) unused-tags)
 		       collect `(,unused-tags ,@forms)))
 	  (let ((key-var (gensym)))
-	    `(gl:let ((,key-var ,keyform))
-	       (gl:typecase ,key-var
+	    `(tl:let ((,key-var ,keyform))
+	       (tl:typecase ,key-var
 		 ,@clauses))))
       (let ((key-var (gensym)))
-	`(gl:let ((,key-var ,keyform))
-	   (gl:cond
+	`(tl:let ((,key-var ,keyform))
+	   (tl:cond
 	     ,@(loop for (type . forms) in clauses
 		     collect
-		     (if (memqp type '(gl:t gl:otherwise))
+		     (if (memqp type '(tl:t tl:otherwise))
 			 `(t ,@forms)
-			 `((gl:typep ,key-var ',type) ,@forms))))))))
+			 `((tl:typep ,key-var ',type) ,@forms))))))))
 
-(gl:declaim (gl:functional gl:not))
+(tl:declaim (tl:functional tl:not))
 
-(def-c-translation gl:not (object)
+(def-c-translation tl:not (object)
   ((lisp-specs :ftype ((t) t))
    `(not ,object))
   ((trans-specs :c-type ((boolean) boolean))
@@ -2232,10 +2230,10 @@
   ((trans-specs :c-type ((obj obj) boolean))
    (make-c-equality-expr object1 "==" object2)))
 
-(gl:define-compiler-macro gl:eql (object1 object2)
+(tl:define-compiler-macro tl:eql (object1 object2)
   `(eql-trans ,object1 ,object2))
 
-(gl:declaim (gl:functional eql-trans))
+(tl:declaim (tl:functional eql-trans))
 
 (def-c-translation eql-trans (object1 object2)
   ((lisp-specs :ftype ((t t) t))
@@ -2257,10 +2255,10 @@
    (make-c-function-call-expr (make-c-name-expr "eql")
 			      (list object1 object2))))
 
-(gl:define-compiler-macro gl:equal (object1 object2)
+(tl:define-compiler-macro tl:equal (object1 object2)
   `(equal-trans ,object1 ,object2))
 
-(gl:declaim (gl:functional equal-trans))
+(tl:declaim (tl:functional equal-trans))
 
 (def-c-translation equal-trans (object1 object2)
   ((lisp-specs :ftype ((t t) t))
@@ -2291,35 +2289,35 @@
 	  (forms (cons-cdr clause)))
       (cond ((eq test t)
 	     (if forms
-		 `(gl:progn ,@forms)
+		 `(tl:progn ,@forms)
 		 t))
 	    (forms
-	     `(gl:if ,test
-		     (gl:progn ,@forms)
+	     `(tl:if ,test
+		     (tl:progn ,@forms)
 		     ,(when rest-clauses
 			(process-cond-clauses rest-clauses))))
 	    (t
 	     (let ((test-value (gensym)))
-	       `(gl:let ((,test-value ,test))
-		  (gl:if ,test-value
+	       `(tl:let ((,test-value ,test))
+		  (tl:if ,test-value
 			 ,test-value
 			 ,(when rest-clauses
 			    (process-cond-clauses rest-clauses))))))))))
 	       
 	
 
-(def-gl-macro gl:cond (&rest clauses)
+(def-tl-macro tl:cond (&rest clauses)
   (if clauses
       (process-cond-clauses clauses)
       nil))
 
-(def-gl-macro gl:when (test &body body)
-  `(gl:if ,test
-	  (gl:progn ,@body)))
+(def-tl-macro tl:when (test &body body)
+  `(tl:if ,test
+	  (tl:progn ,@body)))
 
-(def-gl-macro gl:unless (test &body body)
-  `(gl:if (gl:not ,test)
-	  (gl:progn ,@body)))
+(def-tl-macro tl:unless (test &body body)
+  `(tl:if (tl:not ,test)
+	  (tl:progn ,@body)))
 
 
 
@@ -2333,29 +2331,29 @@
 
 
 
-(def-gl-macro gl:case (&environment env keyform &rest case-clauses)
+(def-tl-macro tl:case (&environment env keyform &rest case-clauses)
   (cond
-    ((and (gl-subtypep (expression-result-type keyform env) 'fixnum)
+    ((and (tl-subtypep (expression-result-type keyform env) 'fixnum)
 	  (loop for (keys) in case-clauses
 		always (or (fixnump keys)
-			   (memqp keys '(t gl:otherwise))
+			   (memqp keys '(t tl:otherwise))
 			   (and (consp keys)
 				(loop for key in keys
 				      always (fixnump key))))))
      `(fixnum-case ,keyform ,@case-clauses))
-    ((and (gl-subtypep (expression-result-type keyform env) 'character)
+    ((and (tl-subtypep (expression-result-type keyform env) 'character)
 	  (loop for (keys) in case-clauses
 		always (or (characterp keys)
-			   (memqp keys '(t gl:otherwise))
+			   (memqp keys '(t tl:otherwise))
 			   (and (consp keys)
 				(loop for key in keys
 				      always (characterp key))))))
-     `(fixnum-case (gl:char-code ,keyform)
+     `(fixnum-case (tl:char-code ,keyform)
 	,@(loop for (keys . forms) in case-clauses
 		collect
 		`(,(cond ((characterp keys)
 			  (list (char-code keys)))
-			 ((memqp keys '(t gl:otherwise))
+			 ((memqp keys '(t tl:otherwise))
 			  keys)
 			 (t
 			  (loop for key in keys
@@ -2363,57 +2361,57 @@
 		   ,@forms))))
     (t
      (let ((key-val (gensym)))
-       `(gl:let ((,key-val ,keyform))
-	  (gl:cond
+       `(tl:let ((,key-val ,keyform))
+	  (tl:cond
 	    ,@(loop for (keylist . forms) in case-clauses
 		    when keylist
 		      collect
 		      (cond
-			((memqp keylist '(gl:t gl:otherwise))
-			 `(gl:t ,@forms))
+			((memqp keylist '(tl:t tl:otherwise))
+			 `(tl:t ,@forms))
 			((atom keylist)
-			 `((gl:eql ,key-val ',keylist) ,@forms))
+			 `((tl:eql ,key-val ',keylist) ,@forms))
 			((null (cdr keylist))
-			 `((gl:eql ,key-val ',(car keylist)) ,@forms))
+			 `((tl:eql ,key-val ',(car keylist)) ,@forms))
 			(t
-			 `((gl:or ,@(loop for key in keylist
-					  collect `(gl:eql ,key-val ',key)))
+			 `((tl:or ,@(loop for key in keylist
+					  collect `(tl:eql ,key-val ',key)))
 			   ,@forms))))))))))
 
-(def-gl-macro gl:ecase (&rest args)
-  `(gl:case ,@args (t (gl:error "Fell off end of ECASE - no matching clause"))))
+(def-tl-macro tl:ecase (&rest args)
+  `(tl:case ,@args (t (tl:error "Fell off end of ECASE - no matching clause"))))
 
-(def-gl-macro gl:psetq (&rest vars-and-values)
+(def-tl-macro tl:psetq (&rest vars-and-values)
   (cond
     ((null vars-and-values)
      nil)
     ((null (cons-cddr vars-and-values))
-     `(gl:progn
-	(gl:setq ,(cons-car vars-and-values) ,(cons-second vars-and-values))
+     `(tl:progn
+	(tl:setq ,(cons-car vars-and-values) ,(cons-second vars-and-values))
 	nil))
     (t
      (let ((settings nil))
-       `(gl:let ,(loop for (var value) on vars-and-values by #'cddr
+       `(tl:let ,(loop for (var value) on vars-and-values by #'cddr
 		       for temp-var = (gensym)
 		       collect (list temp-var value)
 		       do
-		   (push `(gl:setq ,var ,temp-var) settings))
+		   (push `(tl:setq ,var ,temp-var) settings))
 	  ,@(nreverse settings)
 	  nil)))))
 
-(def-gl-macro gl:multiple-value-setq (variables form)
+(def-tl-macro tl:multiple-value-setq (variables form)
   (let ((bind-vars (loop repeat (length variables) collect (gensym))))
-    `(gl:multiple-value-bind ,bind-vars ,form
+    `(tl:multiple-value-bind ,bind-vars ,form
        ,@(when (memq nil (cdr variables))
-	   `((gl:declare
-	       (gl:ignore ,@(loop for first = t then nil
+	   `((tl:declare
+	       (tl:ignore ,@(loop for first = t then nil
 				  for set in variables
 				  for bind in bind-vars
 				  when (and (null set) (not first))
 				    collect bind)))))
        ,@(loop for set in variables
 	       for bind in bind-vars
-	       when set collect `(gl:setq ,set ,bind))
+	       when set collect `(tl:setq ,set ,bind))
        ,(car bind-vars))))
 
 
@@ -2486,7 +2484,7 @@
 
 
 ;;; The function `get-platform-code' returns an integer which identifies the
-;;; currently running system.  See code in gl/lisp/gl-util.lisp for how to add
+;;; currently running system.  See code in tl/lisp/tl-util.lisp for how to add
 ;;; further machines to this set.
 
 (def-c-translation get-platform-code ()
@@ -2510,7 +2508,7 @@
 
 
 
-;;; The following functions can allocate more memory into a running GL image and
+;;; The following functions can allocate more memory into a running TL image and
 ;;; query about the amount of memory used.
 
 (def-c-translation malloc-block-into-region (region-number byte-count silent)

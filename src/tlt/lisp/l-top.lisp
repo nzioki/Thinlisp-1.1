@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module L-TOP
 
@@ -66,7 +66,7 @@
 	 (arglist (cons-third form))
 	 (body (cons-cdddr form))
 	 (decls (multiple-value-bind (type local f-decls)
-		    (gl:function-information name)
+		    (tl:function-information name)
 		  (declare (ignore type local))
 		  f-decls))
 	 (ftype
@@ -101,7 +101,7 @@
 			  (optional-init-form?
 			    (if optional? (cons-second arg) nil)))
 		     (multiple-value-bind (binding-type local? decls)
-			 (gl:variable-information arg-symbol aug-env)
+			 (tl:variable-information arg-symbol aug-env)
 		       (declare (ignore local?))
 		       (let ((binding (cdr (assq 'variable-binding-structure
 						 decls))))
@@ -219,8 +219,8 @@
 	nil c-type c-name
 	(if (and (eq var-kind :constant)
 		 (l-expr-constant-p init)
-		 (or (gl-subtypep (l-expr-lisp-return-type init) 'fixnum)
-		     (gl-subtypep (l-expr-lisp-return-type init) 'symbol)))
+		 (or (tl-subtypep (l-expr-lisp-return-type init) 'fixnum)
+		     (tl-subtypep (l-expr-lisp-return-type init) 'symbol)))
 	    (let ((c-expr
 		    (translate-l-expr-into-c
 		      init top-level-function assignment-statement :c-expr)))
@@ -311,16 +311,16 @@
   (when (consp form)
     (let ((operator (cons-car form)))
       (cond
-	((eq operator 'gl:progn)
+	((eq operator 'tl:progn)
 	 (loop for subform in (cons-cdr form) do
 	   (translate-top-level-lisp-form subform c-file)))
-	((eq operator 'gl:eval-when)
+	((eq operator 'tl:eval-when)
 	 (let* ((situations (cons-second form))
-		(lt? (or (memq 'gl:load situations)
+		(lt? (or (memq 'tl:load situations)
 			 (memq :load-toplevel situations)))
-		(ct? (or (memq 'gl:compile situations)
+		(ct? (or (memq 'tl:compile situations)
 			 (memq :compile-toplevel situations)))
-		(ex? (or (memq 'gl:eval situations)
+		(ex? (or (memq 'tl:eval situations)
 			 (memq :execute situations))))
 	   (cond
 	     ((or (and lt? ct?)
@@ -355,7 +355,7 @@
 		 (register-needed-variable-extern
 		   c-file '("extern") 'obj "SpackageS"))
 	       (when (register-used-function
-		       c-file 'gl::find-package-1 "find_package_1" '(function (t) t))
+		       c-file 'tl::find-package-1 "find_package_1" '(function (t) t))
 		(register-needed-function-extern
 		  c-file '("extern") 'obj "find_package_1" '(obj)))
 	       (emit-expr-to-compound-statement
@@ -367,7 +367,7 @@
 		     (list
 		       (translate-l-expr-into-c
 			 (walk-l-expr
-			   (gl:walk (second form) nil #'walk-form-into-l-expr t)
+			   (tl:walk (second form) nil #'walk-form-into-l-expr t)
 			   #'prepare-l-expr-for-translation t 'obj)
 			 top-level-function
 			 top-level-c-body
@@ -375,8 +375,8 @@
 		 top-level-c-body)))))
 	(t
 	 (multiple-value-bind (new-form expanded?)
-	     (gl:macroexpand-1 form nil)
+	     (tl:macroexpand-1 form nil)
 	   (if expanded?
 	       (translate-top-level-lisp-form new-form c-file)
-	       (let ((l-expr (gl:walk new-form nil #'walk-form-into-l-expr 'void)))
+	       (let ((l-expr (tl:walk new-form nil #'walk-form-into-l-expr 'void)))
 		 (translate-top-level-l-expr l-expr c-file)))))))))

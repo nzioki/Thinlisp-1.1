@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module C-FILES
 
@@ -221,7 +221,7 @@
 	     (the fixnum
 		  (+ (the fixnum (c-file-line-cache-length ,c-file-var))
 		     (the fixnum (length ,string-var)))))
-       (glt-write-string ,string-var (c-file-c-stream ,c-file-var))
+       (tlt-write-string ,string-var (c-file-c-stream ,c-file-var))
        nil)))
 
 
@@ -253,7 +253,7 @@
 			 (- ,length ,index))
 		   (setf (c-file-line-cache-length ,c-file-var)
 			 (max 1 (- ,length ,index)))))
-       (glt-write-string ,string-var (c-file-c-stream ,c-file-var))
+       (tlt-write-string ,string-var (c-file-c-stream ,c-file-var))
        nil)))
 
 
@@ -274,7 +274,7 @@
 	(setf (c-file-line-cache-length ,c-file-var)
 	      (the fixnum (+ (the fixnum (c-file-line-cache-length ,c-file-var))
 			     1)))
-	(glt-write-char ,char (c-file-c-stream ,c-file-var))
+	(tlt-write-char ,char (c-file-c-stream ,c-file-var))
 	nil)))
 
 
@@ -317,23 +317,23 @@
 			    (- line-comments-target-column line-so-far)
 			    (logand (- line-so-far) 3))
 			2)))
-	(glt-write-string
+	(tlt-write-string
 	  "                                                "
 	  c-stream
 	  :end spaces))
       ;; Emit comment opening.
-      (glt-write-string "/* " c-stream)
+      (tlt-write-string "/* " c-stream)
       (loop with comments-cache = (c-file-line-comments-cache c-file)
 	    for comments-index fixnum from 0
 			       below (c-file-line-comments-cache-index c-file)
 	    do
-	(glt-write-string (svref comments-cache comments-index) c-stream))
-      (glt-write-string " */" c-stream)
+	(tlt-write-string (svref comments-cache comments-index) c-stream))
+      (tlt-write-string " */" c-stream)
       (setf (c-file-line-comments-cache-index c-file) 0)
       (setf (c-file-line-comments-cache-length c-file) 0))
 
     (setf (c-file-line-cache-length c-file) 0)
-    (glt-write-char #\newline c-stream)
+    (tlt-write-char #\newline c-stream)
     nil))
 
 

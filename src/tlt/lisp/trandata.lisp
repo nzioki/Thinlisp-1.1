@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module TRANDATA
 
@@ -110,14 +110,14 @@
 ;;; in one file can affect the availability and therefore the use of externs in
 ;;; a secondary file.
 
-;;; Inside the c/<system-name>/<module-name>.glt files, there will be two
+;;; Inside the c/<system-name>/<module-name>.tlt files, there will be two
 ;;; single forms.  The first is just a fixnum that represents the version of
-;;; the GLT files that we are will to attempt to reload.  If that fixnum is not
-;;; equal to the value of `trans-data-glt-version', then we will not attempt to
+;;; the TLT files that we are will to attempt to reload.  If that fixnum is not
+;;; equal to the value of `trans-data-tlt-version', then we will not attempt to
 ;;; read the file.  If the version numbers match, then the seconf form in the
 ;;; file, when evaluated, will return a `trans-data' structure.
 
-(defparameter trans-data-glt-version 1)
+(defparameter trans-data-tlt-version 1)
 
 (defstruct (trans-data
 	     (:constructor
@@ -195,7 +195,7 @@
       (return-from write-trans-data-file nil))
     (let ((system (c-file-system c-file))
 	  (module (c-file-module c-file))
-	  (*package* *gli-package*)
+	  (*package* *tli-package*)
 	  (symbol-array-name (car (c-file-last-symbol-definition? c-file)))
 	  (compiled-function-array-name
 	    (car (c-file-last-compiled-function-definition? c-file))))
@@ -208,9 +208,9 @@
        (namestring (system-lisp-file system module)))
 
       (format stream
-	      ";;; The following is the value of the trans-data-glt-version ~
+	      ";;; The following is the value of the trans-data-tlt-version ~
                parameter.~%~a~%~%"
-	      trans-data-glt-version)
+	      trans-data-tlt-version)
 
       (write-line "(make-trans-data" stream)
       (write-trans-data-hash-table
@@ -300,7 +300,7 @@
 ;;; and determines if the constants are still located in the same location
 ;;; within the same constant-vectors, and if the referenced functions still
 ;;; provide the same argument and return value signature.  This function is
-;;; called only when it is known that there is a GLT data file that is up to
+;;; called only when it is known that there is a TLT data file that is up to
 ;;; date with the source Lisp file, so this function need not be concerned about
 ;;; file existence or dates.  If this function returns NIL, it will also modify
 ;;; the global symbol registries and the global C namespaces to register the
@@ -311,16 +311,16 @@
 	 (trans-data-version nil)
 	 (trans-data nil))
     ;; Read in the version number.  If it does not match the one in the
-    ;; trans-data-glt-version parameter, then return T.  Else, we can read the
+    ;; trans-data-tlt-version parameter, then return T.  Else, we can read the
     ;; trans-data file.
     (when (with-open-file (input data-file)
 	    (setq trans-data-version (read input nil :eof))
-	    (cond ((eql trans-data-version trans-data-glt-version)
-		   (let ((*package* *gli-package*))
+	    (cond ((eql trans-data-version trans-data-tlt-version)
+		   (let ((*package* *tli-package*))
 		     (setq trans-data (eval (read input)))
 		     nil))
 		  (t t)))
-      (retranslate-warning verbose module "Obsolete format in GLT file.")
+      (retranslate-warning verbose module "Obsolete format in TLT file.")
       (return-from trans-data-indicates-retranslate-p t))
 
     ;; Check that the symbol constants we used are still in the same locations.

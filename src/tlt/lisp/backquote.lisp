@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module BACKQUOTE
 
@@ -31,12 +31,12 @@
 
 
 ;;; This module imports the public domain implementation of backquote from CLtL
-;;; II into GL.  The first commit of this file is the verbatim sources of the
-;;; original, and from there it has been modified to reflect GL's curiosities.
+;;; II into TL.  The first commit of this file is the verbatim sources of the
+;;; original, and from there it has been modified to reflect TL's curiosities.
 
 ;;; Note that this version of the backquote reader will only be installed at the
-;;; tail end of GLT translation so that we can bootstrap ourselves cleanly into
-;;; this implementation when the underlying support is in place (i.e. GL's
+;;; tail end of TLT translation so that we can bootstrap ourselves cleanly into
+;;; this implementation when the underlying support is in place (i.e. TL's
 ;;; implementations of CONS, LIST, etc.).
 
 ;;; Original import starts below this line.
@@ -359,22 +359,22 @@
          (cons 'bq-cons (maptree #'bq-remove-tokens (cdr x)))) 
         (t (maptree #'bq-remove-tokens x))))
 
-(def-gl-macro bq-progn (&rest args)
-  `(gl:progn ,@args))
+(def-tl-macro bq-progn (&rest args)
+  `(tl:progn ,@args))
 
-(def-gl-macro bq-list (&rest args)
-  `(gl:list ,@args))
+(def-tl-macro bq-list (&rest args)
+  `(tl:list ,@args))
 
-(def-gl-macro bq-append (&rest args)
+(def-tl-macro bq-append (&rest args)
   (if (and args (null (cdr args)))
       (car args)
-      `(gl:append ,@args)))
+      `(tl:append ,@args)))
 
-(def-gl-macro bq-nconc (&rest args)
-  `(gl:nconc ,@args))
+(def-tl-macro bq-nconc (&rest args)
+  `(tl:nconc ,@args))
 
-(def-gl-macro bq-list* (&rest args)
-  `(gl:list* ,@args))
+(def-tl-macro bq-list* (&rest args)
+  `(tl:list* ,@args))
 
-(def-gl-macro bq-cons (car cdr)
-  `(gl:cons ,car ,cdr))
+(def-tl-macro bq-cons (car cdr)
+  `(tl:cons ,car ,cdr))

@@ -1,4 +1,4 @@
-(in-package "GL")
+(in-package "TL")
 
 ;;;; Module INLINE
 
@@ -60,10 +60,10 @@
 
 
 
-;;; The variable `gli::symbol-plist-of-nil' is used by the translations for
+;;; The variable `tli::symbol-plist-of-nil' is used by the translations for
 ;;; symbol-plist.
 
-(defvar gli::symbol-plist-of-nil nil)
+(defvar tli::symbol-plist-of-nil nil)
 
 
 
@@ -73,7 +73,7 @@
 
 (defmacro gensym (&optional string-or-number)
   `(the symbol 
-	,(if (gli::eval-feature :translator)
+	,(if (tli::eval-feature :translator)
 	     `(make-gensymed-symbol ,string-or-number)
 	     (if string-or-number
 		 `(lisp:gensym ,string-or-number)

@@ -1,4 +1,4 @@
-(in-package "GL")
+(in-package "TL")
 
 ;;;; Module DO
 
@@ -30,10 +30,10 @@
 
 
 
-;;; This module implements the simple looping macros for GL.  Some of this code
+;;; This module implements the simple looping macros for TL.  Some of this code
 ;;; has been pulled from CMULISP.
 
-;;; Note that in GL:DOTIMES, the termination count must always be a fixnum.
+;;; Note that in TL:DOTIMES, the termination count must always be a fixnum.
 
 (defmacro dotimes ((var count &optional (result nil)) &body body)
   (multiple-value-bind (decls forms)
@@ -44,7 +44,7 @@
 	  (declare (fixnum ,var))
 	  ,@decls
 	  (block nil
-	    (gli::for-loop
+	    (tli::for-loop
 	      (nil (< ,var ,count) (setq ,var (+ ,var 1)))
 	      ,@forms)
 	    ,result)))
@@ -55,7 +55,7 @@
 	    (declare (fixnum ,end-value ,var))
 	    ,@decls
 	    (block nil
-	      (gli::for-loop
+	      (tli::for-loop
 		(nil (< ,var ,end-value) (setq ,var (+ ,var 1)))
 		,@forms)
 	      ,result)))))))
@@ -74,7 +74,7 @@
   (let ((the-list (gensym)))
     `(let ((,the-list ,list))
        (block nil
-	 (gli::for-loop
+	 (tli::for-loop
 	   (nil ,the-list (setq ,the-list (cdr (the cons ,the-list))))
 	   (let ((,var (car (the cons ,the-list))))
 	     ,@body))
@@ -97,7 +97,7 @@
 	    ((listp v)
 	     (unless (symbolp (first v))
 	       (lisp:error "~S step variable is not a symbol: ~S" name (first v)))
-	     (case (gli::length-trans v)
+	     (case (tli::length-trans v)
 	       (1 (push (first v) inits))
 	       (2 (push v inits))
 	       (3 (push (list (first v) (second v)) inits)

@@ -1,4 +1,4 @@
-(in-package "GL")
+(in-package "TL")
 
 ;;;; Module FORMAT
 
@@ -137,17 +137,17 @@
 						,(caadr bind-cons))
 				tests)))))))))
 
-(def-multi-arg-char-comparitor char= gli::two-arg-char=)
+(def-multi-arg-char-comparitor char= tli::two-arg-char=)
 
-(def-multi-arg-char-comparitor char/= gli::two-arg-char/=)
+(def-multi-arg-char-comparitor char/= tli::two-arg-char/=)
 
-(def-multi-arg-char-comparitor char< gli::two-arg-char<)
+(def-multi-arg-char-comparitor char< tli::two-arg-char<)
 
-(def-multi-arg-char-comparitor char<= gli::two-arg-char<=)
+(def-multi-arg-char-comparitor char<= tli::two-arg-char<=)
 
-(def-multi-arg-char-comparitor char> gli::two-arg-char>)
+(def-multi-arg-char-comparitor char> tli::two-arg-char>)
 
-(def-multi-arg-char-comparitor char>= gli::two-arg-char>=)
+(def-multi-arg-char-comparitor char>= tli::two-arg-char>=)
 
 (defmacro lower-case-p (character)
   (let ((char (gensym)))
@@ -257,7 +257,7 @@
   (declare (string string)
 	   (fixnum start)
 	   (return-type string))
-  (do ((limit (if end end (gli::length-trans string)))
+  (do ((limit (if end end (tli::length-trans string)))
        (index start (+ index 1)))
       ((>= index limit) string)
     (declare (fixnum limit index))
@@ -269,7 +269,7 @@
 	   (string string)
 	   (return-type string)
 	   (consing-area permanent))
-  (do* ((length (gli::length-trans string))
+  (do* ((length (tli::length-trans string))
 	(limit (if end end length))
 	(index start (+ index 1)))
        ((>= index limit) string)
@@ -282,7 +282,7 @@
   (declare (string string)
 	   (fixnum start)
 	   (return-type string))
-  (do ((limit (if end end (gli::length-trans string)))
+  (do ((limit (if end end (tli::length-trans string)))
        (index start (+ index 1)))
       ((>= index limit) string)
     (declare (fixnum limit index))
@@ -294,7 +294,7 @@
 	   (string string)
 	   (return-type string)
 	   (consing-area permanent))
-  (do* ((length (gli::length-trans string))
+  (do* ((length (tli::length-trans string))
 	(limit (if end end length))
 	(index start (+ index 1)))
        ((>= index limit) string)
@@ -308,7 +308,7 @@
 	   (fixnum start)
 	   (return-type string))
   (do ((word-start t)
-       (limit (if end end (gli::length-trans string)))
+       (limit (if end end (tli::length-trans string)))
        (index start (+ index 1)))
       ((>= index limit) string)
     (declare (fixnum limit index))
@@ -329,7 +329,7 @@
   (let ((original-string (gensym))
 	(length (gensym)))
    `(let* ((,original-string ,string)
-	   (,length (gli::length-trans ,original-string)))
+	   (,length (tli::length-trans ,original-string)))
       (nstring-capitalize
 	(copy-string ,original-string ,length)
 	:start ,start :end ,end))))
@@ -344,7 +344,7 @@
 
 
 ;;; The macro `reclaim-string' is a no-op stub to place hold for when we have a
-;;; built-in pool for 8-bit strings within GL.
+;;; built-in pool for 8-bit strings within TL.
 
 (defmacro reclaim-string (string)
   `(progn ,string nil))
@@ -373,7 +373,7 @@
 
 
 
-(def-translatable-lisp-var *terminal-io* (gli::make-terminal-io-file-stream))
+(def-translatable-lisp-var *terminal-io* (tli::make-terminal-io-file-stream))
 
 (def-translatable-lisp-var *standard-input* *terminal-io*)
 
@@ -432,7 +432,7 @@
     ((or file-stream string)
      stream-arg)
     (string-stream
-     (let* ((string-list (gli::string-stream-strings stream-arg))
+     (let* ((string-list (tli::string-stream-strings stream-arg))
 	    (first-string (car string-list)))
        (when (or (null first-string)
 		 (< (the fixnum
@@ -447,7 +447,7 @@
 			 default-string-stream-size))))
 	     (declare (string new-string))
 	     (setf (fill-pointer new-string) 0)
-	     (setf (gli::string-stream-strings stream-arg)
+	     (setf (tli::string-stream-strings stream-arg)
 		   (cons new-string string-list))
 	     (setq first-string new-string))))
        first-string))
@@ -462,7 +462,7 @@
 (defun last-string-char? (string)
   (declare (string string)
 	   (return-type t))
-  (let ((length (gli::length-trans string)))
+  (let ((length (tli::length-trans string)))
     (declare (fixnum length))
     (if (> length 0)
 	(char string (1- length))
@@ -471,7 +471,7 @@
 (defun get-last-string-stream-character (string-stream)
   (declare (type string-stream string-stream)
 	   (return-type t))
-  (let ((first-string? (car (gli::string-stream-strings string-stream))))
+  (let ((first-string? (car (tli::string-stream-strings string-stream))))
     (if first-string?
 	(last-string-char? first-string?)
 	nil)))
@@ -487,12 +487,12 @@
 (defun get-output-stream-string (string-stream)
   (declare (string-stream string-stream)
 	   (return-type t))
-  (let ((string-list (gli::string-stream-strings string-stream))
+  (let ((string-list (tli::string-stream-strings string-stream))
 	(length 0))
     (declare (fixnum length))
     (dolist (string string-list)
       (declare (type t string))
-      (incf length (gli::length-trans (the string string))))
+      (incf length (tli::length-trans (the string string))))
     (let ((result-string (locally (declare (consing-area permanent))
 			   (make-string length)))
 	  (current-end length))
@@ -500,7 +500,7 @@
 	       (fixnum current-end))
       (dolist (string string-list)
 	(declare (type t string))
-	(let ((this-length (gli::length-trans (the string string))))
+	(let ((this-length (tli::length-trans (the string string))))
 	  (declare (fixnum this-length))
 	  (decf current-end this-length)
 	  (replace-strings result-string
@@ -528,7 +528,7 @@
   (let ((stream (get-string-or-file-stream-for-output output-stream 0)))
     (cond
       ((typep stream 'file-stream)
-       (gli::force-output-to-file stream))
+       (tli::force-output-to-file stream))
       #-translator
       ((ab-lisp::typep stream 'ab-lisp::stream)
        (ab-lisp::force-output stream)))
@@ -540,7 +540,7 @@
 	   (fixnum start)
 	   (return-type string))
   (let* ((end-index (if (null end)
-		  (gli::length-trans string)
+		  (tli::length-trans string)
 		  end))
 	 (stream (get-string-or-file-stream-for-output stream?
 						       (- end-index start))))
@@ -629,7 +629,7 @@
   (cond ((< fixnum 0)
 	 (write-char #\- stream)
 	 ;; Note that the most-negative-fixnum case works here because
-	 ;; type-declared fixnum locations in GL have 32 bits of storage, not
+	 ;; type-declared fixnum locations in TL have 32 bits of storage, not
 	 ;; 30.  So, while technically negating most-negative-fixnum will
 	 ;; overflow most-positive-fixnum, in practice we have two extra bits of
 	 ;; room and it works out OK.  -jra 1/5/97
@@ -668,7 +668,7 @@
 	    (if (< fixnum base)
 		(- fixnum base)
 		(floor fixnum base))))
-    (do ((index (1- (gli::length-trans reversed-fixnum-with-commas))
+    (do ((index (1- (tli::length-trans reversed-fixnum-with-commas))
 		(- index 1)))
 	((< index 0))
       (declare (fixnum index))
@@ -684,8 +684,8 @@
     (cond
       ((= base 10)
        (if (stringp stream)
-	   (gli::write-fixnum-to-string fixnum width stream)
-	   (gli::princ-fixnum-to-file fixnum width stream)))
+	   (tli::write-fixnum-to-string fixnum width stream)
+	   (tli::princ-fixnum-to-file fixnum width stream)))
       ((= base 16)
        (write-fixnum-in-hex fixnum stream))
       (t
@@ -704,14 +704,14 @@
        (declare (double-float ,double)
 		(fixnum ,width-value))
        (if (stringp ,stream)
-	   (gli::write-double-to-string ,double ,width-value ,stream)
-	   (gli::princ-double-to-file ,double ,width-value ,stream))
+	   (tli::write-double-to-string ,double ,width-value ,stream)
+	   (tli::princ-double-to-file ,double ,width-value ,stream))
        ,double)))
 
 
 (defmacro write-object-pointer-in-hex (object stream?)
   `(write-fixnum-in-hex
-     (gli::pointer-as-fixnum ,object)
+     (tli::pointer-as-fixnum ,object)
      ,stream?))
 
 (defun print-random-object-with-type-name (object name extra-info? stream?)
@@ -763,12 +763,12 @@
      (write-double-float object 0 stream))
     (simple-vector
      (print-random-object-with-type-name
-       object "Simple-Vector" (gli::length-trans (the simple-vector object)) stream))
+       object "Simple-Vector" (tli::length-trans (the simple-vector object)) stream))
     (string
      (locally (declare (string object))
        (cond (escape
 	      (write-char #\" stream)
-	      (dotimes (index (gli::length-trans object))
+	      (dotimes (index (tli::length-trans object))
 		(let ((char (char object index)))
 		  (when (or (char= char #\") (char= char #\\))
 		    (write-char #\\ stream))
@@ -779,29 +779,29 @@
     ((array (unsigned-byte 8))
      (print-random-object-with-type-name
        object "Unsigned-Byte-8-Vector"
-       (gli::length-trans (the (array (unsigned-byte 8)) object))
+       (tli::length-trans (the (array (unsigned-byte 8)) object))
        stream))
     ((array (unsigned-byte 16))
      (print-random-object-with-type-name
        object "Unsigned-Byte-16-Vector"
-       (gli::length-trans (the (array (unsigned-byte 16)) object))
+       (tli::length-trans (the (array (unsigned-byte 16)) object))
        stream))
     ((array double-float)
      (print-random-object-with-type-name
        object "Double-Float-Vector"
-       (gli::length-trans (the (array double-float) object))
+       (tli::length-trans (the (array double-float) object))
        stream))
     (symbol
      (funcall-simple-compiled-function #'write-symbol object case stream))
     (compiled-function
      (print-random-object-with-type-name
        object "Compiled-Function"
-       (gli::compiled-function-name object)
+       (tli::compiled-function-name object)
        stream))
     (package
      (print-random-object-with-type-name
        object "Package" (package-name object) stream))
-    (gli::unbound
+    (tli::unbound
      (print-random-object-with-type-name
        object "The-Unbound-Value" nil stream))
     (string-stream
@@ -856,7 +856,7 @@
   (let ((value (gensym)))
     `(let ((,value ,byte))
        (declare (fixnum ,value))
-       (gli::write-byte-to-file ,value ,file-stream)
+       (tli::write-byte-to-file ,value ,file-stream)
        ,value)))
 
 (defun write-list (cons stream?)
@@ -932,7 +932,7 @@
 		   (string current-stream))
 	  (unless atsign-modifier?
 	    (write-string current-stream stream))
-	  (do ((length (gli::length-trans current-stream))
+	  (do ((length (tli::length-trans current-stream))
 	       (pad 0 (+ pad colinc)))
 	      ((and (>= (+ length pad) mincol)
 		    (>= pad minpad)))
@@ -975,20 +975,20 @@
 	    (write-fixnum fixnum *print-base* 0 current-stream))
 	(when mincol-arg
 	  (locally (declare (string current-stream))
-	    (dotimes (x (- mincol (gli::length-trans current-stream)))
+	    (dotimes (x (- mincol (tli::length-trans current-stream)))
 	      (write-char padchar stream))
 	    (write-string current-stream stream)))))))
 
 
 
 
-;;; The GL implementation of `format' supports a compatible subset of the
+;;; The TL implementation of `format' supports a compatible subset of the
 ;;; control directives and argument list features of those directives.
-;;; GL:Format supports the reading of arguments to control directives as
+;;; TL:Format supports the reading of arguments to control directives as
 ;;; described in the CL documentation of format, including up to four args, with
 ;;; numeric args, character args, "V" style argument indirection, "#" style
 ;;; remaining argument counting, and the atsign and colon modifier flags.
-;;; GL:Write and GL:format support *print-escape*, *print-base*, and
+;;; TL:Write and TL:format support *print-escape*, *print-base*, and
 ;;; *print-case* in the standard way.  The following are the supported control
 ;;; directives and argument patterns.  See CLtL2 for a more verbose description
 ;;; of the same thing.
@@ -1035,7 +1035,7 @@
 	(iteration-cached-args nil)
 	(iteration-uses-sublists? nil)
 	(iteration-sublists nil)
-	(control-string-length (gli::length-trans control-string))
+	(control-string-length (tli::length-trans control-string))
 	(field-width-string-list field-width-string-list))
     (declare (fixnum index control-string-length))
     (do ()
@@ -1081,7 +1081,7 @@
 		     ((#.(char-code #\v) #.(char-code #\V))
 		      (setq current-arg? (pop args)))
 		     ((#.(char-code #\#))
-		      (setq current-arg? (gli::length-trans args)))
+		      (setq current-arg? (tli::length-trans args)))
 		     ((#.(char-code #\'))
 		      (setq current-arg? (char control-string index))
 		      (incf index))
@@ -1189,7 +1189,7 @@
 		      (:capitalize
 		       (nstring-capitalize field-width-string))
 		      (:cap-first-lower-rest
-		       (when (> (gli::length-trans field-width-string) 0)
+		       (when (> (tli::length-trans field-width-string) 0)
 			 (setf (char field-width-string 0)
 			       (char-upcase (char field-width-string 0)))
 			 (nstring-downcase field-width-string :start 1))))
@@ -1200,7 +1200,7 @@
 		 ((#\{)
 		  (when iteration-start-index?
 		    (format-error
-		      "GL:FORMAT doesn't support nested ~{ iterations."
+		      "TL:FORMAT doesn't support nested ~{ iterations."
 		      control-string))
 		  (setq iteration-start-index? index)
 		  (setq iteration-maximum-loops? (car arglist))
@@ -1419,11 +1419,11 @@
 ;;; simple-error into whatever the required type is of this scope.  -jra 3/19/96
 
 (defmacro error (control-string &rest args)
-  (let ((arg-count (gli::length-trans args)))
+  (let ((arg-count (tli::length-trans args)))
     (case arg-count
       ((0)
        `(progn
-	  (gli::gli-simple-error ,control-string)
+	  (tli::tli-simple-error ,control-string)
 	  nil))
       ((1)
        `(error-one-arg ,control-string ,@args))
@@ -1434,7 +1434,7 @@
       (t
        `(progn
 	  (with-permanent-area ()
-	    (gli::gli-simple-error
+	    (tli::tli-simple-error
 	      (format nil ,control-string ,@args)))
 	  nil)))))
 
@@ -1446,21 +1446,21 @@
 (defun error-one-arg (control-string arg)
   (declare (return-type null))
   (with-permanent-area ()
-    (gli::gli-simple-error
+    (tli::tli-simple-error
       (format nil control-string arg)))
   nil)
 
 (defun error-two-args (control-string arg1 arg2)
   (declare (return-type null))
   (with-permanent-area ()
-    (gli::gli-simple-error
+    (tli::tli-simple-error
       (format nil control-string arg1 arg2)))
   nil)
 
 (defun error-three-args (control-string arg1 arg2 arg3)
   (declare (return-type null))
   (with-permanent-area ()
-    (gli::gli-simple-error
+    (tli::tli-simple-error
       (format nil control-string arg1 arg2 arg3)))
   nil)
 
@@ -1491,7 +1491,7 @@
 
 
 ;;; The function not-null-destructuring-error-1 is needed by the macroexpansion
-;;; of gl:destructuring-bind-strict.
+;;; of tl:destructuring-bind-strict.
 
 (defun not-null-destructuring-error-1 (shoulda-been-nil)
   (declare (return-type void))
@@ -1502,17 +1502,17 @@
 
 
 ;;; The function `check-make-array-dimensions' is needed by the macroexpansion
-;;; of gl:make-array.
+;;; of tl:make-array.
 
 (defun check-make-array-dimensions (dimensions)
   (declare (return-type fixnum))
   (if (consp dimensions)
       (if (cdr (the cons dimensions))
-	  (error "GL make-array does not support multiple-dimensions: ~a"
+	  (error "TL make-array does not support multiple-dimensions: ~a"
 		 dimensions)
 	  (setq dimensions (car (the cons dimensions)))))
   (if (not (fixnump dimensions))
-      (error "GL make-array dimension argument was not an integer: ~a"
+      (error "TL make-array dimension argument was not an integer: ~a"
 	     dimensions))
   dimensions)
 

@@ -1,6 +1,6 @@
-(in-package "GLI")
+(in-package "TLI")
 
-;;;; Module GLT-MATH
+;;;; Module TLT-MATH
 
 ;;; Copyright (c) 1999 The ThinLisp Group
 ;;; Copyright (c) 1995 Gensym Corporation.
@@ -25,7 +25,7 @@
 
 
 
-;;;; Primitive Operations for GL Arithmetic
+;;;; Primitive Operations for TL Arithmetic
 
 
 
@@ -34,15 +34,15 @@
 ;;; into C.
 
 ;;; Note that because the Lisp symbol + has special meaning as a variable in the
-;;; read-eval-print loop, we have to import that symbol into GL and export it.
-;;; To give it OUR implementation within the GL environment, + is now a special
-;;; form that expands into calls to gli::plus.
+;;; read-eval-print loop, we have to import that symbol into TL and export it.
+;;; To give it OUR implementation within the TL environment, + is now a special
+;;; form that expands into calls to tli::plus.
 
 ;;; The macro `plus' always expands into its two argument variety.  Note that
 ;;; plus only supports fixnums and double-floats, so no integer overflow is
 ;;; allowed.
 
-(def-gl-macro plus (&rest numbers)
+(def-tl-macro plus (&rest numbers)
   (cond ((null numbers)
 	 0)
 	((null (cons-cdr numbers))
@@ -53,7 +53,7 @@
 	 `(plus (+-two-arg ,(cons-car numbers) ,(cons-second numbers))
 		,@(cons-cddr numbers)))))
 
-(def-gl-macro gl:1+ (number)
+(def-tl-macro tl:1+ (number)
   `(plus ,number 1))
 
 (defun l-expr-wants-sint32-type-p (l-expr)
@@ -62,7 +62,7 @@
 	     for c-int-type in (c-integer-types)
 	     thereis (satisfies-c-required-type-p type c-int-type))))
 
-(gl:declaim (gl:functional +-two-arg))
+(tl:declaim (tl:functional +-two-arg))
 
 (def-c-translation +-two-arg (number1 number2)
   ((lisp-specs :ftype ((number number) number))
@@ -115,7 +115,7 @@
    (make-c-function-call-expr
      (make-c-name-expr "generic_plus") (list number1 number2))))
 
-(def-gl-macro gl:- (&rest numbers)
+(def-tl-macro tl:- (&rest numbers)
   (cond ((null numbers)
 	 0)
 	((null (cons-cdr numbers))
@@ -123,13 +123,13 @@
 	((null (cons-cddr numbers))
 	 `(minus-two-arg ,(cons-car numbers) ,(cons-second numbers)))
 	(t
-	 `(gl:- (minus-two-arg ,(cons-car numbers) ,(cons-second numbers))
+	 `(tl:- (minus-two-arg ,(cons-car numbers) ,(cons-second numbers))
 		,@(cons-cddr numbers)))))
 
-(def-gl-macro gl:1- (number)
-  `(gl:- ,number 1))
+(def-tl-macro tl:1- (number)
+  `(tl:- ,number 1))
 
-(gl:declaim (gl:functional negate))
+(tl:declaim (tl:functional negate))
 
 (def-c-translation negate (number)
   ((lisp-specs :ftype ((number) number))
@@ -150,14 +150,14 @@
   ((trans-specs :lisp-type ((number) number)
 		:c-type ((obj) obj))
    (fat-and-slow-warning
-     (l-expr-env function-call-l-expr) 'gl:-
+     (l-expr-env function-call-l-expr) 'tl:-
      (l-expr-pretty-form function-call-l-expr))
    (register-needed-function-extern
      (c-func-c-file c-func) '("extern") 'obj "generic_negate" '(obj))
    (make-c-function-call-expr
      (make-c-name-expr "generic_negate") (list number))))
 
-(gl:declaim (gl:functional minus-two-arg))
+(tl:declaim (tl:functional minus-two-arg))
 
 (def-c-translation minus-two-arg (number1 number2)
   ((lisp-specs :ftype ((number number) number))
@@ -203,14 +203,14 @@
   ((trans-specs :lisp-type ((number number) number)
 		:c-type ((obj obj) obj))
    (fat-and-slow-warning
-     (l-expr-env function-call-l-expr) 'gl:-
+     (l-expr-env function-call-l-expr) 'tl:-
      (l-expr-pretty-form function-call-l-expr))
    (register-needed-function-extern
      (c-func-c-file c-func) '("extern") 'obj "generic_minus" '(obj obj))
    (make-c-function-call-expr
      (make-c-name-expr "generic_minus") (list number1 number2))))
 
-(def-gl-macro multiply (&rest numbers)
+(def-tl-macro multiply (&rest numbers)
   (cond ((null numbers)
 	 1)
 	((null (cons-cdr numbers))
@@ -241,15 +241,15 @@
    (make-c-function-call-expr
      (make-c-name-expr "generic_multiply") (list number1 number2))))
 
-(def-gl-macro gl:/ (&rest numbers)
+(def-tl-macro tl:/ (&rest numbers)
   (cond ((null numbers)
 	 (error "/ called with no arguments"))
 	((null (cons-cdr numbers))
-	 `(gl:/ 1 ,(cons-car numbers)))
+	 `(tl:/ 1 ,(cons-car numbers)))
 	((null (cons-cddr numbers))
 	 `(divide-two-arg ,(cons-car numbers) ,(cons-second numbers)))
 	(t
-	 `(gl:/ (divide-two-arg ,(cons-car numbers) ,(cons-second numbers))
+	 `(tl:/ (divide-two-arg ,(cons-car numbers) ,(cons-second numbers))
 		,@(cons-cddr numbers)))))
 
 (def-c-translation divide-two-arg (number1 number2)
@@ -258,7 +258,7 @@
   ((trans-specs :lisp-type ((fixnum fixnum) fixnum)
 		:c-type ((obj obj) obj))
    (translation-error
-     "/ cannot be called on two fixnums in GL: (/ ~s ~s).  Use floor or ~
+     "/ cannot be called on two fixnums in TL: (/ ~s ~s).  Use floor or ~
        another truncating divide."
      (l-expr-pretty-form number1-l-expr)
      (l-expr-pretty-form number2-l-expr)))
@@ -268,7 +268,7 @@
   ((trans-specs :lisp-type ((number number) number)
 		:c-type ((obj obj) obj))
    (fat-and-slow-warning
-     (l-expr-env function-call-l-expr) 'gl:/
+     (l-expr-env function-call-l-expr) 'tl:/
      (l-expr-pretty-form function-call-l-expr))
    (register-needed-function-extern
      (c-func-c-file c-func) '("extern") 'obj "generic_divide" '(obj obj))
@@ -279,10 +279,10 @@
   `(progn
      ,@(loop for (symbol op-string name) in symbol-op-and-name-sets
 	     for two-arg-op = (intern (format nil "~a-TWO-ARG" symbol)
-				      *gl-package*)
+				      *tl-package*)
 	     for lisp-symbol = (intern (symbol-name symbol) *lisp-package*)
 	     for generic-op = (intern (format nil "GENERIC-~a" name)
-				      *gl-package*)
+				      *tl-package*)
 	     for generic-string = (c-base-string generic-op)
 	     for c-expr-maker
 		 = (intern
@@ -295,16 +295,16 @@
 						(member x y :test #'string=))))))
 	     
 	     nconc
-	     `((def-gl-macro ,symbol (number &rest more-numbers)
+	     `((def-tl-macro ,symbol (number &rest more-numbers)
 		 (cond
 		   ((null more-numbers)
-		    `(gl:progn ,number t))
+		    `(tl:progn ,number t))
 		   ((null (cons-cdr more-numbers))
 		    `(,',two-arg-op ,number ,@more-numbers))
 		   ((and (simple-argument-p number)
 			 (loop for arg in more-numbers
 			       always (simple-argument-p arg)))
-		    `(gl:and ,@(loop for arg-cons on (cons number more-numbers)
+		    `(tl:and ,@(loop for arg-cons on (cons number more-numbers)
 				     while (cdr arg-cons)
 				     collect `(,',two-arg-op
 						   ,(first arg-cons)
@@ -314,15 +314,15 @@
 		    (let* ((arglist (cons number more-numbers))
 			   (varlist (loop repeat (length arglist)
 					  collect (gensym))))
-		      `(gl:let ,(loop for var in varlist
+		      `(tl:let ,(loop for var in varlist
 				      for arg in arglist
 				      collect (list var arg))
-			 (gl:and ,@(loop for arg-cons on varlist
+			 (tl:and ,@(loop for arg-cons on varlist
 					 while (cdr arg-cons)
 					 collect `(,',two-arg-op
 						       ,(first arg-cons)
 						       ,(second arg-cons)))))))))
-	       (gl:declaim (gl:functional ,two-arg-op))
+	       (tl:declaim (tl:functional ,two-arg-op))
 	       (def-c-translation ,two-arg-op (number1 number2)
 		 ((lisp-specs :ftype ((number number) t))
 		  `(,',lisp-symbol ,number1 ,number2))
@@ -353,37 +353,37 @@
 		    (list number1 number2))))))))
 
 
-(def-numeric-comparitors (gl:< "<" "LESS-THAN")
-    (gl:> ">" "GREATER-THAN")
-  (gl:<= "<=" "LESS-THAN-OR-EQUAL")
-  (gl:>= ">=" "GREATER-THAN-OR-EQUAL")
-  (gl:=  "==" "NUMERIC-EQUAL")
-  (gl:/= "!=" "NUMERIC-NOT-EQUAL"))
+(def-numeric-comparitors (tl:< "<" "LESS-THAN")
+    (tl:> ">" "GREATER-THAN")
+  (tl:<= "<=" "LESS-THAN-OR-EQUAL")
+  (tl:>= ">=" "GREATER-THAN-OR-EQUAL")
+  (tl:=  "==" "NUMERIC-EQUAL")
+  (tl:/= "!=" "NUMERIC-NOT-EQUAL"))
 
-(def-gl-macro gl:zerop (&environment env value)
-  (if (gl-subtypep (expression-result-type value env) 'double-float)
-      `(gl:= ,value 0.0)
-      `(gl:= ,value 0)))
+(def-tl-macro tl:zerop (&environment env value)
+  (if (tl-subtypep (expression-result-type value env) 'double-float)
+      `(tl:= ,value 0.0)
+      `(tl:= ,value 0)))
 
-(def-gl-macro gl:plusp (&environment env value)
-  (if (gl-subtypep (expression-result-type value env) 'double-float)
-      `(gl:> ,value 0.0)
-      `(gl:> ,value 0)))
+(def-tl-macro tl:plusp (&environment env value)
+  (if (tl-subtypep (expression-result-type value env) 'double-float)
+      `(tl:> ,value 0.0)
+      `(tl:> ,value 0)))
 
-(def-gl-macro gl:minusp (&environment env value)
-  (if (gl-subtypep (expression-result-type value env) 'double-float)
-      `(gl:< ,value 0.0)
-      `(gl:< ,value 0)))
+(def-tl-macro tl:minusp (&environment env value)
+  (if (tl-subtypep (expression-result-type value env) 'double-float)
+      `(tl:< ,value 0.0)
+      `(tl:< ,value 0)))
 
-(def-gl-macro gl:float (value &optional float-type-arg)
+(def-tl-macro tl:float (value &optional float-type-arg)
   (if (and float-type-arg
 	   (not (constantp float-type-arg)))
-      (error "The second argument to float is discarded in GL, so please pass a ~
+      (error "The second argument to float is discarded in TL, so please pass a ~
               constant instead of ~s."
 	     float-type-arg)
       `(coerce-to-float ,value)))
 
-(gl:declaim (gl:functional coerce-to-float))
+(tl:declaim (tl:functional coerce-to-float))
 
 (def-c-translation coerce-to-float (number)
   ((lisp-specs :ftype ((number) double-float))
@@ -418,7 +418,7 @@
 	 (make-c-cast-expr '(pointer ldouble) expr)
 	 "body")))))
 
-(def-c-translation gl:sxhash (object)
+(def-c-translation tl:sxhash (object)
   ((lisp-specs :ftype ((t) fixnum))
    `(sxhash ,object))
   ((trans-specs :lisp-type ((fixnum) fixnum)
@@ -486,27 +486,27 @@
 	   (make-c-unary-expr #\& float)
 	   (make-c-sizeof-expr (c-type-string 'double))))))
 
-(def-gl-macro gl:max (arg &rest args)
+(def-tl-macro tl:max (arg &rest args)
   (cond ((null args)
 	 arg)
 	(t
 	 (let ((x (gensym))
 	       (y (gensym)))
-	   `(gl:let ((,x ,arg)
-		     (,y (gl:max ,@args)))
-	      (gl:if (gl:> ,x ,y)
+	   `(tl:let ((,x ,arg)
+		     (,y (tl:max ,@args)))
+	      (tl:if (tl:> ,x ,y)
 		     ,x
 		     ,y))))))
 
-(def-gl-macro gl:min (arg &rest args)
+(def-tl-macro tl:min (arg &rest args)
   (cond ((null args)
 	 arg)
 	(t
 	 (let ((x (gensym))
 	       (y (gensym)))
-	   `(gl:let ((,x ,arg)
-		     (,y (gl:min ,@args)))
-	      (gl:if (gl:< ,x ,y)
+	   `(tl:let ((,x ,arg)
+		     (,y (tl:min ,@args)))
+	      (tl:if (tl:< ,x ,y)
 		     ,x
 		     ,y))))))
 
@@ -514,11 +514,11 @@
   (cons
     'progn
     (loop for (name op-string identity) in name-op-identity-tuples
-	  for gl-name = (intern (symbol-name name) *gl-package*)
+	  for tl-name = (intern (symbol-name name) *tl-package*)
 	  for lisp-name = (intern (symbol-name name) *lisp-package*)
 	  for c-trans-name = (intern (format nil "~a-TWO-ARG" lisp-name))
 	  append
-	  `((def-gl-macro ,gl-name (&rest numbers)
+	  `((def-tl-macro ,tl-name (&rest numbers)
 	      (cond ((loop for arg in numbers
 			   always (constantp arg))
 		     (apply ',lisp-name
@@ -531,10 +531,10 @@
 		     `(,',c-trans-name
 			   ,(cons-car numbers) ,(cons-second numbers)))
 		    (t
-		     `(,',gl-name (,',c-trans-name ,(cons-car numbers)
+		     `(,',tl-name (,',c-trans-name ,(cons-car numbers)
 						   ,(cons-second numbers))
 				  ,@(cons-cddr numbers)))))
-	    (gl:declaim (gl:functional ,c-trans-name))
+	    (tl:declaim (tl:functional ,c-trans-name))
 	    (def-c-translation ,c-trans-name (fix1 fix2)
 	      ((lisp-specs :ftype ((fixnum fixnum) fixnum))
 	       `(the fixnum (,',lisp-name (the fixnum ,fix1) (the fixnum ,fix2))))
@@ -547,15 +547,15 @@
 		    (logxor "^" 0)
 		    (logand "&" -1)))
 
-(gl:declaim (gl:functional gl:lognot))
+(tl:declaim (tl:functional tl:lognot))
 
-(def-c-translation gl:lognot (fix)
+(def-c-translation tl:lognot (fix)
   ((lisp-specs :ftype ((fixnum) fixnum))
    `(the fixnum (lognot (the fixnum ,fix))))
   ((trans-specs :c-type ((sint32) sint32))
    (make-c-unary-expr #\~ fix)))
 
-(def-gl-macro gl:ash (number left-shift)
+(def-tl-macro tl:ash (number left-shift)
   (cond ((and (constantp number) (constantp left-shift))
 	 (ash (eval number) (eval left-shift)))
 	((constantp left-shift)
@@ -569,17 +569,17 @@
 	(t
 	 (let ((num (gensym))
 	       (shift (gensym)))
-	   `(gl:let ((,num ,number)
+	   `(tl:let ((,num ,number)
 		     (,shift ,left-shift))
-	      (gl:declare (fixnum ,num ,shift))
-	      (gl:cond ((gl:> ,shift 0)
+	      (tl:declare (fixnum ,num ,shift))
+	      (tl:cond ((tl:> ,shift 0)
 			(fixnum-left-shift ,num ,shift))
-		       ((gl:< ,shift 0)
-			(fixnum-right-shift ,num (gl:- ,shift)))
+		       ((tl:< ,shift 0)
+			(fixnum-right-shift ,num (tl:- ,shift)))
 		       (t
 			,num)))))))
 
-(gl:declaim (gl:functional fixnum-left-shift fixnum-right-shift))
+(tl:declaim (tl:functional fixnum-left-shift fixnum-right-shift))
 
 (def-c-translation fixnum-left-shift (number shift)
   ((lisp-specs :ftype ((fixnum fixnum) fixnum))
@@ -593,19 +593,19 @@
   ((trans-specs :c-type ((sint32 sint32) sint32))
    (make-c-infix-expr number ">>" shift)))
 
-(def-gl-macro gl:logbitp (number bit)
-  `(gl:/= (gl:logand ,number (fixnum-left-shift 1 ,bit)) 0))
+(def-tl-macro tl:logbitp (number bit)
+  `(tl:/= (tl:logand ,number (fixnum-left-shift 1 ,bit)) 0))
 
-(gl:declaim (gl:functional gl:floorf-positive floor-two-arg floor-one-arg))
+(tl:declaim (tl:functional tl:floorf-positive floor-two-arg floor-one-arg))
 
-(def-c-translation gl:floorf-positive (positive-fixnum positive-fixnum-divisor)
+(def-c-translation tl:floorf-positive (positive-fixnum positive-fixnum-divisor)
   ((lisp-specs :ftype ((fixnum fixnum) fixnum))
    `(the fixnum (values (floor (the fixnum ,positive-fixnum)
 			       (the fixnum ,positive-fixnum-divisor)))))
   ((trans-specs :c-type ((sint32 sint32) sint32))
    (make-c-infix-expr positive-fixnum "/" positive-fixnum-divisor)))
 
-(def-gl-macro gl:floor (number &optional divisor)
+(def-tl-macro tl:floor (number &optional divisor)
   (if divisor
       `(floor-two-arg ,number ,divisor)
       `(floor-one-arg ,number)))
@@ -648,7 +648,7 @@
   ((trans-specs :lisp-type ((number number) (values fixnum number))
 		:c-type ((obj obj) obj))
    (fat-and-slow-warning
-     (l-expr-env function-call-l-expr) 'gl:floor
+     (l-expr-env function-call-l-expr) 'tl:floor
      (l-expr-pretty-form function-call-l-expr))
    (register-needed-function-extern
      (c-func-c-file c-func) '("extern") 'obj "generic_floor" '(obj obj))
@@ -680,16 +680,16 @@
    (make-c-function-call-expr
      (make-c-name-expr "generic_floor_one") (list number))))
 
-(gl:declaim (gl:functional gl:modf-positive gl:mod gl:mod-float-positive gl:rem))
+(tl:declaim (tl:functional tl:modf-positive tl:mod tl:mod-float-positive tl:rem))
 
-(def-c-translation gl:modf-positive (positive-fixnum positive-fixnum-divisor)
+(def-c-translation tl:modf-positive (positive-fixnum positive-fixnum-divisor)
   ((lisp-specs :ftype ((fixnum fixnum) fixnum))
    `(the fixnum (mod (the fixnum ,positive-fixnum)
 		     (the fixnum ,positive-fixnum-divisor))))
   ((trans-specs :c-type ((sint32 sint32) sint32))
    (make-c-infix-expr positive-fixnum "%" positive-fixnum-divisor)))
 
-(def-c-translation gl:mod (number divisor)
+(def-c-translation tl:mod (number divisor)
   ((lisp-specs :ftype ((number number) number))
    `(mod ,number ,divisor))
   ((trans-specs :lisp-type ((fixnum fixnum) fixnum)
@@ -709,14 +709,14 @@
   ((trans-specs :lisp-type ((number number) number)
 		:c-type ((obj obj) obj))
    (fat-and-slow-warning
-     (l-expr-env function-call-l-expr) 'gl:mod
+     (l-expr-env function-call-l-expr) 'tl:mod
      (l-expr-pretty-form function-call-l-expr))
    (register-needed-function-extern
      (c-func-c-file c-func) '("extern") 'obj "generic_mod" '(obj obj))
    (make-c-function-call-expr
      (make-c-name-expr "generic_mod") (list number divisor))))
 
-(def-c-translation gl:mod-float-positive (float float-divisor)
+(def-c-translation tl:mod-float-positive (float float-divisor)
   ((lisp-specs :ftype ((double-float double-float) double-float))
    `(the double-float (mod ,float ,float-divisor)))
   ((trans-specs :c-type ((double double) double))
@@ -726,7 +726,7 @@
      (make-c-name-expr "fmod")
      (list float float-divisor))))
 
-(def-c-translation gl:rem (number divisor)
+(def-c-translation tl:rem (number divisor)
   ((lisp-specs :ftype ((number number) number))
    `(rem ,number ,divisor))
   ((trans-specs :lisp-type ((fixnum fixnum) fixnum)
@@ -754,7 +754,7 @@
   ((trans-specs :lisp-type ((number number) number)
 		:c-type ((obj obj) obj))
    (fat-and-slow-warning
-     (l-expr-env function-call-l-expr) 'gl:rem
+     (l-expr-env function-call-l-expr) 'tl:rem
      (l-expr-pretty-form function-call-l-expr))
    (register-needed-function-extern
      (c-func-c-file c-func) '("extern") 'obj "generic_rem" '(obj obj))
@@ -763,9 +763,9 @@
 
 
 
-(gl:declaim (gl:functional gl:oddp gl:evenp gl:abs call-sqrt))
+(tl:declaim (tl:functional tl:oddp tl:evenp tl:abs call-sqrt))
 
-(def-c-translation gl:oddp (fixnum)
+(def-c-translation tl:oddp (fixnum)
   ((lisp-specs :ftype ((fixnum) t))
    `(ab-lisp::oddp ,fixnum))
   ((trans-specs :lisp-type ((fixnum) t)
@@ -778,7 +778,7 @@
      (make-c-infix-expr (make-c-cast-expr 'sint32 fixnum) "&" 4)
      "!=" 0)))
 
-(def-c-translation gl:evenp (fixnum)
+(def-c-translation tl:evenp (fixnum)
   ((lisp-specs :ftype ((fixnum) t))
    `(ab-lisp::evenp ,fixnum))
   ((trans-specs :lisp-type ((fixnum) t)
@@ -791,8 +791,8 @@
      (make-c-infix-expr (make-c-cast-expr 'sint32 fixnum) "&" 4)
      "==" 0)))
 
-(def-gl-macro gl:sqrt (number)
-  `(call-sqrt (gl:float ,number)))
+(def-tl-macro tl:sqrt (number)
+  `(call-sqrt (tl:float ,number)))
 
 (def-c-translation call-sqrt (float)
   ((lisp-specs :ftype ((double-float) double-float))
@@ -803,7 +803,7 @@
      (make-c-name-expr "sqrt")
      (list float))))
 
-(def-c-translation gl:abs (number)
+(def-c-translation tl:abs (number)
   ((lisp-specs :ftype ((number) number))
    `(ab-lisp::abs ,number))
   ((trans-specs :lisp-type ((fixnum) fixnum)
@@ -822,25 +822,25 @@
   ((trans-specs :lisp-type ((number) number)
 		:c-type ((obj) obj))
    (fat-and-slow-warning
-     (l-expr-env function-call-l-expr) 'gl:abs
+     (l-expr-env function-call-l-expr) 'tl:abs
      (l-expr-pretty-form function-call-l-expr))
    (register-needed-function-extern
      (c-func-c-file c-func) '("extern") 'obj "generic_abs" '(obj))
    (make-c-function-call-expr
      (make-c-name-expr "generic_abs") (list number))))
 
-(def-gl-macro gl:log (number &optional base)
+(def-tl-macro tl:log (number &optional base)
   (if base
       (if (and (or (constantp base)
 		   (and (consp base)
-			(eq (car base) 'gl:the)
+			(eq (car base) 'tl:the)
 			(constantp (third base))))
 	       (= (eval base) 10))
-	  `(gl:the gl:double-float (log-10 ,number))
-	  `(gl:the gl:double-float (gl:/ (log-e ,number) (log-e ,base))))
-      `(gl:the gl:double-float (log-e ,number))))
+	  `(tl:the tl:double-float (log-10 ,number))
+	  `(tl:the tl:double-float (tl:/ (log-e ,number) (log-e ,base))))
+      `(tl:the tl:double-float (log-e ,number))))
 
-(gl:declaim (gl:functional log-e log-10 call-exp gl:expt))
+(tl:declaim (tl:functional log-e log-10 call-exp tl:expt))
 
 (def-c-translation log-e (double)
   ((lisp-specs :ftype ((double-float) double-float))
@@ -858,8 +858,8 @@
      (make-c-name-expr "log10")
      (list double))))
 
-(def-gl-macro gl:exp (power)
-  `(call-exp (gl:float ,power)))
+(def-tl-macro tl:exp (power)
+  `(call-exp (tl:float ,power)))
 
 (def-c-translation  call-exp (power)
   ((lisp-specs :ftype ((double-float) double-float))
@@ -870,7 +870,7 @@
      (make-c-name-expr "exp")
      (list power))))
 
-(def-c-translation gl:expt (base power)
+(def-c-translation tl:expt (base power)
   ((lisp-specs :ftype ((number number) number))
    `(expt ,base ,power))
   ((trans-specs :lisp-type ((fixnum fixnum) fixnum)
@@ -885,14 +885,14 @@
      (make-c-name-expr "pow")
      (list base power)))
   ((trans-specs :c-type ((obj obj) obj))
-   (fat-and-slow-warning (l-expr-env function-call-l-expr) 'gl:expt
+   (fat-and-slow-warning (l-expr-env function-call-l-expr) 'tl:expt
 			 (l-expr-pretty-form function-call-l-expr))
    (register-needed-function-extern
      (c-func-c-file c-func) '("extern") 'obj "generic_expt" '(obj obj))
    (make-c-function-call-expr
      (make-c-name-expr "generic_expt") (list base power))))
 
-(def-c-translation gl:scale-float (float exponent)
+(def-c-translation tl:scale-float (float exponent)
   ((lisp-specs :ftype ((double-float integer) double-float))
    `(scale-float ,float ,exponent))
   ((trans-specs :c-type ((double sint32) double))
@@ -902,7 +902,7 @@
 	   (coerce-c-expr-result-to-type
 	     exponent 'sint32 'int (l-expr-env function-call-l-expr))))))
 
-(def-gl-macro gl:ceiling (number &optional divisor)
+(def-tl-macro tl:ceiling (number &optional divisor)
   (if divisor
       `(ceiling-two-arg ,number ,divisor)
       `(ceiling-one-arg ,number)))
@@ -947,7 +947,7 @@
   ((trans-specs :lisp-type ((fixnum) fixnum)
 		:c-type ((sint32) sint32)
 		;; Check that only one return value is required.
-		:test (gl-subtypep lisp-type 'fixnum))
+		:test (tl-subtypep lisp-type 'fixnum))
    number)
   ((trans-specs :lisp-type ((double-float) fixnum)
 		:c-type ((double) sint32)
@@ -964,7 +964,7 @@
    (make-c-function-call-expr
      (make-c-name-expr "generic_ceiling_one") (list number))))
 
-(def-gl-macro gl:ffloor (number &optional divisor)
+(def-tl-macro tl:ffloor (number &optional divisor)
   (if divisor
       `(ffloor-two-arg ,number ,divisor)
       `(ffloor-one-arg ,number)))
@@ -1020,7 +1020,7 @@
    (make-c-function-call-expr
      (make-c-name-expr "generic_ffloor_one") (list number))))
 
-(def-gl-macro gl:fceiling (number &optional divisor)
+(def-tl-macro tl:fceiling (number &optional divisor)
   (if divisor
       `(fceiling-two-arg ,number ,divisor)
       `(fceiling-one-arg ,number)))
@@ -1075,17 +1075,17 @@
      (make-c-name-expr "generic_fceiling_one") (list number))))
 
 
-(gl:declaim (gl:functional truncate-one-arg truncate-two-arg
+(tl:declaim (tl:functional truncate-one-arg truncate-two-arg
 			   truncate-test-by-dividing-with-slash
-			   round-one-arg round-two-arg gl:fround))
+			   round-one-arg round-two-arg tl:fround))
 
-(def-gl-macro gl:truncate (number &optional divisor)
+(def-tl-macro tl:truncate (number &optional divisor)
   (if divisor
       `(truncate-two-arg ,number ,divisor)
       `(truncate-one-arg ,number)))
 
 
-;; The following is used by validate-fixnum-tests in glbasics.lisp
+;; The following is used by validate-fixnum-tests in tl-extension.lisp
 ;;   It forces a divide by "/" to produce a fixnum (in the float
 ;;   case it coerces the result to a sint32).  The result can be compared
 ;;   to the known results of truncate to determine whether or not it is safe
@@ -1192,14 +1192,14 @@
      (make-c-name-expr "generic_truncate_two") (list number divisor))))
 
 
-(def-gl-macro gl:round (number &optional divisor)
+(def-tl-macro tl:round (number &optional divisor)
   (if divisor
       `(round-two-arg ,number ,divisor)
       (if (or (symbolp number)
 	      (constantp number))
 	  `(round-one-arg ,number)
 	  (let ((arg (gensym)))
-	    `(gl:let ((,arg ,number))
+	    `(tl:let ((,arg ,number))
 	       (round-one-arg ,arg))))))
 
 ;;; Note that this translator expands its argument more than once.
@@ -1344,7 +1344,7 @@
 
 ;;; Just doing basic case of one float arg, returning a single value
 
-(def-c-translation gl:fround (double)
+(def-c-translation tl:fround (double)
   ((lisp-specs :ftype ((double-float) double-float))
    ;; NOTE - lisp rounds exact halves to nearest EVEN integer
    ;; The following contortions are to make the lisp expansion of round conform
@@ -1377,7 +1377,7 @@
 				  (make-c-literal-expr 0.5))))))))
 
 
-(gl:declaim (gl:functional ftruncate-two-arg ftruncate-one-arg))
+(tl:declaim (tl:functional ftruncate-two-arg ftruncate-one-arg))
 
 ;;; We're taking shortcuts with ftruncate, in particular converting args to
 ;;; floats before performing the operation.  This reduces the number of cases
@@ -1386,11 +1386,11 @@
 ;;; an integer divide could have been done, and the "remainder" second value
 ;;; may only be approximate because of floating point roundoff errors).
 
-(def-gl-macro gl:ftruncate (number &optional divisor)
+(def-tl-macro tl:ftruncate (number &optional divisor)
   (if divisor
-      `(ftruncate-two-arg (gl:float ,number)
-			  (gl:float ,divisor))
-      `(ftruncate-one-arg (gl:float ,number))))
+      `(ftruncate-two-arg (tl:float ,number)
+			  (tl:float ,divisor))
+      `(ftruncate-one-arg (tl:float ,number))))
 
 (def-c-translation ftruncate-two-arg (number divisor)
   ((lisp-specs :ftype ((double-float double-float)
@@ -1452,10 +1452,10 @@
 
 ;;; Trigonometric functions
 
-(gl:declaim (gl:functional call-sin))
+(tl:declaim (tl:functional call-sin))
 
-(def-gl-macro gl:sin (number)
-  `(gl:the gl:double-float (call-sin (gl:float ,number))))
+(def-tl-macro tl:sin (number)
+  `(tl:the tl:double-float (call-sin (tl:float ,number))))
 
 (def-c-translation call-sin (double)
   ((lisp-specs :ftype ((double-float) double-float))
@@ -1465,10 +1465,10 @@
      (make-c-name-expr "sin")
      (list double))))
 
-(gl:declaim (gl:functional call-cos))
+(tl:declaim (tl:functional call-cos))
 
-(def-gl-macro gl:cos (number)
-  `(gl:the gl:double-float (call-cos (gl:float ,number))))
+(def-tl-macro tl:cos (number)
+  `(tl:the tl:double-float (call-cos (tl:float ,number))))
 
 (def-c-translation call-cos (double)
   ((lisp-specs :ftype ((double-float) double-float))
@@ -1478,13 +1478,13 @@
      (make-c-name-expr "cos")
      (list double))))
 
-(gl:declaim (gl:functional call-atan call-atan2 call-tan))
+(tl:declaim (tl:functional call-atan call-atan2 call-tan))
 
-(def-gl-macro gl:atan (number1 &optional number2)
+(def-tl-macro tl:atan (number1 &optional number2)
   (if number2
-      `(gl:the gl:double-float (call-atan2 (gl:float ,number1)
-					   (gl:float ,number2)))
-      `(gl:the gl:double-float (call-atan (gl:float ,number1)))))
+      `(tl:the tl:double-float (call-atan2 (tl:float ,number1)
+					   (tl:float ,number2)))
+      `(tl:the tl:double-float (call-atan (tl:float ,number1)))))
 
 (def-c-translation call-atan (double)
   ((lisp-specs :ftype ((double-float) double-float))
@@ -1503,8 +1503,8 @@
      (list double1
 	   double2))))
 
-(def-gl-macro gl:tan (number)
-  `(gl:the gl:double-float (call-atan (gl:float ,number))))
+(def-tl-macro tl:tan (number)
+  `(tl:the tl:double-float (call-atan (tl:float ,number))))
 
 (def-c-translation call-tan (double)
   ((lisp-specs :ftype ((double-float) double-float))

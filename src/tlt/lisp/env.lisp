@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module ENV
 
@@ -120,21 +120,21 @@
     (make-hash-table :test #'eq)
     (add-entries-to-environment-hash
       (make-hash-table :test #'eq)
-      '((declaration declaration gl:variable-declaration variable-declaration)))
+      '((declaration declaration tl:variable-declaration variable-declaration)))
     nil))
 
 
 
 
-;;; The global variable `global-glt-environment' contains an environment holding
+;;; The global variable `global-tlt-environment' contains an environment holding
 ;;; globally proclaimed (or declaimed) declarations.  The macro `env-or-default'
 ;;; is used to take environment arguments to functions that receive them, and to
 ;;; either return any valid environments given or to return the global
 ;;; environment.  Note that this function can receive environment arguments from
 ;;; the underlying Lisp implementation, in which case it should return the
-;;; default, global GLT environment.
+;;; default, global TLT environment.
 
-(defvar global-glt-environment (make-new-global-env))
+(defvar global-tlt-environment (make-new-global-env))
 
 (defmacro env-or-default (environment?)
   (let ((env? (gensym)))
@@ -143,7 +143,7 @@
        ;; for our specific structure type here.
        (if (environment-p ,env?)
 	   ,env?
-	 global-glt-environment))))
+	 global-tlt-environment))))
 
 
 
@@ -155,7 +155,7 @@
 (defun global-environment-p (environment?)
   (or (null environment?)
       (consp environment?)
-      (eq environment? global-glt-environment)))
+      (eq environment? global-tlt-environment)))
 
 
 
@@ -186,7 +186,7 @@
     (write-string "ENV" stream)
     (cond ((and (numberp *print-level*) (> level *print-level*))
 	   (write-string " ..." stream))
-	  ((eq env global-glt-environment)
+	  ((eq env global-tlt-environment)
 	   (write-string " GLOBAL-ENV" stream))
 	  (verbose-environment-printing
 	   (let* ((next-env (environment-next-env? env))
@@ -243,8 +243,8 @@
     (write-char #\; stream)))      
 
 (defun print-global-environment ()
-  (let* ((global-env global-glt-environment)
-	 (global-glt-environment nil))
+  (let* ((global-env global-tlt-environment)
+	 (global-tlt-environment nil))
     (print-environment global-env *standard-output* 0)))
     
 
@@ -290,11 +290,11 @@
 
 
 
-;;; The macro `gl:proclaim' takes a declaration specifier and puts it into
+;;; The macro `tl:proclaim' takes a declaration specifier and puts it into
 ;;; effect globally within the Lisp environment.  See CLtL 2, Sec. 9,1, p. 222
 ;;; for details.
 
-(defmacro gl:proclaim (decl-spec)
+(defmacro tl:proclaim (decl-spec)
   (unless (memq :translator *features*)
     `(progn
        ,@(when (and (constantp decl-spec)
@@ -308,54 +308,54 @@
 (defun proclaim-decl-list (decl-specs)
   (multiple-value-bind (variable-env function-env declaration-env)
       (collect-environment-augmentations
-	global-glt-environment nil nil nil nil decl-specs)
+	global-tlt-environment nil nil nil nil decl-specs)
     (when variable-env
       (add-entries-to-environment-hash
-	(environment-local-variable-env global-glt-environment)
+	(environment-local-variable-env global-tlt-environment)
 	variable-env))
     (when function-env
       (add-entries-to-environment-hash
-	(environment-local-function-env global-glt-environment)
+	(environment-local-function-env global-tlt-environment)
 	function-env))
     (when declaration-env
       (add-entries-to-environment-hash
-	(environment-local-declaration-env global-glt-environment)
+	(environment-local-declaration-env global-tlt-environment)
 	declaration-env))
     nil))
 
 
 
 
-;;; The macro `gl:declaim' takes a set of declaration specs and enters them into
+;;; The macro `tl:declaim' takes a set of declaration specs and enters them into
 ;;; the global environment.  They are not evaluated.
 
-(defmacro gl:declaim (&rest decl-specs)
+(defmacro tl:declaim (&rest decl-specs)
   (unless (memq :translator *features*)
     `(progn
        ,@(loop for decl in decl-specs
 	       when (memqp (car decl) '(special declaration))
 		 collect `(lisp-declaim ,decl))
-       (gl:eval-when (:compile-toplevel :load-toplevel :execute)
+       (tl:eval-when (:compile-toplevel :load-toplevel :execute)
 	 (proclaim-decl-list ',decl-specs)))))
 
 
 
 
-;;; The macro definition for `gl:eval-when' normally would be in SPECIAL, but
+;;; The macro definition for `tl:eval-when' normally would be in SPECIAL, but
 ;;; has been moved forward here to support its use by declaim.
 
-(defmacro gl:eval-when (situations &body forms)
+(defmacro tl:eval-when (situations &body forms)
   (let ((lisp-situations
 	  (loop for situation in situations
 		collect (or (cdr (assq situation 
 				       #+lucid
-				       '((gl:compile . compile)
-					 (gl:load    . load)
-					 (gl:eval    . eval))
+				       '((tl:compile . compile)
+					 (tl:load    . load)
+					 (tl:eval    . eval))
 				       #-lucid
-				       '((gl:compile . :compile-toplevel)
-					 (gl:load    . :load-toplevel)
-					 (gl:eval    . :execute)
+				       '((tl:compile . :compile-toplevel)
+					 (tl:load    . :load-toplevel)
+					 (tl:eval    . :execute)
 					 (compile    . :compile-toplevel)
 					 (load       . :load-toplevel)
 					 (eval       . :execute))))
@@ -365,25 +365,25 @@
 
 
 
-;;; The macro `gl:define-declaration' is used to extend the set of declarations
+;;; The macro `tl:define-declaration' is used to extend the set of declarations
 ;;; handled by the environment management code.  See CLtL 2, Sec. 8.5, p. 213
 ;;; for its specification.
 
-(defmacro gl:define-declaration (decl-name lambda-list &body forms)
+(defmacro tl:define-declaration (decl-name lambda-list &body forms)
   (unless (eval-feature :translator)
     (let* ((function-name
 	     (intern (format nil "~a-~a-DECL-DEFN"
 			     (package-name (symbol-package decl-name))
 			     decl-name)
-		     *gli-package*)))
+		     *tli-package*)))
       `(progn
 	 (defun ,function-name ,lambda-list ,@forms)
 	 (setf (get ',decl-name :declaration-definition) #',function-name)
-	 (gl:declaim (declaration ,decl-name))
+	 (tl:declaim (declaration ,decl-name))
 	 ',decl-name))))
 
 (defmacro define-declaration (decl-name lambda-list &body forms)
-  `(gl:define-declaration ,decl-name ,lambda-list ,@forms))
+  `(tl:define-declaration ,decl-name ,lambda-list ,@forms))
 
 
 
@@ -398,11 +398,11 @@
 ;;; environment, but it is redefined here.
 
 ;;; The definition of the `declaration' kind of declaration must be installed
-;;; by hand, since the expansion of the gl:define-declaration macro depends on
+;;; by hand, since the expansion of the tl:define-declaration macro depends on
 ;;; declaration already being available.
 
 (defun declaration-decl-defn (decl-spec env)
-  (let ((current-declarations (gl:declaration-information 'declaration env)))
+  (let ((current-declarations (tl:declaration-information 'declaration env)))
     (loop for new-declaration in (cons-cdr decl-spec) do
       (pushnew new-declaration current-declarations))
     (values :declare (cons 'declaration current-declarations))))
@@ -412,7 +412,7 @@
 
 
 
-;;; The `variable-declaration' declaration is a GL declaration extension that
+;;; The `variable-declaration' declaration is a TL declaration extension that
 ;;; registers the fact that a particular declaration applies to variable
 ;;; bindings, and that it has the form (<decl-name> <var-name>...).  This
 ;;; declaration is used when finding the subset of a block of declarations that
@@ -434,11 +434,11 @@
 (defun variable-declaration-decl-defn (decl-spec env)
   (values
     :declare
-    (cons 'gl:variable-declaration
+    (cons 'tl:variable-declaration
 	  (union (cons-cdr decl-spec)
-		 (gl:declaration-information 'gl:variable-declaration env)))))
+		 (tl:declaration-information 'tl:variable-declaration env)))))
 
-(setf (get 'gl:variable-declaration :declaration-definition)
+(setf (get 'tl:variable-declaration :declaration-definition)
       #'variable-declaration-decl-defn)
 
 (setf (get 'variable-declaration :declaration-definition)
@@ -447,18 +447,18 @@
 
 
 
-;;; The function `gl:augment-environment' is used to add information to a given
+;;; The function `tl:augment-environment' is used to add information to a given
 ;;; environment, returning the new environment.  The given environment is not
 ;;; mutated.  See CLtL 2, Sec. 8.5, p. 211 for specification.
 
-(defun gl:augment-environment
+(defun tl:augment-environment
     (env &key variable symbol-macro function macro declare)
   (setq env (env-or-default env))
   (multiple-value-bind (variable-env function-env declaration-env)
       (collect-environment-augmentations
 	env variable symbol-macro function macro declare)
     (if (and (null variable-env) (null function-env) (null declaration-env))
-	(if (eq env global-glt-environment)
+	(if (eq env global-tlt-environment)
 	    nil
 	    env)
 	(make-environment variable-env function-env declaration-env env))))
@@ -469,7 +469,7 @@
 	(function-env nil)
 	(declaration-env nil))
     (loop for var in variable
-	  for kind? = (gl:variable-information var nil)
+	  for kind? = (tl:variable-information var nil)
           do
       (push (list var (if (memqp kind? '(:special :constant)) kind? :lexical)
 		  t nil)
@@ -495,7 +495,7 @@
 		 for local-binding =
 		 (or (assq var-name variable-env)
 		     (multiple-value-bind (type? local? decls?)
-			 (gl:variable-information var-name env)
+			 (tl:variable-information var-name env)
 		       (let ((new-binding (list var-name type? local? decls?)))
 			 (push new-binding variable-env)
 			 new-binding)))
@@ -506,7 +506,7 @@
 		   ((eq key 'constant)
 		    (setf (second local-binding) :constant)))
 	     (setf (car bindings-cons)
-		   (if (eq env global-glt-environment)
+		   (if (eq env global-tlt-environment)
 		       (add-to-alist-without-duplication
 			 key value (cons-car bindings-cons))
 		       (cons (cons key value) (cons-car bindings-cons))))))
@@ -515,7 +515,7 @@
 		 for local-binding =
 		 (or (assq func-name function-env)
 		     (multiple-value-bind (type? local? decls?)
-			 (gl:function-information func-name env)
+			 (tl:function-information func-name env)
 		       (let* ((new-type
 				(cond ((or (eq decl-name 'ftype)
 					   (eq decl-name 'computed-ftype))
@@ -531,7 +531,7 @@
 		 for bindings-cons = (cons-cdddr local-binding)
 		 do
 	     (setf (car bindings-cons)
-		   (if (eq env global-glt-environment)
+		   (if (eq env global-tlt-environment)
 		       (add-to-alist-without-duplication
 			 key value (cons-car bindings-cons))
 		       (cons (cons key value) (cons-car bindings-cons))))))
@@ -549,14 +549,14 @@
 
 
 
-;;; The function `gl:variable-information' takes a symbol and an environment and
+;;; The function `tl:variable-information' takes a symbol and an environment and
 ;;; returns three values, binding-type (nil, :special, :lexical, :symbol-macro,
 ;;; or :constant), local-binding (t, nil, or a symbol-macro expansion), and a
 ;;; declaration alist.  See CLtL 2, Sec. 8.5, p. 208 for details, but note that
-;;; the symbol-macro expansion in the local-binding return value is a GL
+;;; the symbol-macro expansion in the local-binding return value is a TL
 ;;; specific characteristic.
 
-(defun gl:variable-information (symbol &optional env)
+(defun tl:variable-information (symbol &optional env)
   (let ((entry? (search-variable-environment
 		  symbol
 		  (env-or-default env))))
@@ -578,7 +578,7 @@
 
 (defun variable-decl (symbol key &optional env)
   (multiple-value-bind (type? local? decls)
-      (gl:variable-information symbol env)
+      (tl:variable-information symbol env)
     (declare (ignore type? local?))
     (cdr (assq key decls))))
 
@@ -589,10 +589,10 @@
 ;;; returns up to four values; function-type (nil, :function, :macro, or
 ;;; :special-form), local-binding (t or nil), a declaration alist, and a either
 ;;; the name of a local function or the expansion function for a local macro.
-;;; This fourth value is GL specific and not part of CLtL 2.  See CLtL 2,
+;;; This fourth value is TL specific and not part of CLtL 2.  See CLtL 2,
 ;;; Sec. 8.5, p. 209 for details.
 
-(defun gl:function-information (symbol &optional env)
+(defun tl:function-information (symbol &optional env)
   (let ((entry? (search-function-environment
 		  symbol
 		  (env-or-default env))))
@@ -615,7 +615,7 @@
 
 (defun function-decl (symbol key &optional env)
   (multiple-value-bind (type? local? decls)
-      (gl:function-information symbol env)
+      (tl:function-information symbol env)
     (declare (ignore type? local?))
     (cdr (assq key decls))))
 
@@ -627,19 +627,19 @@
 ;;; state of that declaration within the given environment.  See CLtL 2,
 ;;; Sec. 8.5, pp. 210-211 for details.
 
-(defun gl:declaration-information (symbol &optional env)
+(defun tl:declaration-information (symbol &optional env)
   (search-declaration-environment symbol (env-or-default env)))
 
 
 
 
-;;; The function `gl:optimize-information' is just like declaration-information,
+;;; The function `tl:optimize-information' is just like declaration-information,
 ;;; but it fetches the different optimization parameters out of the optimize
 ;;; declaration.  Those parameters are speed, safety, size, and
 ;;; compilation-speed.
 
-(defun gl:optimize-information (symbol &optional env)
-  (second (assq symbol (gl:declaration-information 'optimize env))))
+(defun tl:optimize-information (symbol &optional env)
+  (second (assq symbol (tl:declaration-information 'optimize env))))
 
 
 
@@ -657,9 +657,9 @@
 	  (when decl-entry
 	    (funcall function symbol (cdr decl-entry)))))
     (cond ((eq decls-space :function)
-	   (environment-local-function-env global-glt-environment))
+	   (environment-local-function-env global-tlt-environment))
 	  ((eq decls-space :variable)
-	   (environment-local-variable-env global-glt-environment))
+	   (environment-local-variable-env global-tlt-environment))
 	  (t
 	   (error
 	     "Decl-space should have been one of :variable or :function, was ~s"

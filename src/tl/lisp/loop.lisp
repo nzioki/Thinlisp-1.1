@@ -1,4 +1,4 @@
-(in-package "GL")
+(in-package "TL")
 
 ;;;
 ;;;
@@ -184,8 +184,8 @@
      (format
        nil
        (if (eval-feature :translator)
-	   "GL-~a"
-	   "GL-~a~d")
+	   "TL-~a"
+	   "TL-~a~d")
        (symbol-name ,pref)
        (prog1 loop-gentemp-counter		; unnec. arg in some cases
 	      (incf loop-gentemp-counter)))))
@@ -646,7 +646,7 @@ The offending clause"
 
 ;;; Note that the documentation above is incorrect for the actual usage of
 ;;; loop-typed-arith.  This function is always given a symbol naming a numeric
-;;; operation.  Today, I changed this to use the Gensym type declared arithmetic
+;;; operation.  Today, I changed this to use the type declared arithmetic
 ;;; operations.  Note that this function is a no-op until the arithmetic macros
 ;;; are loaded.  -jra 2/4/91
 
@@ -661,7 +661,7 @@ The offending clause"
 ;(defun-for-macro loop-typed-arith (substitutable-operation data-type)
 ;  (when (not (member substitutable-operation loop-typed-ops :test #'equal))
 ;    (push substitutable-operation loop-typed-ops))
-;  (cond ((not (eval-feature :gensym-typed-arithmetic))
+;  (cond ((not (eval-feature :tl-typed-arithmetic))
 ;         substitutable-operation)
 ;        ((symbolp substitutable-operation)
 ;         (typed-operator-for-type substitutable-operation data-type))
@@ -675,7 +675,7 @@ The offending clause"
 ;         substitutable-operation)))
 
 (defvar-for-macro loop-floating-point-types
-	'(flonum float short-float single-float double-float long-float gensym-float))
+	'(flonum float short-float single-float double-float long-float))
 
 (defun-for-macro loop-typed-init (data-type)
   (let ((tem nil))

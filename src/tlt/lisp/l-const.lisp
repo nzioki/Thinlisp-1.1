@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module L-CONST
 
@@ -162,12 +162,12 @@
 ;;; argument is.
 
 (def-l-expr-method set-specific-l-expr-bits (the-l-expr)
-  (gl:destructuring-bind-strict (nil type l-expr) (l-expr-form the-l-expr)
+  (tl:destructuring-bind-strict (nil type l-expr) (l-expr-form the-l-expr)
     (setf (l-expr-functional-p the-l-expr) t)
     (setf (l-expr-side-effect-free-p the-l-expr)
 	  (l-expr-side-effect-free-p l-expr))
     (if (and (l-expr-constant-p l-expr)
-	     (gl-typep (l-expr-constant-value l-expr) type))
+	     (tl-typep (l-expr-constant-value l-expr) type))
 	l-expr
 	the-l-expr)))
 
@@ -198,8 +198,8 @@
   (let* ((form (l-expr-form function-call-l-expr))
 	 (args (cons-cdr form))
 	 (decls (function-call-l-expr-decls function-call-l-expr))
-	 (functional? (cdr (assq 'gl:functional decls)))
-	 (side-effect-free? (cdr (assq 'gl:side-effect-free decls))))
+	 (functional? (cdr (assq 'tl:functional decls)))
+	 (side-effect-free? (cdr (assq 'tl:side-effect-free decls))))
     (setf (l-expr-functional-p function-call-l-expr) functional?)
     (cond ((and functional?
 		(loop for l-expr in args always (l-expr-constant-p l-expr))
@@ -215,7 +215,7 @@
 				(setq optional t))
 			       ((null arg-cons)
 				(return optional))
-			       ((gl-typep (l-expr-constant-value (car arg-cons))
+			       ((tl-typep (l-expr-constant-value (car arg-cons))
 					  argtype)
 				(setq arg-cons (cons-cdr arg-cons)))
 			       (t (return nil)))
@@ -223,7 +223,7 @@
 	   (make-quoted-constant-l-expr
 	     (cons (cons-car form)
 		   (loop for l-expr in args
-			 collect `(gl:quote ,(l-expr-constant-value l-expr))))
+			 collect `(tl:quote ,(l-expr-constant-value l-expr))))
 	     (l-expr-env function-call-l-expr)
 	     (l-expr-aug-env function-call-l-expr)))
 	  (t
@@ -247,10 +247,10 @@
 	       (symbol-value (l-expr-form implicit-symbol-value-l-expr)))))
     (cond ((and (eq binding-type :constant)
 		(or (fixnump constant-value)
-		    (gl-typep constant-value 'double-float)
+		    (tl-typep constant-value 'double-float)
 		    (symbolp constant-value)))
 	   (make-quoted-constant-l-expr
-	     (list 'gl:quote constant-value)
+	     (list 'tl:quote constant-value)
 	     (l-expr-env implicit-symbol-value-l-expr)
 	     (l-expr-aug-env implicit-symbol-value-l-expr)))
 	  (t
@@ -311,7 +311,7 @@
     (setf (l-expr-functional-p inlined-typep-l-expr) t)
     (cond ((l-expr-constant-p object-l-expr)
 	   (make-quoted-constant-l-expr
-	     (gl-typep (l-expr-constant-value object-l-expr) type)
+	     (tl-typep (l-expr-constant-value object-l-expr) type)
 	     (l-expr-env inlined-typep-l-expr)
 	     (l-expr-aug-env inlined-typep-l-expr)))
 	  (t
@@ -496,7 +496,7 @@
   (declare (ignore c-type))
   (let* ((form (l-expr-form block-l-expr))
 	 (values-required? (type-includes-values-p lisp-type))
-	 (exit-scope (gl:declaration-information
+	 (exit-scope (tl:declaration-information
 		       'exit-scope (l-expr-aug-env block-l-expr)))
 	 (block-name (cons-second form))
 	 (block-struct
@@ -709,7 +709,7 @@
 	      (symbol
 	       (values 'symbol 'obj))
 	      (fixnum
-	       (if (gl-subtypep lisp-type '(c-type "long"))
+	       (if (tl-subtypep lisp-type '(c-type "long"))
 		   (values '(c-type "long") 'long)
 		   (values 'fixnum
 			   (if (loop for type in '(sint32 uint32 uint16 uint8)
@@ -720,7 +720,7 @@
 	      (double-float
 	       (values 'double-float 'double))
 	      (string
-	       (if (and (gl-subtypep lisp-type '(c-type (pointer "char")))
+	       (if (and (tl-subtypep lisp-type '(c-type (pointer "char")))
 			(<= (length value)
 			    maximum-inline-c-constant-string-length))
 		   (values '(c-type (pointer "char")) '(pointer char))
@@ -756,7 +756,7 @@
       quote-l-expr)))
 
 (def-l-expr-method trivial-l-expr-lisp-result-type (quote-l-expr)
-  (gl-type-of (l-expr-form quote-l-expr)))
+  (tl-type-of (l-expr-form quote-l-expr)))
 
 (def-l-expr-method choose-l-expr-types (return-from-l-expr lisp-type c-type)
   (declare (ignore lisp-type c-type))
@@ -793,7 +793,7 @@
 	 (symbol (cons-second form))
 	 (decls
 	   (multiple-value-bind (bind-type? local? declarations)
-	       (gl:variable-information symbol (l-expr-env setq-l-expr))
+	       (tl:variable-information symbol (l-expr-env setq-l-expr))
 	     (declare (ignore bind-type? local?))
 	     declarations))
 	 (binding? (cdr (assq 'variable-binding-structure decls)))
@@ -988,8 +988,8 @@
 	       (and (eq (implicit-symbol-value-l-expr-binding-type isv)
 			:constant)
 		    (loop with value = (symbol-value (l-expr-form isv))
-			  for type in gl-significant-types
-			  when (gl-typep value type)
+			  for type in tl-significant-types
+			  when (tl-typep value type)
 			    return type))
 	       t))
 	 (c-type (or (and (eq required-lisp-type 'void)
@@ -1025,30 +1025,30 @@
 	   (setq held-lisp-type (type-of-first-value held-lisp-type))))
     (setf (l-expr-lisp-return-type coerce-to-type-l-expr)
 	  (cond
-	    ((gl-subtypep held-lisp-type lisp-type) held-lisp-type)
-	    ((gl-subtypep lisp-type held-lisp-type) lisp-type)
-	    ((and (gl-subtypep held-lisp-type 'fixnum)
-		  (gl-subtypep lisp-type 'double-float))
+	    ((tl-subtypep held-lisp-type lisp-type) held-lisp-type)
+	    ((tl-subtypep lisp-type held-lisp-type) lisp-type)
+	    ((and (tl-subtypep held-lisp-type 'fixnum)
+		  (tl-subtypep lisp-type 'double-float))
 	     'double-float)
 	    ;; When attempting to coerce to a C-type, check that the Lisp type
 	    ;; we can coerce from is compatible with the type we know how to
 	    ;; coerce from.  For example, to coerce to long, the type fixnum
 	    ;; must be a possible subtype of the argument type.
 	    ((and (explicit-lisp-to-c-type-p lisp-type)
-		  (or (and (gl-subtypep lisp-type '(c-type "long"))
-			   (gl-subtypep 'fixnum held-lisp-type))
-		      (and (gl-subtypep lisp-type '(c-type (pointer "char")))
-			   (gl-subtypep 'string held-lisp-type))
-		      (gl-subtypep lisp-type '(c-type (pointer "void")))))
+		  (or (and (tl-subtypep lisp-type '(c-type "long"))
+			   (tl-subtypep 'fixnum held-lisp-type))
+		      (and (tl-subtypep lisp-type '(c-type (pointer "char")))
+			   (tl-subtypep 'string held-lisp-type))
+		      (tl-subtypep lisp-type '(c-type (pointer "void")))))
 	     lisp-type)
 
 	    ;; When coercing from a Long, the required type must allow fixnums.
-	    ((and (gl-subtypep held-lisp-type '(c-type "long"))
-		  (gl-subtypep 'fixnum lisp-type))
+	    ((and (tl-subtypep held-lisp-type '(c-type "long"))
+		  (tl-subtypep 'fixnum lisp-type))
 	     'fixnum)
 	    ;; When coercing from type NULL, allow initializations of fixnums to zero.
-	    ((and (gl-subtypep held-lisp-type 'null)
-		  (gl-subtypep lisp-type 'fixnum))
+	    ((and (tl-subtypep held-lisp-type 'null)
+		  (tl-subtypep lisp-type 'fixnum))
 	     'fixnum)
 	    (t
 	     ;; Else the coercion can't work, return 'void

@@ -1,4 +1,4 @@
-(in-package "GL")
+(in-package "TL")
 
 (defun svref (a b)
   (declare (simple-vector a)
@@ -193,8 +193,8 @@
   gsi-patches
   loop
   lisp-fixes
-  glbasics
-  (gldebug :include-test :development)
+  tl-extension
+  (tldebug :include-test :development)
   os-foreign
   basics
   os-time

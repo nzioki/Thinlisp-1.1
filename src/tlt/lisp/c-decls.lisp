@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module C-DECL
 
@@ -183,7 +183,7 @@
 ;;; currently capable of emitting are new structures for holding constant
 ;;; arrays.  There is a special list representation for these types of arrays,
 ;;; (const-array <struct-type> <length>).  All other types used by the
-;;; translator are defined beforehand in the glt/glt.h file.
+;;; translator are defined beforehand in the tlt/tlt.h file.
 
 ;;; In the future, we may wish to have specific C types defined for translated
 ;;; def-structures.  When that occurs, C types and this declaration operation

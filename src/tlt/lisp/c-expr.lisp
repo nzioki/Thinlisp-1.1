@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module C-EXPR
 
@@ -132,7 +132,7 @@
 		 ,@(loop for slot in slots
 			 when (consp slot)
 			   collect
-			   (gl:destructuring-bind-strict
+			   (tl:destructuring-bind-strict
 			     (name &key (test nil))
 			     slot
 			     (when test

@@ -1,4 +1,4 @@
-(in-package "GL")
+(in-package "TL")
 
 ;;;; Module GENERIC-MATH
 
@@ -25,12 +25,12 @@
 
 
 
-;;;; Primitive Operations for GL Arithmetic
+;;;; Primitive Operations for TL Arithmetic
 
 
 
 
-;;; This module implements the translated portions of math operations in GL.
+;;; This module implements the translated portions of math operations in TL.
 
 ;;; The function `math-type-error' should be called when a two-argument numeric
 ;;; operator is given non-numeric arguments.  It takes a string naming the
@@ -61,7 +61,7 @@
 (defmacro def-generic-math-comparitor (op-symbol op-name)
   (let ((function-name
 	  (intern (ab-lisp::format nil "GENERIC-~a" op-name)
-		  gli::*gli-package*)))
+		  tli::*tli-package*)))
     `(progn
        (declaim (functional ,function-name))
        (defun ,function-name (arg1 arg2)
@@ -106,7 +106,7 @@
 (defmacro def-generic-math-operator (op-symbol op-name)
   (let ((function-name
 	  (intern (ab-lisp::format nil "GENERIC-~A" op-name)
-		  gli::*gli-package*))
+		  tli::*tli-package*))
 	(op-string (string-downcase (symbol-name op-symbol))))
     `(progn
        (declaim (functional ,function-name))
@@ -663,9 +663,9 @@
   (let* ((quotient (/ number divisor))
 	 (integer-quotient (if (>= quotient 0.0)
 			       (the double-float
-				    (gli::ffloor-one-arg quotient))
+				    (tli::ffloor-one-arg quotient))
 			       (the double-float
-				    (gli::fceiling-one-arg quotient)))))
+				    (tli::fceiling-one-arg quotient)))))
     (declare (double-float quotient integer-quotient))
     (values integer-quotient
 	    (the double-float
@@ -677,10 +677,10 @@
 	   (return-type (values double-float double-float)))
   (let ((quotient (if (>= number 0.0)
 		      (the double-float
-			   (gli::ffloor-one-arg
+			   (tli::ffloor-one-arg
 			     (the double-float number)))
 		      (the double-float
-			   (gli::fceiling-one-arg
+			   (tli::fceiling-one-arg
 			     (the double-float number))))))
     (declare (double-float quotient))
     (values quotient
@@ -971,16 +971,16 @@
 	    ((> n  3) 2)
 	    ((> n  0) 1)
 	    (t 0))
-      (let* ((n-len-quarter (gli::fixnum-right-shift (integer-length n) 2))
-	     (n-half (gli::fixnum-right-shift
-		       n (gli::fixnum-left-shift n-len-quarter 1)))
+      (let* ((n-len-quarter (tli::fixnum-right-shift (integer-length n) 2))
+	     (n-half (tli::fixnum-right-shift
+		       n (tli::fixnum-left-shift n-len-quarter 1)))
 	     (n-half-isqrt (isqrt n-half))
 	     (init-value
-	       (gli::fixnum-left-shift (1+ n-half-isqrt) n-len-quarter)))
+	       (tli::fixnum-left-shift (1+ n-half-isqrt) n-len-quarter)))
 	(declare (fixnum n-len-quarter n-half n-half-isqrt init-value))
 	(loop do
 	  (let ((iterated-value
-		  (gli::fixnum-right-shift
+		  (tli::fixnum-right-shift
 		    (+ init-value (floorf-positive n init-value)) 1)))
 	    (declare (fixnum iterated-value))
 	    (unless (< iterated-value init-value)

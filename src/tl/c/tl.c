@@ -2,7 +2,7 @@
  +
  + Copyright (c) 1995 Gensym Corporation.  All Rights Reserved.
  +
- + Module:      glt.c
+ + Module:      tlt.c
  +
  + Copyright (c) 1999 The Thinlisp Group
  + All Rights Reserved.
@@ -22,7 +22,7 @@
  + Author   Jim Allard
  +
  + Description:
- +   Hand written functions and variables to support GL translated C code.
+ +   Hand written functions and variables to support TL translated C code.
  + 
  + Key:
  +   +++++++ Module Header.   Used for file-wide information.
@@ -69,7 +69,7 @@
 
 #include <string.h>
 #include <unistd.h>
-#include "glt.h"
+#include "tlt.h"
 
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -84,7 +84,7 @@
  %      Values_buffer is cached into the global sint32 variable Values_count.
  %      The translator emits code that sets and references these global
  %      variables.  The size of Values_buffer is determined by
- %      gl:multiple-values-limit, defined in glt/lisp/special.lisp.
+ %      tl:multiple-values-limit, defined in tlt/lisp/special.lisp.
  %
  % Notes:
  %
@@ -103,7 +103,7 @@ Obj Values_buffer[20];
  %
  % Description:
  %      When a variable is defined but has not yet received an initial value, it
- %      is unbound.  That will be represented in GL tranlated code as a pointer
+ %      is unbound.  That will be represented in TL tranlated code as a pointer
  %      to the unbound value.  This section implements the global C variable
  %      that will contain the unbound value.  It is implemented as a Hdr struct
  %      that has the type tag 14, which is reserved for the special type of
@@ -358,7 +358,7 @@ void discard_block (sint32 region, memory_block *block)
 	current_block = next_block;
       }
     }
-    sprintf(msg, "GL Memory Error: Couldn't find block %lx to discard from region %d.",
+    sprintf(msg, "TL Memory Error: Couldn't find block %lx to discard from region %d.",
 	    (unsigned long)block, (int)region);
     fatal_error(msg);
   }

@@ -1,4 +1,4 @@
-(in-package "GL")
+(in-package "TL")
 
 ;;;; Module APPLY
 
@@ -30,13 +30,13 @@
 
 
 
-;;; This file contains the function that the macro gl:apply expands into when we
+;;; This file contains the function that the macro tl:apply expands into when we
 ;;; are translating.  It can handle optional arguments, but not keyword or rest
-;;; arguments, which are only availabe in macros within GL.
+;;; arguments, which are only availabe in macros within TL.
 
-;;; Note that this can only handle gl:lambda-parameters-limit (currently 20)
+;;; Note that this can only handle tl:lambda-parameters-limit (currently 20)
 ;;; arguments in its dispatch.  If we want to increase this number, we must also
-;;; edit gl/c/glt.h to define these function types.
+;;; edit tl/c/tlt.h to define these function types.
 
 (defun apply-1 (function args)
   (let* ((rest-length (length args))
@@ -64,13 +64,13 @@
 	      (error "~s given as the function argument to apply."
 		     function))))
 	 (actual-arg-count
-	   (gli::compiled-function-arg-count compiled-function)))
+	   (tli::compiled-function-arg-count compiled-function)))
     (declare (fixnum rest-length given-arg-count actual-arg-count))
 ;    #+nil
     (when (/= given-arg-count actual-arg-count)
       (if (and (< given-arg-count actual-arg-count)
 	       (>= (+ given-arg-count
-		      (gli::compiled-function-optional-arguments
+		      (tli::compiled-function-optional-arguments
 			compiled-function))
 		   actual-arg-count))
 	  (cond
@@ -79,7 +79,7 @@
 	     ;; extent conses extending through the body of the containing
 	     ;; function.
 	     (macrolet ((optional-argument-conses ()
-			  `(gli::list-dynamic-extent
+			  `(tli::list-dynamic-extent
 			     ,@(loop repeat lambda-parameters-limit
 				     collect nil))))
 	       (let ((conses (optional-argument-conses)))
@@ -93,15 +93,15 @@
 			 (setf (car cons) (car (the cons arg-cons)))
 			 (setf (cdr cons)
 			       (nthcdr
-				 (- (gli::compiled-function-optional-arguments
+				 (- (tli::compiled-function-optional-arguments
 				      compiled-function)
 				    (- actual-arg-count given-arg-count))
-				 (gli::compiled-function-default-arguments
+				 (tli::compiled-function-default-arguments
 				   compiled-function))))
 		 (setq function-args conses))))
 	    (t
 	     (setq function-args
-		   (gli::compiled-function-default-arguments
+		   (tli::compiled-function-default-arguments
 		     compiled-function))))
 	  (error "Argument count mismatch in APPLY ~s on ~s"
 		 compiled-function function-args)))
@@ -121,18 +121,18 @@
 				  (setq ,arg-list (cdr-of-cons ,arg-list)))))
 		      (case (the fixnum ,actual-arg-count-var)
 			,@(loop for arg-count from 0
-					      to gl:lambda-parameters-limit
+					      to tl:lambda-parameters-limit
 				collect
 				`((,arg-count)
-				  (if (/= (gli::compiled-function-sets-values-count
+				  (if (/= (tli::compiled-function-sets-values-count
 					    ,compiled-function-var)
 					  0)
-				      (gli::funcall-internal
+				      (tli::funcall-internal
 					t ,compiled-function-var
 					,@(loop repeat arg-count
 						for arg in arg-vars
 						collect arg))
-				      (gli::funcall-internal
+				      (tli::funcall-internal
 					nil ,compiled-function-var
 					,@(loop repeat arg-count
 						for arg in arg-vars

@@ -1,4 +1,4 @@
-(in-package "GL")
+(in-package "TL")
 
 ;;;; Module PACKAGES
 
@@ -45,7 +45,7 @@
 
 ;;; Note that the hash code for a one character string is equal to the char-code
 ;;; of the character.  This fact is used when initializing the symbol T in
-;;; gli::dump-makefile-information.  -jallard 12/5/97
+;;; tli::dump-makefile-information.  -jallard 12/5/97
 
 (declaim (functional sxhash-string))
 
@@ -63,39 +63,39 @@
 
 
 
-;;; The function gli::init-symbol takes a symbol with only the type tag
+;;; The function tli::init-symbol takes a symbol with only the type tag
 ;;; initialized, and assigns into it the name an hash number of the symbol.  It
-;;; returns the symbol.  The function gli::init-symbol-into-package is a
+;;; returns the symbol.  The function tli::init-symbol-into-package is a
 ;;; combination of init-symbol and insert-symbol-into-package, this is called
 ;;; from the top level initializations of symbols in translated C code.
 
-(defun gli::init-symbol (symbol string string-hash)
+(defun tli::init-symbol (symbol string string-hash)
   (declare (symbol symbol)
 	   (type t string)
 	   (fixnum string-hash)
 	   (return-type symbol))
-  (gli::set-symbol-type-tag symbol)
-  (setf (gli::symbol-local-value symbol) t)
-  (setf (gli::symbol-external symbol) nil)
-  (setf (gli::symbol-balance symbol) 0)
-  (setf (gli::symbol-imported symbol) nil)
-  (setf (gli::symbol-name-hash symbol) string-hash)
-  (gli::set-symbol-name symbol string)
-  (gli::set-symbol-value-pointer symbol (gli::the-unbound-value))
-  (gli::set-non-null-symbol-plist symbol nil)
-  (gli::set-symbol-package symbol nil)
-  (gli::set-symbol-function symbol (gli::the-unbound-value))
-  (setf (gli::symbol-left-branch symbol) (gli::the-unbound-value))
-  (setf (gli::symbol-right-branch symbol) (gli::the-unbound-value))
+  (tli::set-symbol-type-tag symbol)
+  (setf (tli::symbol-local-value symbol) t)
+  (setf (tli::symbol-external symbol) nil)
+  (setf (tli::symbol-balance symbol) 0)
+  (setf (tli::symbol-imported symbol) nil)
+  (setf (tli::symbol-name-hash symbol) string-hash)
+  (tli::set-symbol-name symbol string)
+  (tli::set-symbol-value-pointer symbol (tli::the-unbound-value))
+  (tli::set-non-null-symbol-plist symbol nil)
+  (tli::set-symbol-package symbol nil)
+  (tli::set-symbol-function symbol (tli::the-unbound-value))
+  (setf (tli::symbol-left-branch symbol) (tli::the-unbound-value))
+  (setf (tli::symbol-right-branch symbol) (tli::the-unbound-value))
   symbol)
 
-(defun gli::init-symbol-into-package (symbol string string-hash package)
+(defun tli::init-symbol-into-package (symbol string string-hash package)
   (declare (symbol symbol)
 	   (type t string)
 	   (fixnum string-hash)
 	   (package package)
 	   (return-type symbol))
-  (gli::init-symbol symbol string string-hash)
+  (tli::init-symbol symbol string string-hash)
   (when package
     (insert-symbol-into-package symbol package))
   symbol)
@@ -110,52 +110,52 @@
   (declare (symbol symbol)
 	   (package package)
 	   (return-type void))
-  (if (gli::not-unbound-value-p (gli::package-root-symbol package))
+  (if (tli::not-unbound-value-p (tli::package-root-symbol package))
       ;; Insert into balanced binary tree later, just a binary tree now.  -jra
       ;; 4/8/96
-      (let ((hash-number (gli::symbol-name-hash symbol))
-	    (name (gli::non-null-symbol-name symbol)))
+      (let ((hash-number (tli::symbol-name-hash symbol))
+	    (name (tli::non-null-symbol-name symbol)))
 	(declare (fixnum hash-number))
-	(loop with current-symbol = (gli::package-root-symbol package)
+	(loop with current-symbol = (tli::package-root-symbol package)
 	      for last-symbol = current-symbol
-	      for current-hash fixnum = (gli::symbol-name-hash current-symbol)
+	      for current-hash fixnum = (tli::symbol-name-hash current-symbol)
 	      do
 	  (cond ((< hash-number current-hash)
-		 (setq current-symbol (gli::symbol-left-branch current-symbol))
-		 (unless (gli::not-unbound-value-p current-symbol)
-		   (setf (gli::symbol-left-branch last-symbol) symbol)
-		   (gli::set-symbol-package symbol package)
+		 (setq current-symbol (tli::symbol-left-branch current-symbol))
+		 (unless (tli::not-unbound-value-p current-symbol)
+		   (setf (tli::symbol-left-branch last-symbol) symbol)
+		   (tli::set-symbol-package symbol package)
 		   (return nil)))
 		((> hash-number current-hash)
-		 (setq current-symbol (gli::symbol-right-branch current-symbol))
-		 (unless (gli::not-unbound-value-p current-symbol)
-		   (setf (gli::symbol-right-branch last-symbol) symbol)
-		   (gli::set-symbol-package symbol package)
+		 (setq current-symbol (tli::symbol-right-branch current-symbol))
+		 (unless (tli::not-unbound-value-p current-symbol)
+		   (setf (tli::symbol-right-branch last-symbol) symbol)
+		   (tli::set-symbol-package symbol package)
 		   (return nil)))
 		(t
 		 (let ((compare-result
-			 (gli::string-compare
-			   name (gli::non-null-symbol-name current-symbol))))
+			 (tli::string-compare
+			   name (tli::non-null-symbol-name current-symbol))))
 		   (declare (fixnum compare-result))
 		   (cond
 		     ((< compare-result 0)
-		      (setq current-symbol (gli::symbol-left-branch current-symbol))
-		      (unless (gli::not-unbound-value-p current-symbol)
-			(setf (gli::symbol-left-branch last-symbol) symbol)
-			(gli::set-symbol-package symbol package)
+		      (setq current-symbol (tli::symbol-left-branch current-symbol))
+		      (unless (tli::not-unbound-value-p current-symbol)
+			(setf (tli::symbol-left-branch last-symbol) symbol)
+			(tli::set-symbol-package symbol package)
 			(return nil)))
 		     ((> compare-result 0)
-		      (setq current-symbol (gli::symbol-right-branch current-symbol))
-		      (unless (gli::not-unbound-value-p current-symbol)
-			(setf (gli::symbol-right-branch last-symbol) symbol)
-			(gli::set-symbol-package symbol package)
+		      (setq current-symbol (tli::symbol-right-branch current-symbol))
+		      (unless (tli::not-unbound-value-p current-symbol)
+			(setf (tli::symbol-right-branch last-symbol) symbol)
+			(tli::set-symbol-package symbol package)
 			(return nil)))
 		     (t
 		      (error "Can't insert ~a in ~a, a symbol with that name already exists."
 			     symbol package))))))))
       (progn
-	(gli::set-symbol-package symbol package)
-	(setf (gli::package-root-symbol package) symbol))))
+	(tli::set-symbol-package symbol package)
+	(setf (tli::package-root-symbol package) symbol))))
 
 
 
@@ -177,26 +177,26 @@
 	   (fixnum string-hash)
 	   (package package)
 	   (return-type t))
-  (loop with current-symbol = (gli::package-root-symbol package)
-	initially (unless (gli::not-unbound-value-p current-symbol)
+  (loop with current-symbol = (tli::package-root-symbol package)
+	initially (unless (tli::not-unbound-value-p current-symbol)
 		    (return 0))
-	while (gli::not-unbound-value-p current-symbol)
-	for current-hash fixnum = (gli::symbol-name-hash current-symbol)
+	while (tli::not-unbound-value-p current-symbol)
+	for current-hash fixnum = (tli::symbol-name-hash current-symbol)
 	do
     (cond ((< string-hash current-hash)
-	   (setq current-symbol (gli::symbol-left-branch current-symbol)))
+	   (setq current-symbol (tli::symbol-left-branch current-symbol)))
 	  ((> string-hash current-hash)
-	   (setq current-symbol (gli::symbol-right-branch current-symbol)))
+	   (setq current-symbol (tli::symbol-right-branch current-symbol)))
 	  (t
-	   (let ((compare-result (gli::string-compare
+	   (let ((compare-result (tli::string-compare
 				   string
-				   (gli::non-null-symbol-name current-symbol))))
+				   (tli::non-null-symbol-name current-symbol))))
 	     (declare (fixnum compare-result))
 	     (cond
 	       ((< compare-result 0)
-		(setq current-symbol (gli::symbol-left-branch current-symbol)))
+		(setq current-symbol (tli::symbol-left-branch current-symbol)))
 	       ((> compare-result 0)
-		(setq current-symbol (gli::symbol-right-branch current-symbol)))
+		(setq current-symbol (tli::symbol-right-branch current-symbol)))
 	       (t
 		(return current-symbol))))))
 	finally (return 0)))
@@ -241,7 +241,7 @@
 ;;; attempts to optimize cases where the argument can be proven to be a package.
 
 (defmacro find-package-or-error (&environment env package-or-name)
-  (if (gli::gl-subtypep (gli::expression-result-type package-or-name env)
+  (if (tli::tl-subtypep (tli::expression-result-type package-or-name env)
 			'package)
       package-or-name
       `(find-package-or-error-1 ,package-or-name)))
@@ -260,7 +260,7 @@
 ;;; coercing it to a package.
 
 (defmacro package-use-list (package-or-package-name)
-  `(gli::package-use-list-internal
+  `(tli::package-use-list-internal
      (find-package-or-error ,package-or-package-name)))
 
 (defun make-package-1 (name use)
@@ -293,11 +293,11 @@
 			   (return nil)))
 	   (error "Use list for ~a differs from compile-time list: ~@
                    compile-time = ~s, new = ~s."
-		  name-to-use (gli::package-use-list-internal found-package?)
+		  name-to-use (tli::package-use-list-internal found-package?)
 		  use))
 	 found-package?)
 	(t
-	 (let ((new-package (gli::make-new-package name-to-use use-list)))
+	 (let ((new-package (tli::make-new-package name-to-use use-list)))
 	   (setq all-packages (cons new-package all-packages))
 	   new-package))))))
 
@@ -341,16 +341,16 @@
 	      do
 	  (unless (eql found-inherited-symbol 0)
 	    (return (values
-		      (if (gli::symbol-imported found-inherited-symbol)
-			  (gli::symbol-value-pointer found-inherited-symbol)
+		      (if (tli::symbol-imported found-inherited-symbol)
+			  (tli::symbol-value-pointer found-inherited-symbol)
 			  found-inherited-symbol)
 		      :inherited)))
 	      finally
 		(return (values nil nil)))
-	(values (if (gli::symbol-imported found-symbol)
-		    (gli::symbol-value-pointer found-symbol)
+	(values (if (tli::symbol-imported found-symbol)
+		    (tli::symbol-value-pointer found-symbol)
 		    found-symbol)
-		(if (gli::symbol-external found-symbol)
+		(if (tli::symbol-external found-symbol)
 		    :external
 		    :internal)))))
 
@@ -369,9 +369,9 @@
       (find-symbol-in-package string hash-number package)
     (if found?
 	(values symbol found?)
-	(let ((new-symbol (gli::make-empty-symbol)))
-	  (gli::init-symbol new-symbol string hash-number)
-	  (gli::set-symbol-package new-symbol package)
+	(let ((new-symbol (tli::make-empty-symbol)))
+	  (tli::init-symbol new-symbol string hash-number)
+	  (tli::set-symbol-package new-symbol package)
 	  (insert-symbol-into-package new-symbol package)
 	  (values new-symbol :internal)))))
 
@@ -400,11 +400,11 @@
   (with-permanent-area ()
     (let ((symbol-list (if (listp symbol-or-symbol-list)
 			   symbol-or-symbol-list
-			   (gli::list-dynamic-extent symbol-or-symbol-list)))
+			   (tli::list-dynamic-extent symbol-or-symbol-list)))
 	  (package (find-package-or-error package-arg)))
       (loop for symbol in symbol-list
 	    for symbol-name = (symbol-name symbol)
-	    for symbol-hash fixnum = (gli::symbol-name-hash symbol)
+	    for symbol-hash fixnum = (tli::symbol-name-hash symbol)
 	    do
 	(multiple-value-bind (found-symbol found?)
 	    (find-symbol-in-package symbol-name symbol-hash package)
@@ -415,10 +415,10 @@
 	(cond ((null (symbol-package symbol))
 	       (insert-symbol-into-package symbol package))
 	      (t
-	       (let ((import-symbol (gli::make-empty-symbol)))
-		 (gli::init-symbol import-symbol symbol-name symbol-hash)
-		 (setf (gli::symbol-imported import-symbol) t)
-		 (setf (gli::symbol-value-pointer import-symbol) symbol)
+	       (let ((import-symbol (tli::make-empty-symbol)))
+		 (tli::init-symbol import-symbol symbol-name symbol-hash)
+		 (setf (tli::symbol-imported import-symbol) t)
+		 (setf (tli::symbol-value-pointer import-symbol) symbol)
 		 (insert-symbol-into-package import-symbol package)))))
       t)))
 
@@ -435,11 +435,11 @@
   (with-permanent-area ()
     (let ((symbol-list (if (listp symbol-or-symbol-list)
 			   symbol-or-symbol-list
-			   (gli::list-dynamic-extent symbol-or-symbol-list)))
+			   (tli::list-dynamic-extent symbol-or-symbol-list)))
 	  (package (find-package-or-error package-arg)))
       (loop for symbol in symbol-list
 	    for symbol-name = (symbol-name symbol)
-	    for symbol-hash fixnum = (gli::symbol-name-hash symbol)
+	    for symbol-hash fixnum = (tli::symbol-name-hash symbol)
 	    do
 	(multiple-value-bind (found-symbol found?)
 	    (find-symbol-in-package symbol-name symbol-hash package)
@@ -454,16 +454,16 @@
 	    ((:internal)
 	     ;; Already found in this package's binary tree, merely the external
 	     ;; bit.
-	     (setf (gli::symbol-external symbol) t))
+	     (setf (tli::symbol-external symbol) t))
 	    ((:inherited)
 	     ;; It is accessible, but not in this package's data strucutures.
 	     ;; Import an indirection symbol, and set the external bit on it.
-	     (let ((import-symbol (gli::make-empty-symbol)))
-	       (gli::init-symbol import-symbol symbol-name symbol-hash)
-	       (setf (gli::symbol-imported import-symbol) t)
-	       (setf (gli::symbol-value-pointer import-symbol) symbol)
+	     (let ((import-symbol (tli::make-empty-symbol)))
+	       (tli::init-symbol import-symbol symbol-name symbol-hash)
+	       (setf (tli::symbol-imported import-symbol) t)
+	       (setf (tli::symbol-value-pointer import-symbol) symbol)
 	       (insert-symbol-into-package import-symbol package)
-	       (setf (gli::symbol-external import-symbol) t)))
+	       (setf (tli::symbol-external import-symbol) t)))
 	    (t
 	     (error "Bad second value ~a from find-symbol received by export."
 		    found?)))))
@@ -521,7 +521,7 @@
 
 
 
-;;; The GL internal function `write-symbol' is called from gl:write to output
+;;; The TL internal function `write-symbol' is called from tl:write to output
 ;;; symbols.
 
 (defun write-symbol (symbol case stream?)
@@ -536,7 +536,7 @@
 		       (not (eq (find-symbol name-string *package*) symbol)))
 	      (write-string (package-name home-package) stream?)
 	      (write-string
-		(if (gli::symbol-external symbol) ":" "::")
+		(if (tli::symbol-external symbol) ":" "::")
 		stream?)))))
     (let* ((name name-string)
 	   (length (length (the string name-string)))

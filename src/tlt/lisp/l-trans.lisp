@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module L-TRANS
 
@@ -273,7 +273,7 @@
 			'catch-result c-func 'obj '("volatile"))
 		      nil))
 	 ;; Change the following to 3 later.  -jallard 8/4/97
-	 (safety? (>= (gl:optimize-information 'safety (l-expr-env catch-l-expr)) 
+	 (safety? (>= (tl:optimize-information 'safety (l-expr-env catch-l-expr)) 
 		      0))
 	 (expected-tos
 	   (when safety?
@@ -407,7 +407,7 @@
     (function-l-expr c-func c-body return-directive)
   (let ((name (cons-second (l-expr-form function-l-expr))))
     (multiple-value-bind (function-type local? decls local-function?)
-	(gl:function-information name (l-expr-env function-l-expr))
+	(tl:function-information name (l-expr-env function-l-expr))
       (cond
 	((and (eq function-type :function)
 	      (or (cdr (assq 'ftype decls))
@@ -439,7 +439,7 @@
     (go-l-expr c-func c-body return-directive)
   (let* ((target-tag (cons-second (l-expr-form go-l-expr)))
 	 (exit-scope
-	   (gl:declaration-information 'exit-scope (l-expr-env go-l-expr)))
+	   (tl:declaration-information 'exit-scope (l-expr-env go-l-expr)))
 	 (found-tag? nil)
 	 (current-c-body c-body)
 	 (pre-exit-cleanups nil))
@@ -678,7 +678,7 @@
 	  for init-l-expr = (cons-second pair)
 	  do
       (multiple-value-bind (binding-variety local? decls)
-	  (gl:variable-information var inner-env)
+	  (tl:variable-information var inner-env)
 	(declare (ignore local?))
 	(let* ((struct (cons-cdr (assq 'variable-binding-structure decls)))
 	       (lisp-type (variable-binding-lisp-type struct))
@@ -730,7 +730,7 @@
 		  (lexical-c-variable-identifier
 		    'temp c-func c-type-of-let temp-storage-classes)))
 	      ;; Rebind this to 3 when things settle down.  -jallard 8/4/97
-	      (safety? (>= (gl:optimize-information 'safety inner-env)
+	      (safety? (>= (tl:optimize-information 'safety inner-env)
 			   0))
 	      (expected-tos
 		(when safety?
@@ -850,7 +850,7 @@
   (loop with form = (l-expr-form let*-l-expr)
 	with inner-env = (l-expr-aug-env let*-l-expr)
 	with temp-storage-classes = (storage-classes-for-env inner-env)
-	with safety? = (>= (gl:optimize-information 'safety inner-env) 0)
+	with safety? = (>= (tl:optimize-information 'safety inner-env) 0)
 	with expected-tos = nil
 	with bindings = (cons-second form)
 	with body = (cons-cddr form)
@@ -869,7 +869,7 @@
 	for init-l-expr = (cons-second pair)
 	do
     (multiple-value-setq-some (binding-variety nil decls)
-      (gl:variable-information var inner-env))
+      (tl:variable-information var inner-env))
     (setq struct (cons-cdr (assq 'variable-binding-structure decls)))
     (setq lisp-type (variable-binding-lisp-type struct))
     (setq c-type (variable-binding-c-type struct))
@@ -986,7 +986,7 @@
 	  for first? = t then nil
 	  do
       (multiple-value-setq-some (binding-variety nil decls)
-	(gl:variable-information var inner-env))
+	(tl:variable-information var inner-env))
       (setq struct (cons-cdr (assq 'variable-binding-structure decls)))
       (setq c-type (variable-binding-c-type struct))
       (setq volatile? (variable-binding-volatile struct))
@@ -1111,7 +1111,7 @@
 	     (kept-values-array
 	       (lexical-c-variable-identifier
 		 'temp-values-array c-func
-		 (list 'array 'obj gl:multiple-values-limit)
+		 (list 'array 'obj tl:multiple-values-limit)
 		 nil)))
 	 (translate-l-expr-into-c values-l-expr c-func c-body (list result-var))
 	 (emit-copy-value-buffer-statements
@@ -1147,7 +1147,7 @@
     ((or (and (fixnump value)
 	      (loop for type in '(sint32 uint32 uint16 uint8)
 		    thereis (satisfies-c-required-type-p c-type type)))
-	 (and (gl-typep value 'double-float)
+	 (and (tl-typep value 'double-float)
 	      (satisfies-c-required-type-p c-type 'double)))
      (emit-c-expr-as-directed (make-c-literal-expr value)
 			      quote-l-expr c-func c-body return-directive))
@@ -1161,7 +1161,7 @@
       (make-c-function-call-expr (make-c-name-expr "BOXFIX") 
 				 (list (make-c-literal-expr value)))
       quote-l-expr c-func c-body return-directive))
-    ((gl-typep value 'character)
+    ((tl-typep value 'character)
      (let ((c-char-expr (make-c-literal-expr value)))
        (emit-c-expr-as-directed
 	 (cond
@@ -1177,7 +1177,7 @@
 	   (t
 	    (translation-error "Can't emit ~s as c-type ~s." value c-type)))
 	 quote-l-expr c-func c-body return-directive)))
-    ((gl-typep value 'double-float)
+    ((tl-typep value 'double-float)
      (translate-double-float-constant-into-c
        value c-type c-file quote-l-expr c-func c-body return-directive))
     ((stringp value)
@@ -1186,11 +1186,11 @@
 ;    ((managed-float-p value)
 ;     (translate-managed-float-constant-into-c
 ;       value c-file quote-l-expr c-func c-body return-directive))
-    ((or (gl-typep value '(array (unsigned-byte 8)))
-	 (gl-typep value '(array (unsigned-byte 16))))
+    ((or (tl-typep value '(array (unsigned-byte 8)))
+	 (tl-typep value '(array (unsigned-byte 16))))
      (translate-byte-array-constants-into-c
        value c-type c-file quote-l-expr c-func c-body return-directive))
-    ((gl-typep value '(array double-float))
+    ((tl-typep value '(array double-float))
      (translate-float-array-constants-into-c
        value c-type c-file quote-l-expr c-func c-body return-directive))
     ((simple-vector-p value)
@@ -1307,7 +1307,7 @@
 
 (defun translate-byte-array-constants-into-c
     (value c-type c-file quote-l-expr c-func c-body return-directive)
-  (let* ((one-byte? (gl-typep value '(array (unsigned-byte 8))))
+  (let* ((one-byte? (tl-typep value '(array (unsigned-byte 8))))
 	 (array-var
 	   (c-identifier-for-string
 	     (if one-byte? "sa_uint8_const" "sa_uint16_const")
@@ -1713,7 +1713,7 @@
 			    (translation-warning
 			      "A default value, ~s, of an optional argument of ~
                                ~s was not a constant and it might be funcalled.  ~
-                               GL can't handle this, using NIL instead."
+                               TL can't handle this, using NIL instead."
 			      default
 			      compiled-function-name)
 			    nil))))
@@ -1727,7 +1727,7 @@
 	     (make-c-name-expr (cons-car new-definition))
 	     (make-c-literal-expr (cons-cdr new-definition))))
 	 (env (if l-expr? (l-expr-env l-expr?) nil))
-	 (safe? (>= (gl:optimize-information 'safety env) 3)))
+	 (safe? (>= (tl:optimize-information 'safety env) 3)))
     (setf (gethash compiled-function-name *global-compiled-function-registry*)
 	  new-definition)
     (setf (c-file-last-compiled-function-definition? c-file)
@@ -1840,7 +1840,7 @@
 		   for c-name-expr = (make-c-name-expr c-arg-name)
 		   collect
 		   (progn
-		     (when (and safe? (not (gl-subtypep t lisp-type)))
+		     (when (and safe? (not (tl-subtypep t lisp-type)))
 		       (emit-safety-type-check-to-compound-statement
 			 c-name-expr lisp-type t c-body))
 		     (if (satisfies-c-required-type-p 'obj c-arg-type)
@@ -1894,7 +1894,7 @@
 	 (target-name (cons-second form))
 	 (value-l-expr (cons-third form))
 	 (env (l-expr-env return-from-l-expr))
-	 (exit-scope (gl:declaration-information 'exit-scope env))
+	 (exit-scope (tl:declaration-information 'exit-scope env))
 	 (temp-storage-classes (storage-classes-for-env env))
 	 (previous-unwind-protect nil)
 	 (current-c-body c-body)
@@ -2096,7 +2096,7 @@
 	 (symbol (cons-second form))
 	 (value-l-expr (cons-third form)))
     (multiple-value-bind (bind-type? local? decls)
-	(gl:variable-information symbol (l-expr-env setq-l-expr))
+	(tl:variable-information symbol (l-expr-env setq-l-expr))
       (declare (ignore local?))
       (let* ((binding? (cdr (assq 'variable-binding-structure decls)))
 	     (c-name
@@ -2125,7 +2125,7 @@
     (tagbody-l-expr c-func c-body return-directive)
   ;; The tags for this tagbody should be the first thing on the exit scope.
   (loop with tagbody-tags
-	  = (cons-car (gl:declaration-information
+	  = (cons-car (tl:declaration-information
 			'exit-scope (l-expr-aug-env tagbody-l-expr)))
 	with tag-list = (if (eq (car tagbody-tags) 'tagbody-tags)
 			    (cons-cdr tagbody-tags)
@@ -2197,7 +2197,7 @@
 	 (c-type (l-expr-c-return-type unwind-protect-l-expr))
 	 (lisp-type (l-expr-lisp-return-type unwind-protect-l-expr))
 	 (inner-env (l-expr-aug-env unwind-protect-l-expr))
-	 (exit-scope (gl:declaration-information 'exit-scope inner-env))
+	 (exit-scope (tl:declaration-information 'exit-scope inner-env))
 	 (protect-struct
 	   (if (eq (caar exit-scope) 'unwind-protect)
 	       (cadar exit-scope)
@@ -2209,7 +2209,7 @@
 	     'pass-through-value-count c-func 'sint32 '("volatile")))
 	 (values-buffer (lexical-c-variable-identifier
 			  'pass-through-value-buffer c-func
-			  (list 'array 'obj gl:multiple-values-limit)
+			  (list 'array 'obj tl:multiple-values-limit)
 			  ;; Array variables do not need to be declared
 			  ;; volatile.  -jallard 7/31/97
 			  nil))
@@ -2229,7 +2229,7 @@
 	 (protected-statement (make-c-compound-statement nil nil nil nil))
 	 (exit-statement (make-c-compound-statement nil nil nil nil))
 	 ;; Change the following to 3 later.  -jallard 8/4/97
-	 (safety? (>= (gl:optimize-information 'safety inner-env) 
+	 (safety? (>= (tl:optimize-information 'safety inner-env) 
 		      0))
 	 (expected-tos
 	   (when safety?
@@ -2487,7 +2487,7 @@
 
 (def-l-expr-method translate-l-expr-into-c
     (for-loop-l-expr c-func c-body return-directive)
-  (gl:destructuring-bind-strict
+  (tl:destructuring-bind-strict
       (nil (init? control step?) . l-expr-body)
     (l-expr-form for-loop-l-expr)
     (let* ((init-c-expr? (if init?
@@ -2693,7 +2693,7 @@
 	      (loop with initial-types = (cons-cdr required-lisp-type)
 		    while initial-types
 		    for last-type? = (car (last initial-types))
-		    while (and last-type? (gl-subtypep t last-type?))
+		    while (and last-type? (tl-subtypep t last-type?))
 		    do
 		(setq initial-types (butlast initial-types))
 		    finally (return initial-types)))
@@ -2706,7 +2706,7 @@
 			  (make-c-literal-expr needed-value-count)))
 	    (type-tests nil))
        (when (and needed-types
-		  (not (gl-subtypep (or (car known-types) t)
+		  (not (tl-subtypep (or (car known-types) t)
 				    (car needed-types))))
 	 (push (translate-type-check-predicate
 		 c-expr (car needed-types) (or (car known-types) t))
@@ -2716,7 +2716,7 @@
 	     for known-cons = (cdr known-types) then (cdr known-cons)
 	     for known-type = (or (car known-cons) (if known-types 'null t))
 	     do
-	 (unless (gl-subtypep known-type type)
+	 (unless (tl-subtypep known-type type)
 	   (push (translate-type-check-predicate
 		   (make-c-subscript-expr (make-c-name-expr "Values_buffer")
 					  (make-c-literal-expr index))
@@ -2772,12 +2772,12 @@
      (make-c-unary-expr
        #\! (translate-type-check-predicate
 	     c-expr (cons-second required-lisp-type) result-lisp-type)))
-    ((gl-subtypep required-lisp-type 'null)
+    ((tl-subtypep required-lisp-type 'null)
      (make-c-infix-expr c-expr "==" (make-c-name-expr "NULL")))
-    ((gl-subtypep required-lisp-type 'fixnum)
+    ((tl-subtypep required-lisp-type 'fixnum)
      (make-c-line-comment-expr
        (translate-immediate-tag-test c-expr 1) "Fixnump"))
-    ((gl-subtypep required-lisp-type 'cons)
+    ((tl-subtypep required-lisp-type 'cons)
      (make-c-line-comment-expr
        (translate-immediate-tag-test c-expr 2) "Consp"))
     ((eq required-lisp-type 'atom)
@@ -2786,7 +2786,7 @@
 	 (make-c-infix-expr (make-c-cast-expr 'uint32 c-expr) "&" 3)
 	 "!=" 2)
        "Atomp"))
-    ((gl-subtypep required-lisp-type 'character)
+    ((tl-subtypep required-lisp-type 'character)
      (translate-immediate-tag-test c-expr 3))
     (t
      (let ((type-tag? (lisp-type-tag required-lisp-type)))
@@ -2805,14 +2805,14 @@
 		    (make-c-line-comment-expr
 		      (make-c-literal-expr type-tag?)
 		      (format nil "~a type tag" required-lisp-type))))))
-	     ((gl-subtypep required-lisp-type 'number)
+	     ((tl-subtypep required-lisp-type 'number)
 	      (make-c-infix-expr
 		(translate-type-check-predicate
 		  c-expr 'fixnum result-lisp-type)
 		"||"
 		(translate-type-check-predicate
 		  c-expr 'double-float result-lisp-type)))
-	     ((gl-subtypep required-lisp-type 'list)
+	     ((tl-subtypep required-lisp-type 'list)
 	      (make-c-infix-expr
 		(translate-type-check-predicate
 		  c-expr 'null result-lisp-type)
@@ -2850,7 +2850,7 @@
 	 (insert-values-count? nil)
 	 (safety-value
 	   (second
-	     (assq 'safety (gl:declaration-information
+	     (assq 'safety (tl:declaration-information
 			     'optimize (l-expr-env coerce-to-type-l-expr))))))
     (cond ((type-includes-values-p lisp-type)
 	   (when (not (type-includes-values-p held-lisp-type))
@@ -2872,44 +2872,44 @@
     (cond
       ((and (explicit-lisp-to-c-type-p lisp-type)
 	    (not (explicit-lisp-to-c-type-p held-lisp-type)))
-       (cond ((gl-subtypep lisp-type '(c-type "long"))
+       (cond ((tl-subtypep lisp-type '(c-type "long"))
 	      (setq lisp-type 'fixnum))
-	     ((gl-subtypep lisp-type '(c-type (pointer "char")))
+	     ((tl-subtypep lisp-type '(c-type (pointer "char")))
 	      (setq lisp-type 'string))
-	     ((or (gl-subtypep lisp-type '(c-type (pointer "void")))
-		  (gl-subtypep lisp-type '(c-type (pointer "uint32"))))
+	     ((or (tl-subtypep lisp-type '(c-type (pointer "void")))
+		  (tl-subtypep lisp-type '(c-type (pointer "uint32"))))
 	      (setq lisp-type t))
 	     (t
 	      (translation-error
 		"Can't coerce ~s into ~s." held-lisp-type lisp-type))))
       ((and (explicit-lisp-to-c-type-p held-lisp-type)
 	    (not (explicit-lisp-to-c-type-p lisp-type)))
-       (cond ((gl-subtypep held-lisp-type '(c-type "long"))
+       (cond ((tl-subtypep held-lisp-type '(c-type "long"))
 	      (setq held-lisp-type 'fixnum)
 	      (setq held-c-type 'long))
-	     ((gl-subtypep held-lisp-type '(c-type (pointer "uint32")))
+	     ((tl-subtypep held-lisp-type '(c-type (pointer "uint32")))
 	      (setq held-lisp-type t)
 	      (setq held-c-type '(pointer uint32)))
 	     (t
 	      (translation-error
 		"Can't coerce ~s into ~s." held-lisp-type lisp-type))))
-      ((and (gl-subtypep lisp-type 'fixnum)
-	    (gl-subtypep held-lisp-type 'null))
+      ((and (tl-subtypep lisp-type 'fixnum)
+	    (tl-subtypep held-lisp-type 'null))
        (setq held-lisp-type 'fixnum)
        (setq held-c-type 'int)))
 
     (cond
       ((or (return-directive-discards-values-p return-directive c-func)
 	   (and (null insert-values-count?)
-		(gl-subtypep held-lisp-type lisp-type)
+		(tl-subtypep held-lisp-type lisp-type)
 		(satisfies-c-required-type-p held-c-type c-type)))
        (translate-l-expr-into-c
 	 held-l-expr c-func c-compound-statement return-directive))
       ;; Give an error for disjoint types.
-      ((or (and (not (gl-subtypep held-lisp-type lisp-type))
-		(not (gl-subtypep lisp-type held-lisp-type)))
+      ((or (and (not (tl-subtypep held-lisp-type lisp-type))
+		(not (tl-subtypep lisp-type held-lisp-type)))
 	   (and (l-expr-constant-p held-l-expr)
-		(not (gl-typep (l-expr-constant-value held-l-expr) lisp-type))))
+		(not (tl-typep (l-expr-constant-value held-l-expr) lisp-type))))
        (cond
 	 ;; When the value being returned is a NIL and the required C type is
 	 ;; Obj, just translate it through and see what happens.  NIL is the
@@ -2920,7 +2920,7 @@
 	 ;; could do better within LET et ali so that this case did not arise.
 	 ;; There could easily be type declarations bugs in user code that could
 	 ;; be hidden by this case.  -jallard 4/22/97
-	 ((or (gl-subtypep held-lisp-type 'null)
+	 ((or (tl-subtypep held-lisp-type 'null)
 	      (and (l-expr-constant-p held-l-expr)
 		   (null (l-expr-constant-value held-l-expr))))
 	  (cond
@@ -2938,8 +2938,8 @@
 			  held-l-expr c-func c-compound-statement :c-expr))
 	       coerce-to-type-l-expr c-func c-compound-statement
 	       return-directive))))
-	 ((and (gl-subtypep lisp-type 'double-float)
-	       (gl-subtypep held-lisp-type 'fixnum))
+	 ((and (tl-subtypep lisp-type 'double-float)
+	       (tl-subtypep held-lisp-type 'fixnum))
 	  (let* ((held-translated-expr
 		   (translate-l-expr-into-c
 		     held-l-expr c-func c-compound-statement :c-expr))
@@ -2979,7 +2979,7 @@
 ;	 held-lisp-type (l-expr-pretty-form held-l-expr) lisp-type)
 
 ;      ((and (l-expr-constant-p held-l-expr)
-;	    (not (gl-typep (l-expr-constant-value held-l-expr) lisp-type)))
+;	    (not (tl-typep (l-expr-constant-value held-l-expr) lisp-type)))
 ;       (translation-error
 ;	 "The constant ~s cannot satisfy the required-type ~s."
 ;	 (l-expr-constant-value held-l-expr)
@@ -2988,7 +2988,7 @@
        (let ((held-c-expr (translate-l-expr-into-c
 			    held-l-expr c-func c-compound-statement :c-expr))
 	     (temp-var? nil))
-	 (when (and (not (gl-subtypep held-lisp-type lisp-type))
+	 (when (and (not (tl-subtypep held-lisp-type lisp-type))
 		    (eq held-c-type 'obj)
 		    (>= safety-value 3))
 	   ;; Emit a Lisp type check if we are safe.
@@ -3110,7 +3110,7 @@
 	  (translate-l-expr-into-c
 	    (cons-car args) c-func c-body (list first-value?))
 	  (loop with desired-values fixnum = (if (eq lisp-type '*)
-						 gl:multiple-values-limit
+						 tl:multiple-values-limit
 						 (length (cons-cdr lisp-type)))
 		for index fixnum from 0
 		for arg in (cons-cdr args)
@@ -3168,7 +3168,7 @@
 
 
 ;;; The translator for `inlined-typep-l-expr' emits inlined code to typetest its
-;;; first argument.  The walker and gl:typep have ensured that the first
+;;; first argument.  The walker and tl:typep have ensured that the first
 ;;; argument is always a symbol and so may be evaluated multiple times.  The
 ;;; type argument is a constant naming a primitive Lisp type suitable for
 ;;; immediate translation into a C type predicate.
@@ -3454,7 +3454,7 @@
 
 (def-l-expr-method translate-l-expr-into-c
     (funcall-internal-l-expr c-func c-body return-directive)
-  (gl:destructuring-bind-strict (nil nil func &rest args)
+  (tl:destructuring-bind-strict (nil nil func &rest args)
     (l-expr-form funcall-internal-l-expr)
     (let ((target-func
 	    (make-c-indirect-selection-expr
@@ -3486,29 +3486,29 @@
 
 
 
-;;; The default expansion of `gl:funcall' calls apply, which knows how to supply
+;;; The default expansion of `tl:funcall' calls apply, which knows how to supply
 ;;; optional arguments and knows how to call the internal version of funcall.
 ;;; In cases where the argument can be seen to be a function (or macro,
 ;;; actually) this will open code into a call to the given operation.
 
-(def-gl-macro gl:funcall (&environment env function &rest args)
+(def-tl-macro tl:funcall (&environment env function &rest args)
   (cond 
     ((and (consp function)
 	  (memqp (car function) '(quote function))
 	  (symbolp (cons-second function))
-	  (gl:function-information (second function) env))
+	  (tl:function-information (second function) env))
      (cons (second function) args))
     ((and (consp function)
 	  (eq (cons-car function) 'function)
 	  (let ((func (cons-second function)))
 	    (and (consp func)
-		 (eq (cons-car func) 'gl:lambda))))
+		 (eq (cons-car func) 'tl:lambda))))
      ;; When funcalling #'(lambda ...) forms, the translator can turn the call
      ;; into a direct C function call if the function is defined via an FLET.
      ;; So, all funcalls of lambdas will be made into flets instead.
      (let ((new-name (make-symbol "FUNCALLED-LAMBDA"))
 	   (lambda (cons-second function)))
-       `(gl:flet ((,new-name ,(cons-second lambda)
+       `(tl:flet ((,new-name ,(cons-second lambda)
 		    ,@(cons-cddr lambda)))
 	  (,new-name ,@args))))
        
@@ -3517,13 +3517,13 @@
       env 
       "FUNCALL can be further optimized using FUNCALL-SIMPLE-COMPILED-FUNCTION~@
        or this warning can be suppressed with a FAT-AND-SLOW declaration."
-      `(gl:funcall ,function ,@args))
-     `(gl:apply ,function (list-dynamic-extent ,@args)))))
+      `(tl:funcall ,function ,@args))
+     `(tl:apply ,function (list-dynamic-extent ,@args)))))
 
 
 
 
-;;; The translation for the `gl:c-comment-form' special form translates its
+;;; The translation for the `tl:c-comment-form' special form translates its
 ;;; argument as a :c-expr, wraps a line-comment c-expr around it and emits the
 ;;; result as directed.
 

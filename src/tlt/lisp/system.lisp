@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module SYSTEM
 
@@ -30,7 +30,7 @@
 
 
 
-;;; The `gl:system' stucture is used to store the characteristics of a system.
+;;; The `tl:system' stucture is used to store the characteristics of a system.
 ;;; This structure is stored on the :system property of the system name.
 
 (defstruct (system)
@@ -57,24 +57,24 @@
 (defvar current-systems nil)
 
 (defun normalize-system-name (name)
-  (if (eq (symbol-package name) *gl-user-package*)
+  (if (eq (symbol-package name) *tl-user-package*)
       name
-      (intern (symbol-name name) *gl-user-package*)))
+      (intern (symbol-name name) *tl-user-package*)))
 
 (defun normalize-module-name (name)
   (normalize-system-name name))
 
-(defvar gl:current-system-being-loaded nil)
+(defvar tl:current-system-being-loaded nil)
 
-(defvar gl:all-systems nil)
-
-
+(defvar tl:all-systems nil)
 
 
-;;; The macro `gl:find-system' takes a symbol and returns the system structure,
+
+
+;;; The macro `tl:find-system' takes a symbol and returns the system structure,
 ;;; if any, that corresponds to that system.
 
-(defun gl:find-system (system-name)
+(defun tl:find-system (system-name)
   (setq system-name (normalize-system-name system-name))
   (or (get system-name :system)
       (let ((standard-boot-name
@@ -101,7 +101,7 @@
 		     it did not define ~a."
 		    system-name standard-boot-name system-name)))))))
 
-(defsetf gl:find-system set-find-system)
+(defsetf tl:find-system set-find-system)
 
 (defun set-find-system (system-name system-structure)
   (setf (get (normalize-system-name system-name) :system)
@@ -110,7 +110,7 @@
 
 
 
-;;; The macro `gl:declare-system' is used to define sets of files as a
+;;; The macro `tl:declare-system' is used to define sets of files as a
 ;;; compilable unit.  Systems have a name, are compiled either as a library or
 ;;; an executable, contain a set of used systems, and contain a set of Lisp
 ;;; files.  Systems are presumed to lie within a subdirectory of a sandbox that
@@ -159,20 +159,20 @@
 ;;;     echo)
 
 ;;; This declaration would expect to find a "lecho" directory as a sibling to
-;;; glt and gl.  Within lecho, there should be lisp, c, opt, o, and o-pg
+;;; tlt and tl.  Within lecho, there should be lisp, c, opt, o, and o-pg
 ;;; subdirectories.  In the Lisp directory there should be files boot.lisp and
-;;; echo.lisp.  Inside of boot.lisp, it should default to the package "GL-USER",
+;;; echo.lisp.  Inside of boot.lisp, it should default to the package "TL-USER",
 ;;; there should be the following declare-system form, and any needed packages
 ;;; should be created.  Note that the symbol naming the main function must have
 ;;; a package matching what will be found in the body of the system.  In the
 ;;; second file, echo.lisp, there should be an in-package to the lecho package,
-;;; and the function gl-user::main (or some such name) that takes a single
+;;; and the function tl-user::main (or some such name) that takes a single
 ;;; argument, which is the list of given args.
 
-(defmacro gl:declare-system ((name &key
+(defmacro tl:declare-system ((name &key
 				   (library nil)
 				   (main-function nil)
-				   (used-systems '(gl))
+				   (used-systems '(tl))
 				   (nicknames nil)
 				   (lisp-dir nil)
 				   (c-dir nil)
@@ -228,32 +228,32 @@
        (error "Bad module format, wasn't a symbol or list of symbol and ~
                  properties: ~s"
 	      mod))))
-  (let ((defined-get (if (eval-feature :translator) 'gl:get 'get)))
-    `(gl:progn
+  (let ((defined-get (if (eval-feature :translator) 'tl:get 'get)))
+    `(tl:progn
        ,@(unless (eval-feature :translator)
-	   `((gl:setf (gl:find-system ',name)
+	   `((tl:setf (tl:find-system ',name)
 		      (make-new-system
 			',name ',nicknames ,library ',main-function
 			',used-systems ,lisp-dir ,c-dir ',extra-c-files
 			',extra-h-files ',modules ',alias ',properties))))
-       ,@(unless (eq name 'gl:debug)
-	   `((gl:setq gl:current-system-being-loaded ',name)
-	     (gl:setq gl:all-systems (gl:cons ',name gl:all-systems))
+       ,@(unless (eq name 'tl:debug)
+	   `((tl:setq tl:current-system-being-loaded ',name)
+	     (tl:setq tl:all-systems (tl:cons ',name tl:all-systems))
 	     ))
-       (gl:setf (,defined-get ',name :system-nicknames)
+       (tl:setf (,defined-get ',name :system-nicknames)
 		',nicknames)
        ,@(loop for nickname in nicknames collect
-	       `(gl:setf (,defined-get ',nickname :nicknames-to)
+	       `(tl:setf (,defined-get ',nickname :nicknames-to)
 			 ',name))
-       (gl:setf (,defined-get ',name :system-used-systems)
+       (tl:setf (,defined-get ',name :system-used-systems)
 		',used-systems)
-       (gl:setf (,defined-get ',name :system-modules)
+       (tl:setf (,defined-get ',name :system-modules)
 		',(loop for module in modules
 			collect (if (consp module)
 				    (car module)
 				    module)))
        ,@(when alias
-	   `((gl:setf (,defined-get ',name :alias) ',alias)))
+	   `((tl:setf (,defined-get ',name :alias) ',alias)))
        ',name)))
 
 (defun make-new-system
@@ -440,9 +440,9 @@
 	     ;; do nothing
 	     nil)
 	    ((eq dir :absolute)
-	     (glt-write-char #\/ output))
+	     (tlt-write-char #\/ output))
 	    ((eq dir :up)
-	     (glt-write-string "../" output))
+	     (tlt-write-string "../" output))
 	    (t
 	     (format output "~a/" dir))))))
 
@@ -455,7 +455,7 @@
 ;;; tags, and make-id calls to get the set of all Lisp modules, in order.
 
 (defun write-system-lisp-file-names (system-name)
-  (loop for module in (system-modules (gl:find-system system-name)) do
+  (loop for module in (system-modules (tl:find-system system-name)) do
     (format t "~a.~a~%" (module-file-name-string module) lisp-file-type)))
 
 
@@ -533,12 +533,12 @@
 (defun system-all-used-systems (system)
   (let ((systems-so-far nil))
     (collect-subsystems
-      (if (symbolp system) (gl:find-system system) system))
+      (if (symbolp system) (tl:find-system system) system))
     (nreverse systems-so-far)))
 
 (defun collect-subsystems (system)
   (loop for subsystem-name in (system-used-systems system)
-	for subsystem = (gl:find-system subsystem-name)
+	for subsystem = (tl:find-system subsystem-name)
 	do
     (collect-subsystems subsystem))
   (pushnew (system-name system) systems-so-far))
@@ -546,7 +546,7 @@
 
 
 
-;;; The function `gl:load-system' is used to load Lisp binaries for a given
+;;; The function `tl:load-system' is used to load Lisp binaries for a given
 ;;; system.  It will also load the corresponding files from its used systems.
 ;;; The :verbose keyword argument that controls whether or not information will
 ;;; be printed to standard output as the process continues.  It defaults to T.
@@ -556,11 +556,11 @@
 ;;; a module in this system.  If :to is provided, load-system will stop after
 ;;; processing the named file.
 
-(defun gl:load-system (system &key (verbose t) (print nil) (to nil))
+(defun tl:load-system (system &key (verbose t) (print nil) (to nil))
   (let* ((system-name (if (symbolp system)
 			  (normalize-system-name system)
 			  (system-name system)))
-	 (system-struct (gl:find-system system-name))
+	 (system-struct (tl:find-system system-name))
 	 (subsystem-names (system-all-used-systems system-struct)))
     (loop for subsystem-name in subsystem-names do
       (load-system-1
@@ -569,7 +569,7 @@
 
 (defun load-system-1 (system verbose print to)
   (when (symbolp system)
-    (setq system (gl:find-system system)))
+    (setq system (tl:find-system system)))
   (pushnew (system-name system) current-systems)
   (loop for nickname in (system-nicknames system) do
     (pushnew nickname current-systems))
@@ -602,7 +602,7 @@
 
 
 
-;;; The function `gl:compile-system' is used to compile and load Lisp binaries
+;;; The function `tl:compile-system' is used to compile and load Lisp binaries
 ;;; for a given system.  By default it will also compile the corresponding files
 ;;; from its used systems.  Keyword arguments are as follows:
 
@@ -631,14 +631,14 @@
 ;;;   used systems are recompiled.  When you supply T to this argument, you do
 ;;;   not need to supply a value for :compile-used-systems.
 
-(defun gl:compile-system
+(defun tl:compile-system
     (system &key (verbose t) (recompile nil) (from nil) (to nil)
 	    (compile-used-systems t) (recompile-used-systems nil)
 	    (print nil))
   (let* ((system-name (if (symbolp system)
 			  (normalize-system-name system)
 			  (system-name system)))
-	 (system-struct (gl:find-system system-name))
+	 (system-struct (tl:find-system system-name))
 	 (used-system-names (system-all-used-systems system-struct)))
     (when from
       (setq from (normalize-module-name from)))
@@ -660,7 +660,7 @@
 (defun compile-system-1
     (system &key (verbose t) (print nil) (recompile nil) (from nil) (to nil))
   (when (symbolp system)
-    (setq system (gl:find-system system)))
+    (setq system (tl:find-system system)))
   (pushnew (system-name system) current-systems)
   (loop for nickname in (system-nicknames system) do
     (pushnew nickname current-systems))
@@ -745,36 +745,36 @@
 
 ;;; The following macro emits macros of the form load-g2, compile-g2, and
 ;;; translate-g2 for all of the systems listed below.  These expand into calls
-;;; to gl:load-system, gl:compile-system, and gl:translate-system and are here
+;;; to tl:load-system, tl:compile-system, and tl:translate-system and are here
 ;;; purely for convenience.
 
 (defmacro def-system-convenience-forms (&rest system-names)
   (cons
     'progn
     (loop for system in system-names
-	  for load-name = (intern (format nil "LOAD-~a" system) *gl-package*)
+	  for load-name = (intern (format nil "LOAD-~a" system) *tl-package*)
 	  for cl-load-name = (intern (symbol-name load-name) *cl-user-package*)
 	  for compile-name = (intern (format nil "COMPILE-~a" system)
-				     *gl-package*)
+				     *tl-package*)
 	  for cl-compile-name = (intern (symbol-name compile-name) *cl-user-package*)
 	  for translate-name = (intern (format nil "TRANSLATE-~a" system)
-				       *gl-package*)
+				       *tl-package*)
 	  for cl-translate-name = (intern (symbol-name translate-name) *cl-user-package*)
 	  appending
 	  `((make-convenince-names-visible '(,(symbol-name load-name)
 					     ,(symbol-name compile-name)
 					     ,(symbol-name translate-name)))
 	    (defmacro ,load-name (&key (verbose t) (print nil) (to nil))
-	      `(gl:load-system ',',system
+	      `(tl:load-system ',',system
 			       :verbose ,verbose :print ,print :to ,to))
 	    (defmacro ,cl-load-name (&key (verbose t) (print nil) (to nil))
-	      `(gl:load-system ',',system
+	      `(tl:load-system ',',system
 			       :verbose ,verbose :print ,print :to ,to))
 	    (defmacro ,compile-name
 		(&key (verbose t) (recompile nil) (from nil) (to nil)
 		      (compile-used-systems t) (recompile-used-systems nil)
 		      (print nil))
-	      `(gl:compile-system
+	      `(tl:compile-system
 		 ',',system
 		 :verbose ,verbose :recompile ,recompile :from ,from :to ,to
 		 :compile-used-systems ,compile-used-systems
@@ -784,7 +784,7 @@
 		(&key (verbose t) (recompile nil) (from nil) (to nil)
 		      (compile-used-systems t) (recompile-used-systems nil)
 		      (print nil))
-	      `(gl:compile-system
+	      `(tl:compile-system
 		 ',',system
 		 :verbose ,verbose :recompile ,recompile :from ,from :to ,to
 		 :compile-used-systems ,compile-used-systems
@@ -798,7 +798,7 @@
 		      (retranslate-used-systems nil)
 		      (retranslate nil)
 		      (print nil))
-	      `(gl:translate-system
+	      `(tl:translate-system
 		 ',',system
 		 :verbose ,verbose :recompile ,recompile :from ,from :to ,to
 		 :compile-used-systems ,compile-used-systems
@@ -814,7 +814,7 @@
 		      (retranslate-used-systems nil)
 		      (retranslate nil)
 		      (print nil))
-	      `(gl:translate-system
+	      `(tl:translate-system
 		 ',',system
 		 :verbose ,verbose :recompile ,recompile :from ,from :to ,to
 		 :compile-used-systems ,compile-used-systems
@@ -825,7 +825,7 @@
 
 (defun make-convenince-names-visible (name-strings)
   (let ((symbols (loop for name in name-strings
-		       collect (intern name *gl-package*))))
-    (export symbols *gl-package*)))
+		       collect (intern name *tl-package*))))
+    (export symbols *tl-package*)))
 
-(def-system-convenience-forms gl lecho)
+(def-system-convenience-forms tl lecho)

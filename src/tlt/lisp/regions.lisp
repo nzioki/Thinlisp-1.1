@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module REGIONS
 
@@ -31,21 +31,21 @@
 
 
 ;;; This module contains operations for specifying and manipulating memory
-;;; regions within GL applications.
+;;; regions within TL applications.
 
 ;;; The function `region-number-for-type-and-area' takes a Lisp type and an area
-;;; name, one of either gl:permannent or gl:temporary.  This function returns an
+;;; name, one of either tl:permannent or tl:temporary.  This function returns an
 ;;; integer that is the region number for creating the given type in the given
 ;;; area.
 
 (defun region-number-for-type-and-area (lisp-type area)
-  (cond ((eq area 'gl:temporary)
+  (cond ((eq area 'tl:temporary)
 	 (unless (eq lisp-type 'double-float)
 	   (translation-warning
 	     "Attempting to allocate a ~s in a temporary area.  Only floats can go there."
 	     lisp-type))
 	 2)
-	((eq area 'gl:permanent)
+	((eq area 'tl:permanent)
 	 (if (eq lisp-type 'symbol)
 	     1
 	     0))
@@ -58,15 +58,15 @@
 ;;; The function `declared-area-name' takes an environment and a Lisp type and
 ;;; returns the symbol naming the current area declared within the environment.
 ;;; If none is visible, this function issues a translation warning and returns
-;;; gl:permanent.
+;;; tl:permanent.
 
 (defun declared-area-name (env type-to-allocate)
-  (let ((area? (gl:declaration-information 'gl:consing-area env)))
+  (let ((area? (tl:declaration-information 'tl:consing-area env)))
     (unless area?
       (translation-warning
 	"Consing a ~s with no surrounding consing-area declaration."
 	type-to-allocate)
-      (setq area? 'gl:permanent))
+      (setq area? 'tl:permanent))
     area?))
 
 
@@ -74,17 +74,17 @@
 
 ;;; The macros `with-temporary-area' and `with-permanent-area' are implemented
 ;;; by rebinding the variables Current-region and Temporary-area-top.  These
-;;; variables are defined in GL.
+;;; variables are defined in TL.
 
-(def-gl-macro gl:with-temporary-area (&body forms)
-  `(gl:let* ((current-region
-	       ,(region-number-for-type-and-area 'double-float 'gl:temporary))
+(def-tl-macro tl:with-temporary-area (&body forms)
+  `(tl:let* ((current-region
+	       ,(region-number-for-type-and-area 'double-float 'tl:temporary))
 	     (temporary-area-top temporary-area-top))
-     (gl:declare (gl:consing-area gl:temporary))
+     (tl:declare (tl:consing-area tl:temporary))
      ,@forms))
 
-(def-gl-macro gl:with-permanent-area (&body forms)
-  `(gl:let* ((current-region
-	       ,(region-number-for-type-and-area 'double-float 'gl:permanent)))
-     (gl:declare (gl:consing-area gl:permanent))
+(def-tl-macro tl:with-permanent-area (&body forms)
+  `(tl:let* ((current-region
+	       ,(region-number-for-type-and-area 'double-float 'tl:permanent)))
+     (tl:declare (tl:consing-area tl:permanent))
      ,@forms))

@@ -1,4 +1,4 @@
-(in-package "GL")
+(in-package "TL")
 
 ;;;; Module BOOT
 
@@ -25,34 +25,33 @@
 
 
 
-;;;; Bootstrapping GL
+;;;; Bootstrapping TL
 
 
 
 
-;;; Loading this module will define the GL system, which implements the
-;;; translated primitives in GL, the Gensym Language.  GL stands upon GLT, the
-;;; Gensym Language Translator, which should already have been loaded when this
-;;; file is loaded.
+;;; Loading this module will define the TL system, which implements the
+;;; translated primitives in TL, ThinLisp.  TL stands upon TLT, the ThinLisp
+;;; Translator, which should already have been loaded when this file is loaded.
 
-(declare-system (gl :library t :used-systems nil
-		    :extra-c-files ("glt" "notify")
-		    :extra-h-files ("glt"))
+(declare-system (tl :library t :used-systems nil
+		    :extra-c-files ("tlt" "notify")
+		    :extra-h-files ("tlt"))
   boot
   stubs
-  gl-types
+  tl-types
   inline
-  gl-prim
+  tl-prim
   do
   format
   input
-  gl-basics
+  tl-basics
   loop
   apply
   generic-math
   generic-prim
   packages
-  gl-util
+  tl-util
   versions
   forward
-  glbasics)
+  tl-extension)

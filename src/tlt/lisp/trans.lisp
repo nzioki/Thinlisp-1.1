@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module TRANS
 
@@ -33,20 +33,20 @@
 ;;; This file contains functions for operating on systems: loading, compiling,
 ;;; and translating.
 
-;;; The function `gl:translate-system' takes a symbol naming a system and
+;;; The function `tl:translate-system' takes a symbol naming a system and
 ;;; translates it into C code.  First this operation loads any systems used by
 ;;; this system.  Next, it compiles and loads any files in this system that are
 ;;; not compiled or loaded up to date.  Next it translates each file where the
 ;;; translation data file is out of date with the Lisp file, where the C file or
 ;;; the H file do not exist, or where the translation data is not consistent
-;;; with the data currently in the glt data file.  Note that we do not verify
+;;; with the data currently in the tlt data file.  Note that we do not verify
 ;;; that the file write dates of the C and H files are up to date with their
 ;;; Lisp file, since translations that produce the exact same C and H files will
 ;;; not overwrite those files.  However, the translation data file is always
 ;;; written when attempting a translate of a Lisp file, so comparing that file's
 ;;; date is adequate.
 
-(defun gl:translate-system
+(defun tl:translate-system
     (system &key (verbose t)
 	    (recompile nil) (from nil) (to nil)
 	    (compile-used-systems t)
@@ -61,7 +61,7 @@
   (let* ((system-name (if (symbolp system)
 			  (normalize-system-name system)
 			  (system-name system)))
-	 (system-struct (gl:find-system system-name))
+	 (system-struct (tl:find-system system-name))
 	 (used-system-names (system-all-used-systems system-struct)))
     ;; First, compile or load the used systems, then run translations.
     (loop for used-system-name in used-system-names do
@@ -80,7 +80,7 @@
 	  (*global-symbol-registry* (make-hash-table :test #'eq))
 	  (*global-compiled-function-registry* (make-hash-table :test #'eq))
 	  (*global-package-registry*
-	    (list *gl-package* *gl-user-package* *keyword-package*)))
+	    (list *tl-package* *tl-user-package* *keyword-package*)))
       (unwind-protect
 	   (progn
 	     (reserve-foreign-function-identifiers)
@@ -102,7 +102,7 @@
 (defun translate-system-1
     (system &key (verbose t) (print nil) (from nil) (to nil) (retranslate nil))
   (when (symbolp system)
-    (setq system (gl:find-system system)))
+    (setq system (tl:find-system system)))
   (when from
     (setq from (normalize-module-name from)))
   (when to
@@ -172,8 +172,8 @@
 ;;; The function `translate-module' takes a system, a module, and an optional
 ;;; keyword controlling whether or not the translation should be verbose.  This
 ;;; function will read the Lisp file for this module, translate it into C, and
-;;; write out C, H, and GLT files.  If this module is part of a library system,
-;;; or part of a submodule (see gl:declare-system for details) then its toplevel
+;;; write out C, H, and TLT files.  If this module is part of a library system,
+;;; or part of a submodule (see tl:declare-system for details) then its toplevel
 ;;; forms and constants will be written out into the existing *top-level-file*
 ;;; or into a new top-level-file if none exists.  Otherwise, the constants and
 ;;; top-level function will be written into the C file for this module.
@@ -266,7 +266,7 @@
 		  (make-c-literal-expr 1)))
 	  main-body)
 
-	;; Initialize All-packages and make the default packages GL, GL-USER,
+	;; Initialize All-packages and make the default packages TL, TL-USER,
 	;; and Keyword.
 	(register-needed-variable-extern
 	  c-file '("extern") 'obj "all_packages")
@@ -290,7 +290,7 @@
 		  (make-c-cast-expr 'obj (make-c-name-expr "NULL"))))
 	  main-body)
 
-	;; Specially handle the symbol T while making the GL package.
+	;; Specially handle the symbol T while making the TL package.
 	(emit-expr-to-compound-statement
 	  (make-c-function-call-expr
 	    (make-c-name-expr "init_symbol_into_package")
@@ -299,17 +299,17 @@
 		'obj (make-c-unary-expr #\& (make-c-name-expr "T")))
 	      (translate-string-constant-into-c
 		"T" 'obj c-file nil main-func main-body :c-expr)
-	      ;; The result of gl:sxhash-string for a one character string is
+	      ;; The result of tl:sxhash-string for a one character string is
 	      ;; equal to the char-code of the character.  Since
-	      ;; gl:sxhash-string isn't defined yet, we'll avoid the forward
+	      ;; tl:sxhash-string isn't defined yet, we'll avoid the forward
 	      ;; reference by making use of that fact.  -jallard 12/5/97
 	      (make-c-literal-expr
-		(char-code #\T))		; (gl:sxhash-string "T")
+		(char-code #\T))		; (tl:sxhash-string "T")
 	      (make-c-function-call-expr
 		(make-c-name-expr "make_package_1")
 		(list (translate-l-expr-into-c
 			(prepare-l-expr-for-translation 
-			  (make-quoted-constant-l-expr "GL" nil nil)
+			  (make-quoted-constant-l-expr "TL" nil nil)
 			  'string '(pointer unsigned-char))
 			main-func main-body :c-expr)
 		      (make-c-cast-expr 'obj (make-c-name-expr "NULL"))))))
@@ -330,14 +330,14 @@
 	    (make-c-name-expr "make_package_1")
 	    (list (translate-l-expr-into-c
 		    (prepare-l-expr-for-translation 
-		      (make-quoted-constant-l-expr "GL-USER" nil nil)
+		      (make-quoted-constant-l-expr "TL-USER" nil nil)
 		      'string '(pointer unsigned-char))
 		    main-func main-body :c-expr)
 		  (make-c-function-call-expr
 		    (make-c-name-expr "alloc_cons")
 		    (list (translate-l-expr-into-c
 			    (prepare-l-expr-for-translation 
-			      (make-quoted-constant-l-expr "GL" nil nil)
+			      (make-quoted-constant-l-expr "TL" nil nil)
 			      't 'obj)
 			    main-func main-body :c-expr)
 			  (make-c-cast-expr 'obj (make-c-name-expr "NULL"))
@@ -351,8 +351,8 @@
 		  in (sort (remove
 			     *keyword-package*
 			     (remove
-			       *gl-package*
-			       (remove *gl-user-package*
+			       *tl-package*
+			       (remove *tl-user-package*
 				       *global-package-registry*)))
 			   #'package-used-by-package-p)
 	      for used-package-c-expr
@@ -425,19 +425,19 @@
 		   :if-exists :supersede)
     (loop for file-name in (system-extra-c-files system)
 	  do
-      (glt-write-string file-name output)
-      (glt-write-char #\newline output))
+      (tlt-write-string file-name output)
+      (tlt-write-char #\newline output))
     (loop for module in (system-modules system)
 	  do
       (when (system-module-included-p system module)
-	(glt-write-string (module-file-name-string module) output)
-	(glt-write-char #\newline output))))
+	(tlt-write-string (module-file-name-string module) output)
+	(tlt-write-char #\newline output))))
   ;; Generate a makefile from the list of files.
   (generate-makefiles system verbose))
 
 (defun emit-top-level-function-calls (system c-file main-func main-body prefix)
   (loop for subsystem-name in (system-all-used-systems system)
-	for subsystem = (gl:find-system subsystem-name)
+	for subsystem = (tl:find-system subsystem-name)
 	do
     (unless (eq subsystem system)
       (emit-top-level-function-calls subsystem c-file main-func main-body prefix)))
@@ -446,7 +446,7 @@
     (when (system-module-included-p system module)
       (let* ((func-name
 	       (intern (format nil "~a-~a-~a" prefix (system-name system) module)
-		       *gli-package*))
+		       *tli-package*))
 	     (c-identifier
 	       (c-identifier-for-function
 		 func-name *global-c-namespace*
@@ -533,7 +533,7 @@
 	 (symbols-func-name
 	   (intern
 	     (format nil "SYMS-~a-~a" (system-name system) module)
-	     *gli-package*))
+	     *tli-package*))
 	 (symbols-function-c-identifier
 	   (c-identifier-for-function
 	     symbols-func-name *global-c-namespace* symbols-func-namespace))
@@ -541,7 +541,7 @@
 	 (init-func-name
 	   (intern
 	     (format nil "INIT-~a-~a" (system-name system) module)
-	     *gli-package*))
+	     *tli-package*))
 	 (init-function-c-identifier
 	   (c-identifier-for-function
 	     init-func-name *global-c-namespace* init-func-namespace))
@@ -549,7 +549,7 @@
 	 (c-final-pathname (system-c-file system module))
 	 (h-temporary-pathname (system-temporary-h-file system module))
 	 (h-final-pathname (system-h-file system module))
-	 (glt-final-pathname (system-trans-data-file system module)))
+	 (tlt-final-pathname (system-trans-data-file system module)))
     (setf (c-file-temporary-pathname c-file) c-temporary-pathname)
     (setf (c-file-final-pathname c-file) c-final-pathname)
     (setf (c-file-c-stream c-file)
@@ -565,7 +565,7 @@
     ;; Emit includes for extra H files from all used systems, and then the H
     ;; file for this particular module.
     (loop for subsystem-name in (system-all-used-systems system)
-	  for subsystem = (gl:find-system subsystem-name)
+	  for subsystem = (tl:find-system subsystem-name)
 	  do
       (loop for h-file in (system-extra-h-files subsystem) do
 	(format (c-file-c-stream c-file) "#include \"~a.h\"~%" (namestring h-file))))
@@ -588,7 +588,7 @@
        (namestring h-final-pathname)
        (namestring (system-lisp-file system module))))
     (setf (c-file-trans-data-final-pathname c-file)
-	  glt-final-pathname)
+	  tlt-final-pathname)
     (setf (c-file-trans-data-stream c-file) nil)
     (setf (c-file-namespace c-file) file-namespace)
     (setf (c-file-defined-functions c-file) (make-hash-table :test #'eq))
@@ -760,16 +760,16 @@
 
 ;;; The following section implements debugging translations of single forms.
 
-(gl:declare-system (debug :library t :c-dir "/tmp/")
+(tl:declare-system (debug :library t :c-dir "/tmp/")
   debug)
 
-(defmacro gl:trans (form &optional (output '*standard-output*))
-  `(gl:debug-translate-form ,form ,output))
+(defmacro tl:trans (form &optional (output '*standard-output*))
+  `(tl:debug-translate-form ,form ,output))
 
-(defun gl:ilisp-translate-form (form package filename)
+(defun tl:ilisp-translate-form (form package filename)
   (declare (ignore filename))
   (let ((*package* (find-package package)))
-    (gl:trans form)))
+    (tl:trans form)))
 
 
 
@@ -778,14 +778,14 @@
 ;;; stream.  This function will translate that form to C, then print the output
 ;;; onto the output stream.
 
-(defun gl:debug-translate-form (lisp-form &optional (output *standard-output*))
+(defun tl:debug-translate-form (lisp-form &optional (output *standard-output*))
   (let ((*global-c-namespace* (make-c-namespace *reserved-c-namespace*))
 	(*global-symbol-registry* (make-hash-table :test #'eq))
 	(*global-compiled-function-registry* (make-hash-table :test #'eq))
 	(*global-package-registry*
-	  (list *gl-package* *gl-user-package* *keyword-package*))
+	  (list *tl-package* *tl-user-package* *keyword-package*))
 	(*system-top-level-c-file* nil)
-	(system (gl:find-system 'debug))
+	(system (tl:find-system 'debug))
 	(*package* *package*)
 	(*readtable* *readtable*)
 	(compile-time-too-mode nil)

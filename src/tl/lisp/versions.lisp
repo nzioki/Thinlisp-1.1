@@ -1,4 +1,4 @@
-(in-package "GL")
+(in-package "TL")
 
 ;;;; Module VERSIONS
 
@@ -31,7 +31,7 @@
 
 
 ;;; This module contains utilities for determining the current machine type that
-;;; is running and for representing Gensym product version number information
+;;; is running and for representing ThinLisp package version number information
 ;;; and it contains utilities for finding out information about loaded systems.
 
 
@@ -48,22 +48,22 @@
 ;;; information has been set up by the translation time expansion of
 ;;; declare-system.
 
-(defvar gl-user-package (find-package "GL-USER"))
+(defvar tl-user-package (find-package "TL-USER"))
 
 (defun normalize-system-name (symbol)
   (declare (symbol symbol)
 	   (return-type symbol))
-  (let ((gl-package-name (if (not (eq (symbol-package symbol) gl-user-package))
-			     (intern (symbol-name symbol) gl-user-package)
+  (let ((tl-package-name (if (not (eq (symbol-package symbol) tl-user-package))
+			     (intern (symbol-name symbol) tl-user-package)
 			     symbol)))
-    (or (get gl-package-name :nicknames-to)
-	gl-package-name)))
+    (or (get tl-package-name :nicknames-to)
+	tl-package-name)))
 
 (defun normalize-module-name (symbol)
   (declare (symbol symbol)
 	   (return-type symbol))
-  (if (not (eq (symbol-package symbol) gl-user-package))
-      (intern (symbol-name symbol) gl-user-package)
+  (if (not (eq (symbol-package symbol) tl-user-package))
+      (intern (symbol-name symbol) tl-user-package)
       symbol))
 
 
@@ -135,7 +135,7 @@
 
 
 
-;;; The following constants identify all of the ports of GL translated software.
+;;; The following constants identify all of the ports of TL translated software.
 ;;; The numbers in these constants must match up with the numbers found in the
 ;;; file ext/c/cprim.c, as defined just above the function
 ;;; cc_get_platform_code().
@@ -180,7 +180,7 @@
 ;;; -jra 12/9/96)
 
 (defvar g2-operating-system
-  (let ((platform-code (gli::get-platform-code)))
+  (let ((platform-code (tli::get-platform-code)))
     (declare (fixnum platform-code))
     (cond
       ((= platform-code i386-code)         'unix)
@@ -227,7 +227,7 @@
 ;;; computer that this software is currently running on.
 
 (defvar g2-machine-type
-  (let ((platform-code (gli::get-platform-code)))
+  (let ((platform-code (tli::get-platform-code)))
     (declare (fixnum platform-code))
     (cond
       ((= platform-code i386-code)         'i386)

@@ -1,6 +1,6 @@
-(in-package "GLI")
+(in-package "TLI")
 
-;;;; Module GLI-UTIL
+;;;; Module TLI-UTIL
 
 ;;; Copyright (c) 1999 The ThinLisp Group
 ;;; Copyright (c) 1995 Gensym Corporation.
@@ -30,7 +30,7 @@
 
 
 
-;;; This file contains miscellaneous utilities needed within the GLI package,
+;;; This file contains miscellaneous utilities needed within the TLI package,
 ;;; but which are not large enough or sophisticated enough to deserve their own
 ;;; module.
 
@@ -51,7 +51,7 @@
 
 (defun stand-in (&rest args)
   (declare (ignore args))
-  (error "You have called the stand-in for a forward referenced GLI function."))
+  (error "You have called the stand-in for a forward referenced TLI function."))
 
 (defmacro declare-forward-function-references (&rest functions)
   `(eval-when (:compile-toplevel)
@@ -74,16 +74,16 @@
 
 
 
-;;; The global parameters `*gli-package*', `*glt-package*', and `*gl-package*'
-;;; contain pointers to the package objects defined by the GLT.
+;;; The global parameters `*tli-package*', `*tlt-package*', and `*tl-package*'
+;;; contain pointers to the package objects defined by the TLT.
 
-(defparameter *gli-package* (find-package "GLI"))
+(defparameter *tli-package* (find-package "TLI"))
 
-(defparameter *glt-package* (find-package "GLT"))
+(defparameter *tlt-package* (find-package "TLT"))
 
-(defparameter *gl-package* (find-package "GL"))
+(defparameter *tl-package* (find-package "TL"))
 
-(defparameter *gl-user-package* (find-package "GL-USER"))
+(defparameter *tl-user-package* (find-package "TL-USER"))
 
 (defparameter *lisp-package* (find-package #+lucid "LISP" #-lucid "COMMON-LISP"))
 
@@ -156,7 +156,7 @@
 
 (defconstant h-file-type "h")
 
-(defconstant trans-data-file-type "glt")
+(defconstant trans-data-file-type "tlt")
 
 (defconstant temporary-c-file-type "tmc")
 
@@ -178,17 +178,17 @@
 
 
 
-;;; The macros `glt-write-char' and `glt-write-string' should be used for all
+;;; The macros `tlt-write-char' and `tlt-write-string' should be used for all
 ;;; output to Lisp file streams.  In implementations where optimizations can be
 ;;; found, these macros will expand to the optimized versions.
 
-(defmacro glt-write-char (char stream)
+(defmacro tlt-write-char (char stream)
   #+lucid
   `(lcl:fast-write-char ,char ,stream)
   #-lucid
   `(write-char ,char ,stream))
 
-(defmacro glt-write-string (string stream &rest keyword-args)
+(defmacro tlt-write-string (string stream &rest keyword-args)
   #+lucid
   `(lcl:fast-write-string ,string ,stream ,@keyword-args)
   #-lucid
@@ -362,9 +362,9 @@
 ;;; message.
 
 (defmacro cons-car (cons)
-  #+fastest-glt
+  #+fastest-tlt
   `(car (the cons ,cons))
-  #+(and (not fastest-glt) cmu)
+  #+(and (not fastest-tlt) cmu)
   `(safe-car ,cons)
   #+(and (not fastest-glt) (not cmu))
   (cond ((and (constantp cons)
@@ -390,11 +390,11 @@
   `(cons-car ,cons))
 
 (defmacro cons-cdr (cons)
-  #+fastest-glt
+  #+fastest-tlt
   `(cdr (the cons ,cons))
-  #+(and (not fastest-glt) cmu)
+  #+(and (not fastest-tlt) cmu)
   `(safe-cdr ,cons)
-  #+(and (not fastest-glt) (not cmu))
+  #+(and (not fastest-tlt) (not cmu))
   (cond ((and (constantp cons)
 	      (not (consp (eval cons))))
 	 `(cons-error ,cons))
@@ -574,19 +574,19 @@
   (if (symbolp feature-form)
       (memq feature-form *features*)
       (ecase (cons-car feature-form)
-	((and gl:and)
+	((and tl:and)
 	 (loop for form in (cons-cdr feature-form)
 	       always (eval-feature form)))
-	((or gl:or)
+	((or tl:or)
 	 (loop for form in (cons-cdr feature-form)
 	       thereis (eval-feature form)))
-	((not gl:not)
+	((not tl:not)
 	 (not (eval-feature (cons-second feature-form)))))))
 
 (defun well-formed-eval-feature-clause (object)
   (cond ((consp object)
 	 (let ((car (cons-car object)))
-	   (and (memqp car '(and gl:and or gl:or not gl:not))
+	   (and (memqp car '(and tl:and or tl:or not tl:not))
 		(loop for cdr = (cons-cdr object) then (cons-cdr cdr)
 		      while cdr
 		      always (and (consp cdr)
@@ -599,13 +599,13 @@
 
 
 
-;;; The function `gl:constantp' works like Common Lisp constantp, but also
-;;; recognizes gl:quote.
+;;; The function `tl:constantp' works like Common Lisp constantp, but also
+;;; recognizes tl:quote.
 
-(defun gl:constantp (form)
+(defun tl:constantp (form)
   (or (constantp form)
       (and (consp form)
-	   (memqp (cons-car form) '(gl:quote gl:function)))))
+	   (memqp (cons-car form) '(tl:quote tl:function)))))
 
 
 
@@ -620,11 +620,11 @@
 
 
 
-;;; The macro `gl:expand-development-memory' takes a number of bytes of
+;;; The macro `tl:expand-development-memory' takes a number of bytes of
 ;;; expansion and will extend the size of the Lisp development environment to
 ;;; that limit.
 
-(defmacro gl:expand-development-memory (bytes)
+(defmacro tl:expand-development-memory (bytes)
   (unless (eval-feature :translator)
     `(user::expand-memory-to-limit ,bytes)))
 
@@ -639,7 +639,7 @@
 
 
 ;;; This section should be filled out with routines from Fred's work in
-;;; lisp/glbasics.lisp to make printed representations of items be mouseable in
+;;; lisp/tl-extension.lisp to make printed representations of items be mouseable in
 ;;; Emacs.  For now, it does something lame and quick.
 
 ;;; The macro `with-printing-wrapper' takes an object, a stream, and a body of
@@ -724,7 +724,7 @@
   (when throw-tag?
     (if within-translation-catcher
 	(throw throw-tag? :error)
-	(error "Uncontinuable GL Error, described just above."))))
+	(error "Uncontinuable TL Error, described just above."))))
 
 
 
@@ -805,7 +805,7 @@
 
 
 
-;;; Within several portions of GLT there is a need for a fast predicates on
+;;; Within several portions of TLT there is a need for a fast predicates on
 ;;; characters that determine whether or not a given character is a member of a
 ;;; set.  Char bit vectors are used to represent a set of characters.
 ;;; Make-char-bit-vector is used to create one, and char-bit-on-p is used to
@@ -926,7 +926,7 @@
 	      (return (values (nreverse decls) subbody (nreverse docs))))
       (values nil decl-and-body nil)))
 
-(defun gl:split-declarations-and-body (decl-and-body)
+(defun tl:split-declarations-and-body (decl-and-body)
   (split-declarations-and-body decl-and-body))
 
 
@@ -938,8 +938,8 @@
 
 
 ;;; The Lucid we are currently using does not support declaim, so we have a
-;;; macro that abstracts this with GLT.  Note that GL supports declaim, and so
-;;; only the GLT implementation need worry about this fixup.
+;;; macro that abstracts this with TLT.  Note that TL supports declaim, and so
+;;; only the TLT implementation need worry about this fixup.
 
 (defmacro lisp-declaim (&rest decls)
   #+lucid
@@ -972,10 +972,10 @@
 ;;; into the result of a macro expansion.
 
 (defun simple-argument-p (form)
-  (or (gl:constantp form)
+  (or (tl:constantp form)
       (symbolp form)
       (and (consp form)
-	   (memq (car form) '(gl:the the))
+	   (memq (car form) '(tl:the the))
 	   (consp (cddr form))
 	   (simple-argument-p (third form)))))
 

@@ -1,7 +1,7 @@
 ;; -*- Mode: Lisp; Package: AB; Base: 10; Syntax: Common-Lisp -*-
-(in-package "GL")
+(in-package "TL")
 
-;;;; Module GLBASICS
+;;;; Module TL-EXTENSION
 
 ;;; Copyright (c) 1999 The ThinLisp Group
 ;;; Copyright (c) 1990, 1991, 1992, 1997 Gensym Corporation.
@@ -25,13 +25,13 @@
 
 
 
-;;;; Basic Facilities for Both G2 and GLT
+;;;; Basic Facilities for Both G2 and TLT
 
 
 (declare-forward-reference gsi-magic-number variable)
 
 (declare-forward-reference c-exit function) ;PRIMITIVES
-(declare-forward-reference gensym-probe-file function) ;PATHNAMES
+(declare-forward-reference tl-probe-file function) ;PATHNAMES
 
 
 
@@ -86,7 +86,7 @@
 
 
 ;;; The macro `with-tracing' is a development-only wrapper for trace print
-;;; statements.  The real macro, with-tracing-1, is in GLDEBUG.
+;;; statements.  The real macro, with-tracing-1, is in TLDEBUG.
 
 (defmacro with-tracing ((kind &key block) &body body)
   #-development (declare (ignore kind block body))
@@ -123,7 +123,7 @@
 
 
 ;;; `Lisp-package-1' is bound to the lisp package.  The lisp package
-;;; contains all GL (most Common Lisp) "primitives": user-visible
+;;; contains all TL (most Common Lisp) "primitives": user-visible
 ;;; functions, special forms, macros, and global variables.
 
 (defvar lisp-package-1 (find-package "LISP"))
@@ -192,7 +192,7 @@
     (:vanilla-areas
       `(progn
 	 ,@forms))
-    (:gl
+    (:tl
       `(with-permanent-area ,@forms))
     (:translator
       (warn "This translator has no WITH-DYNAMIC-CREATION code.")
@@ -223,19 +223,19 @@
 
 
 
-;;; `Gensym-make-symbol' is a compile time function similar to make-symbol that
+;;; `Tl-make-symbol' is a compile time function similar to make-symbol that
 ;;; returns an uninterned symbol.  It differs in that the print name will be
 ;;; made unique.  Note that for gensyms produced during translations into C, the
 ;;; gensym function will not return unique print names.  The translator itself
 ;;; generates unique print names in a consistent way on translation.
 
-(defun-for-macro gensym-make-symbol (print-name-prefix)
+(defun-for-macro tl-make-symbol (print-name-prefix)
   (let* ((prefix-string
 	   (cond
 	     ((stringp print-name-prefix) print-name-prefix)
 	     ((symbolp print-name-prefix) (symbol-name print-name-prefix))
 	     (t (cerror "Continue."
-			"gensym-make-symbol should be called with a symbol or string.")
+			"to-make-symbol should be called with a symbol or string.")
 		"G"))))
     (prog1
       (gensym prefix-string)
@@ -405,14 +405,14 @@
 ;;; NOT handled.
 
 ;;; **Note**: This is no longer necessary.  This functionality is now defaulted
-;;; in GL.  -jallard 2/4/97
+;;; in TL.  -jallard 2/4/97
 
 (defmacro defun-allowing-keywords (name lambda-list &body body)
   `(defun ,name ,lambda-list ,@body))
 
 ;; Chestnut should do (a better version of) this for us.  -fmw, 9/21/93
 
-;; GL did.  -jallard 2/4/97
+;; TL did.  -jallard 2/4/97
 
 
   
@@ -636,9 +636,6 @@
 (defun-for-macro declare-type-preserving-numeric-operation
 		 (type operation args &optional env)
   (declare (ignore env))
-  ;; Minor optimization.
-  (when (eq type 'gensym-float)
-    (setq type (gensym-float-type)))
   (cond
     ((null args)
      (error "Numeric type wrapper called with no arguments."))
@@ -663,18 +660,13 @@
 
 (defun-for-macro declare-argument-types (type form &optional env)
   (declare (ignore env))
-  (when (eq type 'gensym-float)
-    (setq type (gensym-float-type)))
   (cons (car form)
 	(loop for argument in (cdr form)
 	      collect (declare-result type argument))))
 
-(defun-for-macro declare-argument-and-result-types (type-arg form &optional env)
+(defun-for-macro declare-argument-and-result-types (type form &optional env)
   (declare (ignore env))
-  (let* ((type (if (eq type-arg 'gensym-float)
-		   (gensym-float-type)
-		   type-arg))
-	 (operator (car form))
+  (let* ((operator (car form))
 	 (args (cdr form)))
     `(the ,type
 	  (,operator ,@(loop for arg in args
@@ -687,7 +679,7 @@
     +r -r *r minr maxr absr
     +i -i *i mini maxi absi))
 
-(defvar-for-macro gensym-float-returning-operations
+(defvar-for-macro double-float-returning-operations
   '(1+e 1-e +e -e *e /e mine maxe abse loge atane cose expe expte sine
     sqrte tane))
 
@@ -701,16 +693,14 @@
 ;;; avoid redundant type wrappers.
 
 (defun-for-macro declare-result (type form)
-  (when (eq type 'gensym-float)
-    (setq type (gensym-float-type)))
   (cond ((and (consp form)
 	      (or (and (eq (car form) 'the)
 		       (consp (cdr form))
 		       (eq (cadr form) type))
 		  (and (eq type 'fixnum)
 		       (member (car form) fixnum-returning-operations))
-		  (and (eq type (gensym-float-type))
-		       (member (car form) gensym-float-returning-operations))))
+		  (and (eq type 'double-float)
+		       (member (car form) double-float-returning-operations))))
 	 form)
 	((and (consp form)
 	      (eq (car form) 'setq)
@@ -761,14 +751,14 @@
 ;;; The function for macro `typed-operator-for-type' takes a symbol naming a
 ;;; Common Lisp numeric operation and a symbol naming a numeric type.  The
 ;;; result is a symbol naming a type declared version of that operator for the
-;;; given type.  This currently can return optimized operators for fixnums,
-;;; gensym-floats, and whatever the specific gensym-float type is for a machine.
+;;; given type.  This currently can return optimized operators for fixnums and
+;;; double-floats.
 
 (defun-for-macro typed-operator-for-type (operator type)
   (cond ((eq type 'fixnum)
 	 (fixnum-operator-for-operation operator))
-	((or (eq type 'gensym-float) (eq type (gensym-float-type)))
-	 (gensym-float-operator-for-operation operator))
+	((eq type 'double-float)
+	 (double-float-operator-for-operation operator))
 	(t
 	 operator)))
 
@@ -1100,12 +1090,12 @@
 	 (declare-argument-and-result-types 'fixnum `(ash ,fixnum ,n) env))))
 
 (defmacro right-shiftf (fixnum non-negative-shift-distance)
-  `(the fixnum (gli::fixnum-right-shift
+  `(the fixnum (tli::fixnum-right-shift
 		 (the fixnum ,fixnum)
 		 (the fixnum ,non-negative-shift-distance))))
 
 (defmacro left-shiftf (fixnum non-negative-shift-distance)
-  `(the fixnum (gli::fixnum-left-shift
+  `(the fixnum (tli::fixnum-left-shift
 		 (the fixnum ,fixnum)
 		 (the fixnum ,non-negative-shift-distance))))
 
@@ -1248,8 +1238,8 @@
     (let ((errant-systems?
 	    (set-difference
 	      systems-mentioned
-	      '(t otherwise gl-user::ab gl-user::telewindows gl-user::tw
-		gl-user::ntw gl-user::gsi gl-user::gl gl-user::g2))))
+	      '(t otherwise tl-user::ab tl-user::telewindows tl-user::tw
+		tl-user::ntw tl-user::gsi tl-user::tl tl-user::g2))))
       (when errant-systems?
 	(error "CURRENT-SYSTEM-CASE: unknown system(s): ~s"
 	       errant-systems?)))
@@ -1265,15 +1255,15 @@
 		       t)
 		      ((symbolp system-or-systems)
 		       `(memq ',(normalize-system-name system-or-systems)
-			      gli::current-systems))
+			      tli::current-systems))
                       ((null (cdr system-or-systems))
                        `(memq ',(normalize-system-name (car system-or-systems))
-                              gli::current-systems))
+                              tli::current-systems))
 		      (t
 		       `(loop for sys in ',(loop for sys in system-or-systems
 						 collect
 						 (normalize-system-name sys))
-			      thereis (memq sys gli::current-systems))))
+			      thereis (memq sys tli::current-systems))))
 		    (cdr clause)))))
       (t
        (loop for clause in clauses
@@ -1281,10 +1271,10 @@
 	     when (or (memq system-or-systems '(t otherwise))
 		      (if (symbolp system-or-systems)
 			  (memq (normalize-system-name system-or-systems)
-				gli::current-systems)
+				tli::current-systems)
 			  (loop for sys in system-or-systems
 				thereis (memq (normalize-system-name sys)
-					      gli::current-systems))))
+					      tli::current-systems))))
 	       return (cons 'progn (cdr clause))
 	     finally
 	       ;; The following attempt at rigor was before its time.  -jallard
@@ -1343,7 +1333,7 @@
 	 ,@forms)
       `(progn ,@forms)))
 
-;; Note that in GL, funcall macroexpands into a direct call to the given
+;; Note that in TL, funcall macroexpands into a direct call to the given
 ;; function, if that function is a constant.  So, we must bind the function
 ;; object first, before calling funcall.  -jallard 5/7/97
 
@@ -1357,8 +1347,8 @@
 
 
 
-;;; The following code is run at launch time for any Gensym product that
-;;; includes glbasics.  It runs a function that will call error if any of the
+;;; The following code is run at launch time for any ThinLisp package that
+;;; includes tl-extension.  It runs a function that will call error if any of the
 ;;; assumptions that we have made about arithmetic do not hold true.  Add more
 ;;; assumption checking code to the function validate-fixnum-assumptions.
 
@@ -1388,17 +1378,17 @@
   (unless (=f (ashf negative-fifty-million -8) -195313)
     (bad-assumption
       "Right shift doesn't sign extend."))
-  (unless (and (=f (gli::truncate-test-by-dividing-with-slash
+  (unless (and (=f (tli::truncate-test-by-dividing-with-slash
 		     (the double-float float-test-value) 1.0)
 		   13)
-	       (=f (gli::truncate-test-by-dividing-with-slash
+	       (=f (tli::truncate-test-by-dividing-with-slash
 		     (the double-float (- (the double-float float-test-value)))
 		     1.0)
 		   -13)
-	       (=f (gli::truncate-test-by-dividing-with-slash
+	       (=f (tli::truncate-test-by-dividing-with-slash
 		     (the double-float float-test-value) -1.0)
 		   -13)
-	       (=f (gli::truncate-test-by-dividing-with-slash
+	       (=f (tli::truncate-test-by-dividing-with-slash
 		     (the double-float (- (the double-float float-test-value)))
 		     -1.0)
 		   13))
@@ -1407,13 +1397,13 @@
 ;  #+cmu
 ;  (warn "Disabled truncation testing.")
   #-cmu
-  (unless (and (=f (gli::truncate-test-by-dividing-with-slash
+  (unless (and (=f (tli::truncate-test-by-dividing-with-slash
 		     (the fixnum (- (the fixnum fixnum-test-value))) 2)
 		   -5)
-	       (=f (gli::truncate-test-by-dividing-with-slash
+	       (=f (tli::truncate-test-by-dividing-with-slash
 		     (the fixnum fixnum-test-value) -2)
 		   -5)
-	       (=f (gli::truncate-test-by-dividing-with-slash
+	       (=f (tli::truncate-test-by-dividing-with-slash
 		     (the fixnum (- (the fixnum fixnum-test-value))) -2)
 		   5))
     (bad-assumption
@@ -1432,11 +1422,11 @@
 
 
 
-;;; The function for macro `gensym-float-operator-for-operation' takes a symbol
+;;; The function for macro `double-float-operator-for-operation' takes a symbol
 ;;; naming a Common Lisp numeric operation and returns the symbol naming the
-;;; type declared equivalent for gensym-floats.
+;;; type declared equivalent for double-floats.
 
-(defparameter-for-macro gensym-float-operator-alist
+(defparameter-for-macro double-float-operator-alist
   '((1+ . 1+e)
     (1- . 1-e)
     (+ . +e)
@@ -1470,8 +1460,8 @@
     (sqrt . sqrte)
     (tan . tane)))
 
-(defun-for-macro gensym-float-operator-for-operation (operator)
-  (or (cdr (assoc operator gensym-float-operator-alist))
+(defun-for-macro double-float-operator-for-operation (operator)
+  (or (cdr (assoc operator double-float-operator-alist))
       operator))
 
 
@@ -1514,7 +1504,7 @@
 ;;; double floats as values.  These double floats can only exist on the stack
 ;;; while being passed from one raw-double operation to another, and the final
 ;;; result must eventually be coerced back into a double-float.  The macro
-;;; `coerce-gensym-float-to-raw-double' takes an argument which should be
+;;; `coerce-double-float-to-raw-double' takes an argument which should be
 ;;; coerced into a raw-double.  If the argument to this macro is an expression,
 ;;; an attempt will be made to find an operator for that expression which
 ;;; already produces a raw-double as its value.  If one can be found, the
@@ -1522,12 +1512,12 @@
 ;;; themselves coerced to raw-doubles.  If no such operator can be found, the
 ;;; Chestnut primitve unboxing operation is emitted.
 
-(defmacro coerce-gensym-float-to-raw-double (gensym-float-expression)
+(defmacro coerce-double-float-to-raw-double (double-float-expression)
   #+chestnut
   (if (not (eval-feature :chestnut-trans))
-      gensym-float-expression
+      double-float-expression
       (let* ((expression
-	       (loop for exp = gensym-float-expression
+	       (loop for exp = double-float-expression
 			     then (third exp)
 		     while (and (consp exp) (eq (car exp) 'the))
 		     finally (return exp)))
@@ -1540,28 +1530,28 @@
 	(cond ((null raw-operator?)
 	       (if (eq operator? 'if)
 		   `(if ,(second expression)
-			(coerce-gensym-float-to-raw-double
+			(coerce-double-float-to-raw-double
 			  ,(third expression))
-			(coerce-gensym-float-to-raw-double
+			(coerce-double-float-to-raw-double
 			  ,(fourth expression)))
 		   `(trun:unbox%d ,expression)))
 	      ((raw-double-receiving-operator operator?)
 	       `(,raw-operator?
 		 ,@(loop for arg in (cdr expression)
-			 collect `(coerce-gensym-float-to-raw-double ,arg))))
+			 collect `(coerce-double-float-to-raw-double ,arg))))
 	      (t
 	       `(,raw-operator? ,@(cdr expression))))))
   #-chestnut
-  gensym-float-expression)
+  double-float-expression)
 
 
 
 
-;;; The macro `coerce-raw-double-to-gensym-float' takes a raw-double produced by
+;;; The macro `coerce-raw-double-to-double-float' takes a raw-double produced by
 ;;; the Chestnut optimized floating point operations, and boxes it up again
 ;;; inside of a Common Lisp double float, using the Chestnut supplied primitive.
 
-(defmacro coerce-raw-double-to-gensym-float (raw-double)
+(defmacro coerce-raw-double-to-double-float (raw-double)
   #+chestnut
   (if (eval-feature :chestnut-trans)
       `(trun:box%d ,raw-double)
@@ -1574,124 +1564,123 @@
 
 ;;; The floating point arithmetic suite is a set of macros which are defined to
 ;;; act upon and (with the exception of predicates and the rounding type
-;;; functions) return Gensym floating point numbers.  The actual type which
-;;; corresponds to gensym-float varies per machine and Lisp vendor.  These
-;;; functions include type declarations for the operators and results so that
-;;; compilers may optimize calls to these numeric operations into appropriate
-;;; floating point machine instructions.  The following macros are defined: 1+e,
-;;; 1-e, +e, -e, =e, /=e, <e, >e, <=e, >=e, mine, maxe, *e, /e, rounde, floore,
-;;; ceilinge, and truncatee.  Note that it is also useful to declare the types
-;;; of local variables to gensym-float.  Both Lucid and Ibuki [an obsolete
-;;; platform] use this information to limit the boxing of a raw floating point
-;;; number into a Lisp, consed float.
+;;; functions) return double floating point numbers.  These functions include
+;;; type declarations for the operators and results so that compilers may
+;;; optimize calls to these numeric operations into appropriate floating point
+;;; machine instructions.  The following macros are defined: 1+e, 1-e, +e, -e,
+;;; =e, /=e, <e, >e, <=e, >=e, mine, maxe, *e, /e, rounde, floore, ceilinge, and
+;;; truncatee.  Note that it is also useful to declare the types of local
+;;; variables to double-float.  Both Lucid and Ibuki [an obsolete platform] use
+;;; this information to limit the boxing of a raw floating point number into a
+;;; Lisp, consed float.
 
 ;; See the comment in the section about fixnum arithmetic above which explains
 ;; why we ARE wrapping numeric type definers around forms for the Lispms.
 
-(defmacro 1+e (gensym-float &environment env)
+(defmacro 1+e (double-float &environment env)
   `(potentially-rigorous-operation
-     ,(declare-argument-and-result-types (gensym-float-type) `(1+ ,gensym-float) env)))
+     ,(declare-argument-and-result-types 'double-float `(1+ ,double-float) env)))
 
 (defmacro 1+e-raw (raw-double &environment env)
   (declare-argument-and-result-types 'raw-double `(1+ ,raw-double) env))
 
-(defmacro 1-e (gensym-float &environment env)
+(defmacro 1-e (double-float &environment env)
   `(potentially-rigorous-operation
-     ,(declare-argument-and-result-types (gensym-float-type) `(1- ,gensym-float) env)))
+     ,(declare-argument-and-result-types 'double-float `(1- ,double-float) env)))
 
 (defmacro 1-e-raw (raw-double &environment env)
   (declare-argument-and-result-types 'raw-double `(1- ,raw-double) env))
 
-(defmacro +e (&rest gensym-floats &environment env)
+(defmacro +e (&rest double-floats &environment env)
   `(potentially-rigorous-operation
-    ,(if (null gensym-floats)
+    ,(if (null double-floats)
 	0.0
 	(declare-type-preserving-numeric-operation
-	  (gensym-float-type) '+ gensym-floats env))))
+	  'double-float '+ double-floats env))))
 
 (defmacro +e-raw (&rest raw-doubles &environment env)
   (declare-type-preserving-numeric-operation 'raw-double '+ raw-doubles env))
 
-(defmacro -e (gensym-float &rest gensym-floats &environment env)
+(defmacro -e (double-float &rest double-floats &environment env)
   `(potentially-rigorous-operation
     ,(declare-type-preserving-numeric-operation
-      (gensym-float-type) '- (cons gensym-float gensym-floats) env)))
+      'double-float '- (cons double-float double-floats) env)))
 
 (defmacro -e-raw (raw-double &rest raw-doubles &environment env)
   (declare-type-preserving-numeric-operation
     'raw-double '- (cons raw-double raw-doubles) env))
 
-(defmacro *e (&rest gensym-floats &environment env)
+(defmacro *e (&rest double-floats &environment env)
   `(potentially-rigorous-operation
-    ,(if (null gensym-floats)
+    ,(if (null double-floats)
 	1.0
 	(declare-type-preserving-numeric-operation
-	  (gensym-float-type) '* gensym-floats env))))
+	  'double-float '* double-floats env))))
 
 (defmacro *e-raw (&rest raw-doubles &environment env)
   (declare-type-preserving-numeric-operation 'raw-double '* raw-doubles env))
 
-(defmacro /e (&rest gensym-floats &environment env)
+(defmacro /e (&rest double-floats &environment env)
   `(potentially-rigorous-operation
-    ,(declare-type-preserving-numeric-operation (gensym-float-type) '/ gensym-floats env)))
+    ,(declare-type-preserving-numeric-operation 'double-float '/ double-floats env)))
 
 (defmacro /e-raw (&rest raw-doubles &environment env)
   (declare-type-preserving-numeric-operation 'raw-double '/ raw-doubles env))
 
-(defmacro =e (&rest gensym-floats &environment env)
-  (declare-comparitor '= (gensym-float-type) gensym-floats env))
+(defmacro =e (&rest double-floats &environment env)
+  (declare-comparitor '= 'double-float double-floats env))
 
 (defmacro =e-raw (&rest raw-doubles &environment env)
   (declare-comparitor '= 'raw-double raw-doubles env))
 
-(defmacro /=e (&rest gensym-floats &environment env)
-  (declare-comparitor '/= (gensym-float-type) gensym-floats env))
+(defmacro /=e (&rest double-floats &environment env)
+  (declare-comparitor '/= 'double-float double-floats env))
 
 (defmacro /=e-raw (&rest raw-doubles &environment env)
   (declare-comparitor '/= 'raw-double raw-doubles env))
 
-(defmacro <e (&rest gensym-floats &environment env)
-  (declare-comparitor '< (gensym-float-type) gensym-floats env))
+(defmacro <e (&rest double-floats &environment env)
+  (declare-comparitor '< 'double-float double-floats env))
 
 (defmacro <e-raw (&rest raw-doubles &environment env)
   (declare-comparitor '< 'raw-double raw-doubles env))
 
-(defmacro >e (&rest gensym-floats &environment env)
-  (declare-comparitor '> (gensym-float-type) gensym-floats env))
+(defmacro >e (&rest double-floats &environment env)
+  (declare-comparitor '> 'double-float double-floats env))
 
 (defmacro >e-raw (&rest raw-doubles &environment env)
   (declare-comparitor '> 'raw-double raw-doubles env))
 
-(defmacro <=e (&rest gensym-floats &environment env)
-  (declare-comparitor '<= (gensym-float-type) gensym-floats env))
+(defmacro <=e (&rest double-floats &environment env)
+  (declare-comparitor '<= 'double-float double-floats env))
 
 (defmacro <=e-raw (&rest raw-doubles &environment env)
   (declare-comparitor '<= 'raw-double raw-doubles env))
 
-(defmacro >=e (&rest gensym-floats &environment env)
-  (declare-comparitor '>= (gensym-float-type) gensym-floats env))
+(defmacro >=e (&rest double-floats &environment env)
+  (declare-comparitor '>= 'double-float double-floats env))
 
 (defmacro >=e-raw (&rest raw-doubles &environment env)
   (declare-comparitor '>= 'raw-double raw-doubles env))
 
-(defmacro mine (&rest gensym-floats)
+(defmacro mine (&rest double-floats)
   `(potentially-rigorous-operation
     ,(declare-type-preserving-numeric-operation
-       (gensym-float-type) 'min gensym-floats)))
+       'double-float 'min double-floats)))
 
 (defmacro mine-raw (&rest raw-doubles &environment env)
   (declare-type-preserving-numeric-operation
     'raw-double 'min raw-doubles env))
 
-(defmacro maxe (&rest gensym-floats &environment env)
+(defmacro maxe (&rest double-floats &environment env)
   `(potentially-rigorous-operation
     ,(cond
-      ((loop for argument in gensym-floats
+      ((loop for argument in double-floats
 	     always (simple-argument-p argument))
        (declare-type-preserving-numeric-operation
-	 (gensym-float-type) 'max gensym-floats env))
+	 'double-float 'max double-floats env))
       (t
-       (loop for argument in gensym-floats
+       (loop for argument in double-floats
 	     for bound-argument = (gensym)
 	     collect `(,bound-argument ,argument) into bindings
 	     collect bound-argument into new-arguments
@@ -1699,17 +1688,17 @@
 	       (return
 		 `(let ,bindings
 		    ,(declare-type-preserving-numeric-operation
-		       (gensym-float-type) 'max new-arguments env))))))))
+		       'double-float 'max new-arguments env))))))))
 
 (defmacro maxe-raw (&rest raw-doubles &environment env)
   (declare-type-preserving-numeric-operation
     'raw-double 'max raw-doubles env))
 
-(defmacro abse (gensym-float &environment env)
+(defmacro abse (double-float &environment env)
   `(potentially-rigorous-operation
      ,(declare-argument-and-result-types
-	(gensym-float-type)
-	`(abs ,gensym-float)
+	'double-float
+	`(abs ,double-float)
 	env)))
 
 (defmacro abse-raw (raw-double &environment env)
@@ -1718,26 +1707,26 @@
     `(abs ,raw-double)
     env))
 
-(defmacro ffloore (gensym-float &optional gensym-float-divisor &environment env)
+(defmacro ffloore (double-float &optional double-float-divisor &environment env)
   `(potentially-rigorous-operation
-     (the (values ,(gensym-float-type) ,(gensym-float-type))
+     (the (values ,'double-float ,'double-float)
 	  ,(declare-argument-types
-	     (gensym-float-type)
+	     'double-float
 	     `(potentially-rigorous-operation
-		,(if gensym-float-divisor
-		     `(ffloor ,gensym-float ,gensym-float-divisor)
-		     `(ffloor ,gensym-float)))
+		,(if double-float-divisor
+		     `(ffloor ,double-float ,double-float-divisor)
+		     `(ffloor ,double-float)))
 	     env))))
 
-(defmacro fceilinge (gensym-float &optional gensym-float-divisor &environment env)
+(defmacro fceilinge (double-float &optional double-float-divisor &environment env)
   `(potentially-rigorous-operation
-     (the (values ,(gensym-float-type) ,(gensym-float-type))
+     (the (values ,'double-float ,'double-float)
 	,(declare-argument-types
-	   (gensym-float-type)
+	   'double-float
 	   `(potentially-rigorous-operation
-	     ,(if gensym-float-divisor
-		 `(fceiling ,gensym-float ,gensym-float-divisor)
-		 `(fceiling ,gensym-float)))
+	     ,(if double-float-divisor
+		 `(fceiling ,double-float ,double-float-divisor)
+		 `(fceiling ,double-float)))
 	   env))))
 
 
@@ -1748,65 +1737,65 @@
 ;;; implementations there is a direct translation for this operator into the C
 ;;; floor function.
 
-(defmacro ffloore-first (gensym-float &optional divisor-gensym-float?)
+(defmacro ffloore-first (double-float &optional divisor-double-float?)
   `(potentially-rigorous-operation
      ,(declare-argument-and-result-types
-	(gensym-float-type)
-	(if divisor-gensym-float?
-	    `(ffloor ,gensym-float ,divisor-gensym-float?)
-	    `(ffloor ,gensym-float)))))
+	'double-float
+	(if divisor-double-float?
+	    `(ffloor ,double-float ,divisor-double-float?)
+	    `(ffloor ,double-float)))))
 
 
 
 
 ;;; The macro `floore-first' is like Common Lisp floor, but it accepts only
-;;; gensym-floats, returns only the first value of floor, and the result must be
+;;; double-floats, returns only the first value of floor, and the result must be
 ;;; able to lie within the range of fixnums.  The behavior is undefined if any
 ;;; of these constraints are not adhered to.
 
-(defmacro floore-first (gensym-float &optional divisor-gensym-float?)
+(defmacro floore-first (double-float &optional divisor-double-float?)
   `(potentially-rigorous-operation
      (the fixnum
 	  ,(declare-argument-types
-	     (gensym-float-type)
-	     (if divisor-gensym-float?
-		 `(floor ,gensym-float ,divisor-gensym-float?)
-		 `(floor ,gensym-float))))))
+	     'double-float
+	     (if divisor-double-float?
+		 `(floor ,double-float ,divisor-double-float?)
+		 `(floor ,double-float))))))
 
 
 
 
-;;; The macro `ceilinge-first' takes a gensym float and an optional gensym float
+;;; The macro `ceilinge-first' takes a double-float and an optional double-float
 ;;; divisor, divides the two, takes the ceiling of the result, and returns the
 ;;; fixnum result.  Note that if the result is not within fixnum bounds, then
 ;;; the result of this operation is undefined and it may signal an error.  The
 ;;; macro `fceilinge-first' is the optimized version of fceiling.
 
-(defmacro ceilinge-first (gensym-float &optional divisor-gensym-float?)
+(defmacro ceilinge-first (double-float &optional divisor-double-float?)
   `(potentially-rigorous-operation
      (the fixnum
 	  ,(declare-argument-types
-	     (gensym-float-type)
-	     (if divisor-gensym-float?
-		 `(ceiling ,gensym-float ,divisor-gensym-float?)
-		 `(ceiling ,gensym-float))))))
+	     'double-float
+	     (if divisor-double-float?
+		 `(ceiling ,double-float ,divisor-double-float?)
+		 `(ceiling ,double-float))))))
 
-(defmacro fceilinge-first (gensym-float &optional divisor-gensym-float?)
+(defmacro fceilinge-first (double-float &optional divisor-double-float?)
   `(potentially-rigorous-operation
      ,(declare-argument-and-result-types
-	(gensym-float-type)
-	(if divisor-gensym-float?
-	    `(fceiling ,gensym-float ,divisor-gensym-float?)
-	    `(fceiling ,gensym-float)))))
+	'double-float
+	(if divisor-double-float?
+	    `(fceiling ,double-float ,divisor-double-float?)
+	    `(fceiling ,double-float)))))
 
-(defmacro ftruncatee (gensym-float &optional gensym-float-divisor &environment env)
+(defmacro ftruncatee (double-float &optional double-float-divisor &environment env)
   `(potentially-rigorous-operation
-    (the (values ,(gensym-float-type) ,(gensym-float-type))
+    (the (values ,'double-float ,'double-float)
 	 ,(declare-argument-types
-	    (gensym-float-type)
-	    (if gensym-float-divisor
-		`(ftruncate ,gensym-float ,gensym-float-divisor)
-		`(ftruncate ,gensym-float))
+	    'double-float
+	    (if double-float-divisor
+		`(ftruncate ,double-float ,double-float-divisor)
+		`(ftruncate ,double-float))
 	    env))))
 
 
@@ -1820,23 +1809,23 @@
       (ffloore   float)))
 
 
-(defmacro frounde (gensym-float &optional gensym-float-divisor &environment env)
+(defmacro frounde (double-float &optional double-float-divisor &environment env)
   `(potentially-rigorous-operation
-    (the (values ,(gensym-float-type) ,(gensym-float-type))
+    (the (values ,'double-float ,'double-float)
 	 ,(declare-argument-types
-	    (gensym-float-type)
-	    (if gensym-float-divisor
-		`(fround ,gensym-float ,gensym-float-divisor)
-		`(fround ,gensym-float))
+	    'double-float
+	    (if double-float-divisor
+		`(fround ,double-float ,double-float-divisor)
+		`(fround ,double-float))
 	    env))))
 
-(defmacro loge (gensym-float &optional gensym-float-base &environment env)
+(defmacro loge (double-float &optional double-float-base &environment env)
   `(potentially-rigorous-operation 
      ,(declare-argument-and-result-types
-	(gensym-float-type)
-	(if gensym-float-base
-	    `(log ,gensym-float ,gensym-float-base)
-	    `(log ,gensym-float))
+	'double-float
+	(if double-float-base
+	    `(log ,double-float ,double-float-base)
+	    `(log ,double-float))
 	env)))
 
 (defmacro loge-raw (raw-double &optional raw-double-base &environment env)
@@ -1847,13 +1836,13 @@
 	`(log ,raw-double))
     env))
 
-(defmacro atane (gensym-float &optional gensym-float-2 &environment env)
+(defmacro atane (double-float &optional double-float-2 &environment env)
   `(potentially-rigorous-operation
      ,(declare-argument-and-result-types
-       (gensym-float-type)
-       (if gensym-float-2
-	   `(atan ,gensym-float ,gensym-float-2)
-	   `(atan ,gensym-float))
+       'double-float
+       (if double-float-2
+	   `(atan ,double-float ,double-float-2)
+	   `(atan ,double-float))
        env)))
 
 (defmacro atane-raw (raw-double &optional raw-double-2 &environment env)
@@ -1864,11 +1853,11 @@
 	`(atan ,raw-double))
     env))
 
-(defmacro cose (gensym-float &environment env)
+(defmacro cose (double-float &environment env)
   `(potentially-rigorous-operation
      ,(declare-argument-and-result-types
-	(gensym-float-type)
-	`(cos ,gensym-float)
+	'double-float
+	`(cos ,double-float)
 	env)))
 
 (defmacro cose-raw (raw-double &environment env)
@@ -1877,11 +1866,11 @@
     `(cos ,raw-double)
     env))
 
-(defmacro expe (gensym-float &environment env)
+(defmacro expe (double-float &environment env)
   `(potentially-rigorous-operation
      ,(declare-argument-and-result-types
-	(gensym-float-type)
-	`(exp ,gensym-float)
+	'double-float
+	`(exp ,double-float)
 	 env)))
 
 (defmacro expe-raw (raw-double &environment env)
@@ -1890,11 +1879,11 @@
     `(exp ,raw-double)
     env))
 
-(defmacro expte (gensym-float gensym-float-power &environment env)
+(defmacro expte (double-float double-float-power &environment env)
   `(potentially-rigorous-operation
      ,(declare-argument-and-result-types
-	(gensym-float-type)
-	`(expt ,gensym-float ,gensym-float-power)
+	'double-float
+	`(expt ,double-float ,double-float-power)
 	env)))
 
 (defmacro expte-raw (raw-double raw-double-power &environment env)
@@ -1903,10 +1892,10 @@
     `(expt ,raw-double ,raw-double-power)
     env))
 
-(defmacro minuspe (gensym-float &environment env)
+(defmacro minuspe (double-float &environment env)
   (declare-argument-and-result-types
-    (gensym-float-type)
-    `(minusp ,gensym-float)
+    'double-float
+    `(minusp ,double-float)
     env))
 
 (defmacro minuspe-raw (raw-double &environment env)
@@ -1915,10 +1904,10 @@
     `(minusp ,raw-double)
     env))
 
-(defmacro pluspe (gensym-float &environment env)
+(defmacro pluspe (double-float &environment env)
   (declare-argument-and-result-types
-    (gensym-float-type)
-    `(plusp ,gensym-float)
+    'double-float
+    `(plusp ,double-float)
     env))
 
 (defmacro pluspe-raw (raw-double &environment env)
@@ -1927,10 +1916,10 @@
     `(plusp ,raw-double)
     env))
 
-(defmacro sine (gensym-float &environment env)
+(defmacro sine (double-float &environment env)
   (declare-argument-and-result-types
-    (gensym-float-type)
-    `(sin ,gensym-float)
+    'double-float
+    `(sin ,double-float)
     env))
 
 (defmacro sine-raw (raw-double &environment env)
@@ -1940,11 +1929,11 @@
 	`(sin ,raw-double)
 	env)))
 
-(defmacro sqrte (gensym-float &environment env)
+(defmacro sqrte (double-float &environment env)
   `(potentially-rigorous-operation
     ,(declare-argument-and-result-types
-      (gensym-float-type)
-      `(sqrt ,gensym-float)
+      'double-float
+      `(sqrt ,double-float)
       env)))
 
 (defmacro sqrte-raw (raw-double &environment env)
@@ -1953,11 +1942,11 @@
     `(sqrt ,raw-double)
     env))
 
-(defmacro tane (gensym-float &environment env)
+(defmacro tane (double-float &environment env)
   `(potentially-rigorous-operation
      ,(declare-argument-and-result-types
-	(gensym-float-type)
-	`(tan ,gensym-float)
+	'double-float
+	`(tan ,double-float)
 	env)))
 
 (defmacro tane-raw (raw-double &environment env)
@@ -1971,10 +1960,10 @@
 
 
 
-;;; The macro `coerce-to-gensym-float' takes a non-complex number and converts
-;;; it into a gensym-float.
+;;; The macro `coerce-to-double-float' takes a non-complex number and converts
+;;; it into a double-float.
 
-(defmacro coerce-to-gensym-float (number)  
+(defmacro coerce-to-double-float (number)  
   `(potentially-rigorous-operation
      ,(cond ((constantp number)
 	     (float (eval number) 0.0))
@@ -1984,28 +1973,28 @@
 
 
 
-;;; The macro `coerce-fixnum-to-gensym-float' takes a fixnum and converts it
-;;; into a gensym-float.
+;;; The macro `coerce-fixnum-to-double-float' takes a fixnum and converts it
+;;; into a double-float.
 
-(defmacro coerce-fixnum-to-gensym-float (fixnum)
+(defmacro coerce-fixnum-to-double-float (fixnum)
   `(potentially-rigorous-operation
      ,(cond ((constantp fixnum)
 	     (float (eval fixnum) 0.0))
 	    (t
 	     `(float (the fixnum ,fixnum) 0.0)))))
 
-(defun coerce-to-gensym-float-function (x)
+(defun coerce-to-double-float-function (x)
 ;;  (declare (eliminate-for-gsi))
-  (coerce-to-gensym-float x))
+  (coerce-to-double-float x))
 
 
-;;; The macro `gensym-float-p' is a predicate which takes a thing and determines
-;;; whether it is a gensym-float.
+;;; The macro `double-float-p' is a predicate which takes a thing and determines
+;;; whether it is a double-float.
 
-(defmacro gensym-float-p (thing)
+(defmacro double-float-p (thing)
   (if (eval-feature :chestnut-trans)
       `(floatp ,thing)
-      `(typep ,thing (gensym-float-type))))
+      `(typep ,thing 'double-float)))
 
 
 
@@ -2017,7 +2006,7 @@
 ;;; since all of them are wrapped with eval-when (compile load eval).
 
 #-no-macros
-(pushnew :gensym-typed-arithmetic *features*)
+(pushnew :thinlisp-typed-arithmetic *features*)
 
 
 
@@ -2144,9 +2133,9 @@
 ;;; operations in the set B.  However, argument lists containing only calls to
 ;;; function A and other side-effect free functions can be optimized.  This
 ;;; special case is very important, since it can justify side-effect free
-;;; declarations for structure allocation functions, like gensym-cons, as long
+;;; declarations for structure allocation functions, like thinlisp-cons, as long
 ;;; as the memory metering functions are not declared side-effect free.  If
-;;; there are more calls that are performance critical to gensym-cons than there
+;;; there are more calls that are performance critical to thinlisp-cons than there
 ;;; are to the memory metering functions, then this trade-off is a win.
 
 (defmacro declare-side-effect-free-function (function-name)
@@ -2172,22 +2161,22 @@
 ;;; There are also versions of funcall which are optimized for funcalling
 ;;; symbols and compiled functions.
 
-;;; The macro `gensym-funcall' is like the Common Lisp version of funcall,
+;;; The macro `thinlisp-funcall' is like the Common Lisp version of funcall,
 ;;; except that it can only accept symbols and compiled function objects as the
 ;;; function argument.  In some systems (like ohh say Chestnut) it expands into
 ;;; C code which is much faster than the default Common Lisp implementation.
 ;;; Note that right now, the symbol funcall is itself shadowed and redefined as
-;;; a macro that calls gensym-funcall.
+;;; a macro that calls thinlisp-funcall.
 
 ;;; The comments above about faster funcalls no longer apply to the generic
 ;;; funcall operation.  We are putting in an optimization for funcall-simple-
 ;;; compiled-function, but the generic funcall still must go through Chestnut's
 ;;; implementation to handle things like optional and keyword arguments.  So,
-;;; the gensym-funcall macro will only expand into ab-lisp::funcall, though we will
+;;; the thinlisp-funcall macro will only expand into ab-lisp::funcall, though we will
 ;;; retain this macro in case we want to do something interesting with it in the
 ;;; future.  -jra 4/24/91
 
-(defmacro gensym-funcall (symbol-or-compiled-function &rest arguments)
+(defmacro thinlisp-funcall (symbol-or-compiled-function &rest arguments)
   `(funcall ,symbol-or-compiled-function ,@arguments))
 
 
@@ -2226,13 +2215,13 @@
 ;;; argument types accepted by a function, and a list of the value types
 ;;; returned by the function.  If the number of returned values is not known,
 ;;; then supply an asterisk for the return values list.  If the function has no
-;;; return value, then supply the GL-specific type VOID.
+;;; return value, then supply the TL-specific type VOID.
 
 ;;; It will register the function declaration so that it can be used by the Lisp
 ;;; compiler to produce more efficient function calls.  In development it also
 ;;; sets a property on the function name symbol reflecting the declaration.
 
-;;; In GLT, we pay lots of attention to the function type declarations, and this
+;;; In TLT, we pay lots of attention to the function type declarations, and this
 ;;; macro will now expand out directly to a call to declaim of an ftype.
 
 (defmacro declare-function-type
@@ -2243,7 +2232,7 @@
 		,(cond ((eq return-type-list-or-asterisk '*)
 			'*)
 		       ((memq return-type-list-or-asterisk
-			      '(void gli::void))
+			      '(void tli::void))
 			'void)
 		       ((and (consp return-type-list-or-asterisk)
 			     (null (cdr return-type-list-or-asterisk)))
@@ -3192,7 +3181,7 @@
 (progn
 (defvar output-recording-id-table (make-hash-table) "Table of object->id")
 (defvar output-recording-object-table (make-hash-table) "Table of id->object"))
-;; Break out to eliminate a GLT cascade.
+;; Break out to eliminate a TLT cascade.
 
 #+development
 (progn
@@ -3277,7 +3266,7 @@
 
 (defmacro %pointer (lisp-object)
   (cond ((eval-feature :translator)
-	 `(gli::pointer-as-fixnum ,lisp-object))
+	 `(tli::pointer-as-fixnum ,lisp-object))
 	((eval-feature :lucid)
 	 (list (intern "%POINTER" "SYS") lisp-object))
 	(t

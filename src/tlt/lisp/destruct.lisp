@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module DESTRUCT
 
@@ -30,7 +30,7 @@
 
 
 
-;;; The macro `gl:destructuring-bind-strict' takes a (possibly dotted) cons tree
+;;; The macro `tl:destructuring-bind-strict' takes a (possibly dotted) cons tree
 ;;; of symbols, a value argument, and a body, and performs an efficient
 ;;; destructuring bind of the given symbols to the values in the corresponding
 ;;; positions of the list returned by the value argument.  If any of the symbols
@@ -43,17 +43,17 @@
 ;;; &body, and &whole.  Note that it supports &allow-other-keys, but only if
 ;;; that lambda-list keyword follows &keys.  The keyword argument
 ;;; :allow-other-keys is not supported.  This also supports the &environment
-;;; lambda-list keyword, which it expands into a reference to gli::env.  The
-;;; &environment argument is only intended for use by gl:parse-macro and other
+;;; lambda-list keyword, which it expands into a reference to tli::env.  The
+;;; &environment argument is only intended for use by tl:parse-macro and other
 ;;; users may find that the details of implementation have changed at some point
 ;;; in the future.
 
 ;;; See CLtL 2, Sec. 8.3, p. 204 for details.  Note that this version of
 ;;; destructuring-bind-strict is strict about the given value matching the given
 ;;; pattern.  This is in conformance with the standard, but is a change from
-;;; Gensym's previous destructuring bind, which supplied NILs for missing parts
-;;; of the pattern.  In gl/lisp/glbasics.lisp there is a forgiving version of
-;;; gl:destructuring-bind that is exported for the interim.  When we can make
+;;; ThinLisp's previous destructuring bind, which supplied NILs for missing parts
+;;; of the pattern.  In tl/lisp/tl-extension.lisp there is a forgiving version of
+;;; tl:destructuring-bind that is exported for the interim.  When we can make
 ;;; significant edits to the lisp directory, we will change the name of the
 ;;; non-conforming destructuring-bind to destructuring-bind-forgiving and
 ;;; re-adopt the Common Lisp version on the standard name.  -jra 1/10/97
@@ -62,28 +62,28 @@
 
 (defvar destruct-binding-list nil)
 
-(defconstant gl:lambda-list-keywords
+(defconstant tl:lambda-list-keywords
   '(&optional &rest &key &aux &body &whole &allow-other-keys &environment))
 
 (defmacro let*-destruct (bindings &body body)
-  `(,(if (eval-feature :translator) 'gl:let* 'let*) ,bindings ,@body))
+  `(,(if (eval-feature :translator) 'tl:let* 'let*) ,bindings ,@body))
 
 (defmacro when-destruct (test &body body)
-  `(,(if (eval-feature :translator) 'gl:when 'when) ,test ,@body))
+  `(,(if (eval-feature :translator) 'tl:when 'when) ,test ,@body))
 
 (defmacro setq-destruct (&rest vars-and-values)
-  `(,(if (eval-feature :translator) 'gl:setq 'setq) ,@vars-and-values))
+  `(,(if (eval-feature :translator) 'tl:setq 'setq) ,@vars-and-values))
 
 (defmacro progn-destruct (&body body)
-  `(,(if (eval-feature :translator) 'gl:progn 'progn) ,@body))
+  `(,(if (eval-feature :translator) 'tl:progn 'progn) ,@body))
 
 (defmacro cons-car-destruct (cons)
-  `(,(if (eval-feature :translator) 'gl:car-of-cons 'cons-car) ,cons))
+  `(,(if (eval-feature :translator) 'tl:car-of-cons 'cons-car) ,cons))
 
 (defmacro cons-cdr-destruct (cons)
-  `(,(if (eval-feature :translator) 'gl:cdr-of-cons 'cons-cdr) ,cons))
+  `(,(if (eval-feature :translator) 'tl:cdr-of-cons 'cons-cdr) ,cons))
 
-(defmacro gl:destructuring-bind-strict (pattern value &body decls-and-body)
+(defmacro tl:destructuring-bind-strict (pattern value &body decls-and-body)
   (let* ((destruct-action-queue nil)
 	 (destruct-binding-list nil)
 	 (cons-error-message
@@ -132,7 +132,7 @@
 
 (defmacro not-null-destructuring-error (shoulda-been-nil)
   `(,(if (eval-feature :translator)
-	 'gl::not-null-destructuring-error-1
+	 'tl::not-null-destructuring-error-1
 	 'not-null-destructuring-error-1)
      ,shoulda-been-nil))
 
@@ -190,7 +190,7 @@
 	 ((&rest &body)
 	  (add-destruct-binding (cons-second pattern) value-var)
 	  (when (cddr pattern)
-	    (unless (memq (third pattern) gl:lambda-list-keywords)
+	    (unless (memq (third pattern) tl:lambda-list-keywords)
 	      (error "&rest may only be followed by other lambda-list keywords, not ~s"
 		     (cddr pattern)))
 	    (collect-destructure-bindings (cddr pattern) value-var t)))
@@ -239,13 +239,13 @@
 			   (intern (symbol-name (cons-car key)) "KEYWORD"))
 			  (t (cons-car (cons-car key)))))))
 	(if (eval-feature :translator)
-	    `(gl:do ((,key-to-check ,value-var (gl:cddr ,key-to-check)))
-		    ((gl:null ,key-to-check)
+	    `(tl:do ((,key-to-check ,value-var (tl:cddr ,key-to-check)))
+		    ((tl:null ,key-to-check)
 		     nil)
-	       (gl:unless (gl:memq (gl:car-of-cons ,key-to-check) ',valid-keys)
-		 (gl:error
+	       (tl:unless (tl:memq (tl:car-of-cons ,key-to-check) ',valid-keys)
+		 (tl:error
 		   "The key ~A does not match any of the keyword arguments."
-		   (gl:car-of-cons ,key-to-check))))
+		   (tl:car-of-cons ,key-to-check))))
 	    `(loop for ,key-to-check on ,value-var by #'cddr do
 	       (unless (memq (cons-car ,key-to-check) ',valid-keys)
 		 (error "The key ~A does not match any of the keyword arguments."
@@ -259,10 +259,10 @@
 	   (add-destruct-binding
 	     key
 	     (if (eval-feature :translator)
-		 `(gl:do ((,search-var ,value-var (gl:cddr ,search-var)))
-			 ((gl:eq (gl:car-of-cons ,search-var)
+		 `(tl:do ((,search-var ,value-var (tl:cddr ,search-var)))
+			 ((tl:eq (tl:car-of-cons ,search-var)
 				 ,(intern (symbol-name key) "KEYWORD"))
-			  (gl:car-of-cons (gl:cdr-of-cons ,search-var))))
+			  (tl:car-of-cons (tl:cdr-of-cons ,search-var))))
 		 `(loop for ,search-var on ,value-var by #'cddr do
 		    (when (eq (cons-car ,search-var)
 			      ,(intern (symbol-name key) "KEYWORD"))
@@ -284,15 +284,15 @@
 	     (add-destruct-binding
 	       variable
 	       (if (eval-feature :translator)
-		   `(gl:do ((,search-var ,value-var (gl:cddr ,search-var)))
-			   ((gl:or (gl:null ,search-var)
-				   (gl:eq (gl:car-of-cons ,search-var)
+		   `(tl:do ((,search-var ,value-var (tl:cddr ,search-var)))
+			   ((tl:or (tl:null ,search-var)
+				   (tl:eq (tl:car-of-cons ,search-var)
 					  ',keyword))
-			    (gl:if ,search-var
-				   (gl:progn
+			    (tl:if ,search-var
+				   (tl:progn
 				    ,@(when supplied-p-var?
-					`((gl:setq ,supplied-p-var? t)))
-				    (gl:car-of-cons (gl:cdr-of-cons ,search-var)))
+					`((tl:setq ,supplied-p-var? t)))
+				    (tl:car-of-cons (tl:cdr-of-cons ,search-var)))
 				   ,init)))
 		   `(loop for ,search-var on ,value-var by #'cddr do
 		      (when (eq (cons-car ,search-var) ',keyword)
@@ -317,17 +317,17 @@
     (add-destruct-binding
       var
       (if (eval-feature :translator)
-	  `(gl:if ,value-var (gl:car-of-cons ,value-var) ,init)
+	  `(tl:if ,value-var (tl:car-of-cons ,value-var) ,init)
 	  `(if ,value-var (cons-car ,value-var) ,init)))
     (when init-p-var?
       (add-destruct-binding
 	init-p-var?
 	(if (eval-feature :translator)
-	    `(gl:not (gl:null ,value-var))
+	    `(tl:not (tl:null ,value-var))
 	    `(not (null ,value-var)))))
     (add-destruct-action
       (if (eval-feature :translator)
-	  `(gl:setq ,value-var
-		    (gl:if ,value-var (gl:cdr-of-cons ,value-var) nil))
+	  `(tl:setq ,value-var
+		    (tl:if ,value-var (tl:cdr-of-cons ,value-var) nil))
 	  `(setq ,value-var (if ,value-var (cons-cdr ,value-var) nil)))))
   (clear-destruct-actions))

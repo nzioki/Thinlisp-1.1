@@ -1,4 +1,4 @@
-(in-package "GL")
+(in-package "TL")
 
 ;;;; Module FORWARD
 
@@ -142,7 +142,7 @@
       declared-module?)
   (when declared-module?
 
-    ;; We don't have the following now in GLT.  -jra 6/27/96
+    ;; We don't have the following now in TLT.  -jra 6/27/96
     ;(check-for-an-actually-existing-module declared-module?)
 
     ;; Check that, if the declaration mentions a module, previous declarations

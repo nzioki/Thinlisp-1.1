@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module DEFVAR
 
@@ -30,32 +30,32 @@
 
 
 
-;;; This module implements the macros `gl:defvar', `gl:defparameter', and
-;;; `gl:defconstant'.  Defvar and defparameter define global variables that are
+;;; This module implements the macros `tl:defvar', `tl:defparameter', and
+;;; `tl:defconstant'.  Defvar and defparameter define global variables that are
 ;;; translated into C variables.  Defconstant defines pointers to variable
 ;;; values that are always inlined into the referencing locations.
 
-(defmacro gl:defvar (name &optional (initial-value no-initial-value)
+(defmacro tl:defvar (name &optional (initial-value no-initial-value)
 			  (documentation nil))
   (declare (ignore documentation))
-  `(gl:progn
-     (gl:declaim (special ,name))
+  `(tl:progn
+     (tl:declaim (special ,name))
      (def-named-variable ,name :variable ,initial-value)))
 			  
-(defmacro gl:defparameter (name initial-value)
-  `(gl:progn
-     (gl:declaim (special ,name))
+(defmacro tl:defparameter (name initial-value)
+  `(tl:progn
+     (tl:declaim (special ,name))
      (def-named-variable ,name :parameter ,initial-value)))
 
-(defmacro gl:defconstant (name initial-value)
-  `(gl:progn
-     (gl:declaim (constant ,name))
+(defmacro tl:defconstant (name initial-value)
+  `(tl:progn
+     (tl:declaim (constant ,name))
      (def-named-variable ,name :constant ,initial-value)))
 
 
 
 
-;;; The macro `def-translatable-lisp-var' is used to define a variable for GL on
+;;; The macro `def-translatable-lisp-var' is used to define a variable for TL on
 ;;; a symbol that is an underlying Lisp implementation variable.  An example is
 ;;; *features*.  We must use the Lisp package version so that the reader can
 ;;; interpret #+ reader macros appropriately, but we want to distinguish a use
@@ -64,14 +64,14 @@
 ;;; a defvar, as far as the translator is concerned, but while still using the
 ;;; previously defined defvar while in development.
 
-(defmacro gl:def-translatable-lisp-var
+(defmacro tl:def-translatable-lisp-var
     (name &optional (initial-value no-initial-value))
-  `(gl:progn
-     (gl:declaim (special ,name))
+  `(tl:progn
+     (tl:declaim (special ,name))
      (def-named-variable ,name :underlying-lisp-variable ,initial-value)))
 
 (defmacro def-translatable-lisp-constant
     (name initial-value)
-  `(gl:progn
-     (gl:declaim (constant ,name))
+  `(tl:progn
+     (tl:declaim (constant ,name))
      (def-named-variable ,name :underlying-lisp-constant ,initial-value)))

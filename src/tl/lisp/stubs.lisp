@@ -1,4 +1,4 @@
-(in-package "GL")
+(in-package "TL")
 
 ;;;; Module STUBS
 
@@ -35,15 +35,15 @@
 
 (defun eq (x y)
   (declare (return-type t))
-  (gli::eq-trans x y))
+  (tli::eq-trans x y))
 
 (defun car (x)
   (declare (return-type t))
-  (gli::car-trans x))
+  (tli::car-trans x))
 
 (defun cdr (x)
   (declare (return-type t))
-  (gli::cdr-trans x))
+  (tli::cdr-trans x))
 
 
 
@@ -56,10 +56,10 @@
 
 
 ;;; This module contains macros that implement stand-in operations for functions
-;;; and macros that do not have translatable implementations in GL.  These stubs
+;;; and macros that do not have translatable implementations in TL.  These stubs
 ;;; should expand into the Lisp versions of the same functions.  These
 ;;; operations are provided for use in macros, defun-for-macros, and while
-;;; debugging the interpreter.  During development of GL, some stub operations
+;;; debugging the interpreter.  During development of TL, some stub operations
 ;;; will also be included for operations that we intend to implement as
 ;;; translatable operations, but have not gotten to yet.
 
@@ -75,7 +75,7 @@
 
 ;;; The following operations are macros that will stand in for operations that
 ;;; we cannot yet translate, but intend to.  This will allow development of the
-;;; GL library while the base is still under construction.
+;;; TL library while the base is still under construction.
 
 (defmacro file-write-date (&rest args)
   `(lisp:file-write-date ,@args))
@@ -113,9 +113,9 @@
 (defmacro pathnamep (object)
   `(lisp:pathnamep ,object))
 
-(deftype pathname () 'gli::pathname)
+(deftype pathname () 'tli::pathname)
 
-(deftype bignum () 'gli::bignum)
+(deftype bignum () 'tli::bignum)
 
 (defmacro rename-file (&rest args)
   `(lisp:rename-file ,@args))

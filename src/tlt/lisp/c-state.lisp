@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module C-STATE
 
@@ -80,7 +80,7 @@
 (defun print-c-expr (c-expr stream level)
   (declare (ignore level))
   (with-printing-wrapper (c-expr stream)
-    (prin1 (gl-type-of c-expr) stream)))
+    (prin1 (tl-type-of c-expr) stream)))
 
 
 

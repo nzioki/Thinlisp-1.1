@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module DECLS
 
@@ -30,8 +30,8 @@
 
 
 
-;;; This module contains definitions for all GL supported declarations (except
-;;; variable-declaration, defined in ENV).  The gl:declaration is embedded in
+;;; This module contains definitions for all TL supported declarations (except
+;;; variable-declaration, defined in ENV).  The tl:declaration is embedded in
 ;;; the environment implementation.  All other declarations are defined here.
 ;;; The declarations are taken from CLtL 2, Sec. 9.2, pp. 223-236.
 
@@ -42,13 +42,13 @@
 ;;; bindings and references in scope to be to a special variable, not a local
 ;;; lexical one.  CLtL 2, p. 223.
 
-(gl:declaim (variable-declaration special))
+(tl:declaim (variable-declaration special))
 
 (define-declaration special (decl-spec env)
   (values
     :variable
     (loop for var in (cons-cdr decl-spec)
-	  unless (eq (gl:variable-information var env) :special)
+	  unless (eq (tl:variable-information var env) :special)
 	    collect (list var 'special t))))
 
 
@@ -58,7 +58,7 @@
 ;;; forms) and declares that references to this name are to a constant, not a
 ;;; local lexical variable.
 
-(gl:declaim (variable-declaration constant))
+(tl:declaim (variable-declaration constant))
 
 (define-declaration constant (decl-spec env)
   (declare (ignore env))
@@ -101,19 +101,19 @@
 ;;; 4-1, p. 50.  This set of declarations is called for in the middle of p. 227.
 
 (defmacro define-type-declarations (&rest types)
-  (let ((gl-types
+  (let ((tl-types
 	  (loop for type in types
-		for gl-type = (intern (symbol-name type) *gl-package*)
-		unless (eq type gl-type)
-		  collect (cons gl-type type))))
+		for tl-type = (intern (symbol-name type) *tl-package*)
+		unless (eq type tl-type)
+		  collect (cons tl-type type))))
     `(progn
-       (gl:declaim
+       (tl:declaim
 	 (variable-declaration
-	   ,@(loop for (gl-type) in gl-types collect gl-type)
+	   ,@(loop for (tl-type) in tl-types collect tl-type)
 	   ,@types))
-       ,@(loop for (gl-type . type) in gl-types
+       ,@(loop for (tl-type . type) in tl-types
 	       collect
-	       `(define-declaration ,gl-type (decl-spec env)
+	       `(define-declaration ,tl-type (decl-spec env)
 		  (process-type-declaration
 		    (cons 'type (cons ',type (cons-cdr decl-spec))) env)))
        ,@(loop for type in types
@@ -134,16 +134,16 @@
 
 
 ;;; The type `string-stream' must be handled specially, since I am not using the
-;;; underlying Lisp's implementation of this type in development-time GL
+;;; underlying Lisp's implementation of this type in development-time TL
 ;;; programs.
 
-(gl:declaim (variable-declaration gl:string-stream gl-string-stream))
+(tl:declaim (variable-declaration tl:string-stream tl-string-stream))
 
-(define-declaration gl:string-stream (decl-spec env)
+(define-declaration tl:string-stream (decl-spec env)
   (process-type-declaration
-   (cons 'type (cons 'gl-string-stream (cons-cdr decl-spec))) env))
+   (cons 'type (cons 'tl-string-stream (cons-cdr decl-spec))) env))
 
-(define-declaration gl-string-stream (decl-spec env)
+(define-declaration tl-string-stream (decl-spec env)
   (process-type-declaration (cons 'type decl-spec) env))
 
 
@@ -156,7 +156,7 @@
 ;;; Note that CLtL 2 does not specify a means of declaring the argument types
 ;;; of a function without describing the value types.  For example, the type
 ;;; (function (fixnum) t) declares that the function receives one fixnum
-;;; argument and returns one value of arbitrary type.  GL extends the function
+;;; argument and returns one value of arbitrary type.  TL extends the function
 ;;; type to include an asterisk in the values location when no declaration is
 ;;; being made about the number or type of values returned from a funtion.  So
 ;;; the type for a function taking a fixnum and returns an arbitrary number of
@@ -175,7 +175,7 @@
 
 ;;; The declarations `inline' and `notinline' ask that the implementation prefer
 ;;; to inline calls or be prevented from inlining calls to the named functions.
-;;; CLtL 2, pp. 229-230.  The implementation of this declaration is in gl:defun.
+;;; CLtL 2, pp. 229-230.  The implementation of this declaration is in tl:defun.
 ;;; If a function is inlineable, then we will define a compiler macro for that
 ;;; function which will inline calls to it.
 
@@ -211,13 +211,13 @@
 
 ;;; The declaration `optimize' informs the Lisp system about how to weigh
 ;;; different factors when determining how to compile a given bit of code.  CLtL
-;;; 2, p. 231.  Note that the GL translator currently ignores these settings,
+;;; 2, p. 231.  Note that the TL translator currently ignores these settings,
 ;;; though I've given some thought to safety three turning on type checking
 ;;; where I can't prove the correctness of type declarations and requirements.
 ;;; -jra 4/6/95
 
 (define-declaration optimize (decl-spec env)
-  (let ((old-optimize (gl:declaration-information 'optimize env)))
+  (let ((old-optimize (tl:declaration-information 'optimize env)))
     (values
       :declare
       (list
@@ -249,7 +249,7 @@
 ;;; The following proclaim establishes the default optimize characteristics in
 ;;; the global environment.
 
-(gl:proclaim '(optimize))
+(tl:proclaim '(optimize))
 
 
 
@@ -257,16 +257,16 @@
 ;;; The declaration `dynamic-extent' is used to declare that variables or
 ;;; functions refer to data objects that will not returned from the scope of the
 ;;; binding of the variable that is declared.  Variables are declared as their
-;;; symbol names.  Functions are declared as (function <name>).  There is a GL
+;;; symbol names.  Functions are declared as (function <name>).  There is a TL
 ;;; specific restriction that variables and functions may not be mixed in the
 ;;; same decl-spec, you must have two seperate uses of dynamic-extent to declare
 ;;; both variables and functions as dynamic-extent.  Note that this is not the
-;;; same as WITH-TEMPORARY-AREA, and in fact GL currently ignores this
+;;; same as WITH-TEMPORARY-AREA, and in fact TL currently ignores this
 ;;; declaration.  See me for a long and boring story about how Gensym's proposal
 ;;; for temporary areas in Common Lisp got turned into this declaration.  -jra
 ;;; 4/7/95
 
-(gl:declaim (variable-declaration dynamic-extent))
+(tl:declaim (variable-declaration dynamic-extent))
 
 (define-declaration dynamic-extent (decl-spec env)
   (declare (ignore env))
@@ -289,7 +289,7 @@
 
 
 
-;;; The following declarations are specific to GL.
+;;; The following declarations are specific to TL.
 
 ;;; The `require-local-exit' declaration is used to declare that the surrounded
 ;;; body of code should not perform any non-local exits through the scope of
@@ -312,9 +312,9 @@
   (values
     :declare
     (cons 'exit-scope
-	  (cons scope-element (gl:declaration-information 'exit-scope env)))))
+	  (cons scope-element (tl:declaration-information 'exit-scope env)))))
 
-(define-declaration gl:require-local-exit (decl-spec env)
+(define-declaration tl:require-local-exit (decl-spec env)
   (add-to-exit-scope
     (list 'require-local-exit (or (car (cons-cdr decl-spec)) t))
     env))
@@ -343,7 +343,7 @@
   (volatile-return-from nil))
 
 (defun block-scope-struct-for-name (block-name env)
-  (let ((exit-scope (gl:declaration-information 'exit-scope env)))
+  (let ((exit-scope (tl:declaration-information 'exit-scope env)))
     (loop for scope-entry in exit-scope
 	  for scope-type = (cons-car scope-entry) do
       (when (eq scope-type 'require-local-exit)
@@ -402,7 +402,7 @@
 ;;; special, but it is a constraint violation if the named variables are not in
 ;;; fact special.
 
-(gl:declaim (variable-declaration global-variable-binding))
+(tl:declaim (variable-declaration global-variable-binding))
 
 (define-declaration global-variable-binding (decl-spec env)
   (add-to-exit-scope decl-spec env))
@@ -527,17 +527,17 @@
 
 
 
-;;; The `gl:allow-unwind-protect' declaration is used to declare that within a
+;;; The `tl:allow-unwind-protect' declaration is used to declare that within a
 ;;; scope calls to unwind-protect or catch will not cause warnings.  Though it
 ;;; originally had a different purpose, this declaration is required so that
 ;;; programmers are required to acknowledge that these very slow operations may
 ;;; be included in their code.  The format is (ALLOW-UNWIND-PROTECT).
 
-(define-declaration gl:allow-unwind-protect (decl-spec env)
+(define-declaration tl:allow-unwind-protect (decl-spec env)
   (declare (ignore decl-spec env))
   (values
     :declare 
-    (list 'gl:allow-unwind-protect t)))
+    (list 'tl:allow-unwind-protect t)))
 
 
 
@@ -548,7 +548,7 @@
 ;;; storage class should be used for any declared or modified variables.
 
 (defun env-requires-volatile-p (env)
-  (gl:declaration-information 'gl:allow-unwind-protect env))
+  (tl:declaration-information 'tl:allow-unwind-protect env))
 
 (defun storage-classes-for-env (env)
   (if (env-requires-volatile-p env)
@@ -559,8 +559,8 @@
 
 
 ;;; The `special-form' declaration is used to register the fact that a symbol
-;;; names a GL special-form.  The format is (SPECIAL-FORM <name> ...).  This
-;;; affects both the type of this name in the gl:function-information space and
+;;; names a TL special-form.  The format is (SPECIAL-FORM <name> ...).  This
+;;; affects both the type of this name in the tl:function-information space and
 ;;; affects the special-form key in the declarations for this name.
 
 (define-declaration special-form (decl-spec env)
@@ -607,26 +607,26 @@
 
 
 
-;;; The `gl:macros-only' declaration is a GL specific extension to CL.  It says
+;;; The `tl:macros-only' declaration is a TL specific extension to CL.  It says
 ;;; that the given function names are functions for available only for the macro
 ;;; expansion pass of a compilation.  The format of this declaration is
 ;;; (MACROS-ONLY <func-name>...) or (MACROS-ONLY).  The second form should only
 ;;; be used at top level of a given function.  The first form should be used at
 ;;; top level.
 
-(define-declaration gl:macros-only (decl-spec env)
+(define-declaration tl:macros-only (decl-spec env)
   (declare (ignore env))
   (values
     :function
     (if (cons-cdr decl-spec)
 	(loop for func in (cons-cdr decl-spec)
-	      collect (list func 'gl:macros-only t))
-	(list (list t 'gl:macros-only t)))))
+	      collect (list func 'tl:macros-only t))
+	(list (list t 'tl:macros-only t)))))
 
 
 
 
-;;; The declaration `gl:return-type' is a GL specific extension to CL.  When
+;;; The declaration `tl:return-type' is a TL specific extension to CL.  When
 ;;; declared at the top level of a function, it is equivalent to an ftype
 ;;; declaration for the current function at top level of the file using the
 ;;; given type as a return type, and whatever types are declared for the
@@ -635,11 +635,11 @@
 ;;; declaration provides no new functionality beyond ftype, but it may be more
 ;;; convenient to use.
 
-(define-declaration gl:return-type (decl-spec env)
+(define-declaration tl:return-type (decl-spec env)
   (declare (ignore env))
   (values
     :declare
-    (cons 'gl:return-type (expand-type (cons-second decl-spec)))))
+    (cons 'tl:return-type (expand-type (cons-second decl-spec)))))
 
 
 
@@ -686,7 +686,7 @@
 
 (define-declaration computed-ftype (decl-spec env)
   (declare (ignore env))
-  (gl:destructuring-bind-strict (nil type . names) decl-spec
+  (tl:destructuring-bind-strict (nil type . names) decl-spec
     (setq type (expand-type type))
     (values
       :function
@@ -704,7 +704,7 @@
 
 (define-declaration optional-arg-default-values (decl-spec env)
   (declare (ignore env))
-  (gl:destructuring-bind-strict (nil init-list . names) decl-spec
+  (tl:destructuring-bind-strict (nil init-list . names) decl-spec
     (values
       :function
       (loop for name in names
@@ -719,7 +719,7 @@
 
 (define-declaration foreign-c-identifier (decl-spec env)
   (declare (ignore env))
-  (gl:destructuring-bind-strict (nil symbol string) decl-spec
+  (tl:destructuring-bind-strict (nil symbol string) decl-spec
     (values
       :function
       (list (list symbol 'foreign-c-identifier string)))))
@@ -735,7 +735,7 @@
 
 (define-declaration function-c-identifier (decl-spec env)
   (declare (ignore env))
-  (gl:destructuring-bind-strict (nil symbol string) decl-spec
+  (tl:destructuring-bind-strict (nil symbol string) decl-spec
     (values
       :function
       (list (list symbol 'function-c-identifier string)))))
@@ -749,11 +749,11 @@
 ;;; format of this declaration is (variable-c-identifier <lisp-symbol>
 ;;; <c-identifier-string>).
 
-(gl:declaim (variable-declaration variable-c-identifier))
+(tl:declaim (variable-declaration variable-c-identifier))
 
 (define-declaration variable-c-identifier (decl-spec env)
   (declare (ignore env))
-  (gl:destructuring-bind-strict (nil symbol string) decl-spec
+  (tl:destructuring-bind-strict (nil symbol string) decl-spec
     (values
       :variable
       (list (list symbol 'variable-c-identifier string)))))
@@ -761,7 +761,7 @@
 
 
 
-;;; The declaration `gl:functional' is used on functions to declare that their
+;;; The declaration `tl:functional' is used on functions to declare that their
 ;;; value is completely determined by their arguments (i.e. they refer to no
 ;;; globals) and that they perform no side-effects.  This is a stronger
 ;;; declaration than side-effect free, and so this declaration has the
@@ -770,33 +770,33 @@
 ;;; arguments.  The functions + and SVREF are prototypical examples of
 ;;; functional operations.
 
-(define-declaration gl:functional (decl-spec env)
+(define-declaration tl:functional (decl-spec env)
   (declare (ignore env))
   (values
     :function
     (loop for function in (cons-cdr decl-spec)
-	  nconc (list (list function 'gl:functional t)
-		      (list function 'gl:side-effect-free t)))))
+	  nconc (list (list function 'tl:functional t)
+		      (list function 'tl:side-effect-free t)))))
 
 
 
 
-;;; The declaration `gl:side-effect-free' is used to declare that a function
+;;; The declaration `tl:side-effect-free' is used to declare that a function
 ;;; performs no side-effects.  Calls to side-effect free functions may be
 ;;; translated in-line in C without harming the left-to-right evaluation
-;;; semantics called for by Common Lisp (and GL).
+;;; semantics called for by Common Lisp (and TL).
 
-(define-declaration gl:side-effect-free (decl-spec env)
+(define-declaration tl:side-effect-free (decl-spec env)
   (declare (ignore env))
   (values
     :function
     (loop for function in (cons-cdr decl-spec)
-	  collect (list function 'gl:side-effect-free t))))
+	  collect (list function 'tl:side-effect-free t))))
 
 
 
 
-;;; The declaration `c-translator' is a GL internal function declaration to
+;;; The declaration `c-translator' is a TL internal function declaration to
 ;;; associate a set of functions for translating function forms with a function.
 ;;; This declaration is only issued by the macroexpansion of the form
 ;;; def-c-translation.  The format of the declaration is (c-translator
@@ -812,14 +812,14 @@
 
 
 
-;;; The declaration `gl:fat-and-slow' is required around code scopes containing
+;;; The declaration `tl:fat-and-slow' is required around code scopes containing
 ;;; generic arithmetic.  This declaration is intentionally pejorative to
 ;;; encourage programmers to fully type declare their arithmetic and achieve
 ;;; inline expansions.  The format of the declaration is (fat-and-slow).
 
-(define-declaration gl:fat-and-slow (decl-spec env)
+(define-declaration tl:fat-and-slow (decl-spec env)
   (declare (ignore decl-spec env))
-  (values :declare (list 'gl:fat-and-slow t)))
+  (values :declare (list 'tl:fat-and-slow t)))
 
 
 
@@ -833,14 +833,14 @@
 ;;; evaluated unless a warning is actually given.
 
 (defun fat-and-slow-warning (env operation form)
-  (unless (gl:declaration-information 'gl:fat-and-slow env)
+  (unless (tl:declaration-information 'tl:fat-and-slow env)
     (translation-warning
       "~s called without type declarations or fat-and-slow declaration.
    The source was:  ~s~%"
       operation form)))
 
 (defun fat-and-slow-warning-with-description (env string form)
-  (unless (gl:declaration-information 'gl:fat-and-slow env)
+  (unless (tl:declaration-information 'tl:fat-and-slow env)
     (translation-warning
       "~a
   The source was :  ~s~%" 
@@ -849,28 +849,31 @@
 
 
 
-;;; The declaration `gl:consing-area' is used to declare the expected consing
+;;; The declaration `tl:consing-area' is used to declare the expected consing
 ;;; area within a scope.  Note that this declaration does not change the consing
 ;;; area, it only makes it apparent within a lexical scope what the expected
 ;;; dynamic consing scope will be.  Either this declaration or an actaul
 ;;; with-permanent-area or with-temporary-area area required around all
 ;;; translated consing operations.  The format of this declaration is
-;;; (gl:consing-area {gl:permanent | gl:temporary).  Forms compiled at top level
+;;; (tl:consing-area {tl:permanent | tl:temporary).  Forms compiled at top level
 ;;; by default are in the permanent consing area.  The translation of DEFUN sets
 ;;; the consing area to NIL so that forms within DEFUN must perform their own
 ;;; declaration.
 
-(define-declaration gl:consing-area (decl-spec env)
+(define-declaration tl:consing-area (decl-spec env)
   (declare (ignore env))
-  (gl:destructuring-bind-strict (nil type)
+  (tl:destructuring-bind-strict (nil type)
     decl-spec
-    (unless (memqp type '(gl:permanent gl:temporary nil))
+    (unless (memqp type '(tl:permanent tl:temporary nil))
       (error "The consing-area declaration received the type ~s.~
                 The type must be either permanent or temporary."
 	     type))
-    (values :declare (cons 'gl:consing-area type))))
+    (values :declare (cons 'tl:consing-area type))))
 
-(gl:proclaim '(gl:consing-area gl:permanent))
+; (tl:proclaim '(tl:consing-area tl:permanent))
+
+;; If the consing complaints get to be too much for you, comment back in the
+;; line above to set the global default.  -jallard 8/28/99
 
 
 
@@ -881,7 +884,7 @@
 ;;; it.  The format for this declaration is (setq-counter <variable-name> (0)).
 
 (define-declaration setq-counter (decl-spec env)
-  (gl:destructuring-bind-strict
+  (tl:destructuring-bind-strict
       (nil variable-name counter-cons)
     decl-spec
     (values
@@ -894,13 +897,13 @@
 
 
 
-;;; The declaration `gl:dll-exported-function' for functions is used to declare
+;;; The declaration `tl:dll-exported-function' for functions is used to declare
 ;;; that the translation of a function will be exported from the DLL built from
 ;;; the translation.  This only has an effect on Windows machines, in all other
 ;;; cases the declaration is ignored.  The format for this declaration is
 ;;; (dll-exported <function-name>...).
 
-(define-declaration gl:dll-exported-function (decl-spec env)
+(define-declaration tl:dll-exported-function (decl-spec env)
   (values
     :function
     (loop for function in (cdr decl-spec)
@@ -915,12 +918,12 @@
 
 
 
-;;; The declaration `gl:static-function' for functions is used to declare that
+;;; The declaration `tl:static-function' for functions is used to declare that
 ;;; the translation of the function will only be used from within the same file
 ;;; that defines the function.  The format for this declaration is
 ;;; (static-function <function-name>...).
 
-(define-declaration gl:static-function (decl-spec env)
+(define-declaration tl:static-function (decl-spec env)
   (values
     :function
     (loop for function in (cdr decl-spec)
@@ -939,7 +942,7 @@
 ;;; system and module a symbol is defined within.  This is used when reserving C
 ;;; name identifiers for systems during translations.  The format for this
 ;;; declaration is (function-name (<system> . <module>) <function-name>...).
-;;; The system and modules names are symbols in the gl-user package.  The
+;;; The system and modules names are symbols in the tl-user package.  The
 ;;; declaration `variable-home' is the same thing, but for global variables.
 
 (define-declaration function-home (decl-spec env)

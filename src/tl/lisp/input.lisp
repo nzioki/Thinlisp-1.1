@@ -1,4 +1,4 @@
-(in-package "GL")
+(in-package "TL")
 
 ;;;; Module INPUT
 
@@ -36,12 +36,12 @@
 
 
 (defmacro eof-value? (value)
-  `(= ,value (gli::c-eof-value)))
+  `(= ,value (tli::c-eof-value)))
 
 (defun analyze-file-stream-error (file-stream eof-error-p eof-value)
   (declare (file-stream file-stream)
 	   (return-type t))
-  (if (gli::file-stream-eof-p file-stream)
+  (if (tli::file-stream-eof-p file-stream)
       (error-or-value file-stream eof-error-p eof-value)
       (error "Non-EOF error while reading from stream ~s" file-stream)))
 
@@ -60,7 +60,7 @@
 	(eof-error-p-var (gensym))
 	(eof-value-var (gensym)))
     `(let* ((,stream-var ,file-stream)
-	    (,getc-val-var (gli::call-getc-on-file-stream ,stream-var))
+	    (,getc-val-var (tli::call-getc-on-file-stream ,stream-var))
 	    (,eof-error-p-var ,eof-error-p)
 	    (,eof-value-var ,eof-value))
        (declare (file-stream ,stream-var)
@@ -80,7 +80,7 @@
 	(eof-value-var (gensym)))
     `(let* ((,stream-var ,file-stream)
 
-	    (,getc-val-var (gli::call-getc-on-file-stream ,stream-var))
+	    (,getc-val-var (tli::call-getc-on-file-stream ,stream-var))
 	    (,eof-error-p-var ,eof-error-p)
 	    (,eof-value-var ,eof-value))
        (declare (file-stream ,stream-var)
@@ -100,15 +100,15 @@
 	(eof-error-p-var (gensym))
 	(eof-value-var (gensym)))
     `(let* ((,stream-var ,string-stream)
-	    (,index-var (gli::string-stream-input-index ,stream-var))
+	    (,index-var (tli::string-stream-input-index ,stream-var))
 	    (,eof-error-p-var ,eof-error-p)
 	    (,eof-value-var ,eof-value))
        (declare (string-stream ,stream-var)
 		(fixnum ,index-var))
-       (cond ((< ,index-var (gli::string-stream-input-index-bounds ,stream-var))
-	      (setf (gli::string-stream-input-index ,stream-var)
+       (cond ((< ,index-var (tli::string-stream-input-index-bounds ,stream-var))
+	      (setf (tli::string-stream-input-index ,stream-var)
 		    (the fixnum (1+ ,index-var)))
-	      (char (gli::string-stream-input-string ,stream-var)
+	      (char (tli::string-stream-input-string ,stream-var)
 		    ,index-var))
 	     (t ;; end of file
 	      ;; can try to simplify if can prove eof-error-p is nil (then just plug in eof-value)
@@ -136,7 +136,7 @@
     (error "READ-CHAR doesn't support non-null recursive arguments: ~s"
 	   recursive-p))
   (setf stream (macroexpand stream env))
-  (let ((stream-type (gli::expression-result-type stream env)))
+  (let ((stream-type (tli::expression-result-type stream env)))
     (cond
       ((subtypep stream-type 'file-stream)
        `(read-char-from-file-stream ,stream ,eof-error-p ,eof-value))
@@ -169,18 +169,18 @@
 					     (eof-error-p t)
 					     eof-value)
   (declare (file-stream file-stream))
-  (let ((fgets-result (gli::call-fgets-on-file-stream
+  (let ((fgets-result (tli::call-fgets-on-file-stream
 			(the string *input-string-buffer*)
 			(the fixnum *input-string-buffer-size*)
 			file-stream)))
     (declare (type (or null string) fgets-result))
-    (cond ((gli::null-pointer? fgets-result)
+    (cond ((tli::null-pointer? fgets-result)
 	   (values (analyze-file-stream-error file-stream
 					      eof-error-p
 					      eof-value)
 		   t))			; yes, we're missing a new-line
 	  (t
-	   (let ((strlen-value (gli::call-strlen *input-string-buffer*))
+	   (let ((strlen-value (tli::call-strlen *input-string-buffer*))
 		 (missing-new-line? t))
 	     (declare (fixnum strlen-value))
 	     (cond ((> strlen-value
@@ -205,16 +205,16 @@
 					       (eof-error-p t)
 					       eof-value)
   (declare (string-stream string-stream))
-  (let ((input-string (gli::string-stream-input-string string-stream))
+  (let ((input-string (tli::string-stream-input-string string-stream))
 	(final-result *input-string-buffer*)
-	(input-index-bounds (gli::string-stream-input-index-bounds
+	(input-index-bounds (tli::string-stream-input-index-bounds
 			      string-stream))
 	(next-char #\null)
 	(missing-newline? t))
     (declare (string final-result)
 	     (character next-char)
 	     (fixnum input-index-bounds))
-    (do ((input-index (gli::string-stream-input-index string-stream)
+    (do ((input-index (tli::string-stream-input-index string-stream)
 		      (1+ input-index))
 	 (buffer-index 0 (1+ buffer-index)))
 	((not (and (< input-index input-index-bounds)
@@ -234,7 +234,7 @@
 		     (not (= input-index input-index-bounds)))
 		(error "Input buffer overflow reading from ~s"
 		       string-stream)))
-	 (setf (gli::string-stream-input-index string-stream) input-index
+	 (setf (tli::string-stream-input-index string-stream) input-index
 	       ; Setting the fill-pointer should now take care of this
 	       ; (char *input-string-buffer* buffer-index) #\null
 	       (fill-pointer (the string *input-string-buffer*)) buffer-index)
@@ -249,7 +249,7 @@
 			       eof-value
 			       &environment env)
   (setf stream (macroexpand stream env))
-  (let ((stream-type (gli::expression-result-type stream env)))
+  (let ((stream-type (tli::expression-result-type stream env)))
     (cond
       ((subtypep stream-type 'file-stream)
        `(read-line-from-file-stream ,stream ,eof-error-p ,eof-value))
@@ -287,9 +287,9 @@
 (defmacro probe-file (filename)
   (let ((filename-var (gensym)))
     `(let* ((,filename-var ,filename)
-	    (file-stream (gli::call-fopen ,filename-var "r")))
+	    (file-stream (tli::call-fopen ,filename-var "r")))
        (when file-stream
-	 (gli::call-fclose file-stream nil))
+	 (tli::call-fclose file-stream nil))
        (if file-stream
 	   ,filename-var
 	   nil))))
@@ -301,18 +301,18 @@
 	   (,abort-var ,abort))
        (unless (or (null ,file-stream-var)
 		   (eq ,file-stream-var *terminal-io*))
-	 (gli::call-fclose ,file-stream-var ,abort-var))
+	 (tli::call-fclose ,file-stream-var ,abort-var))
        t)))
 
 (defmacro delete-file (filename)
-  `(progn (gli::delete-named-file ,filename)
+  `(progn (tli::delete-named-file ,filename)
 	  t))
 
 (defun create-file (filename &optional binary?)
   (declare (string filename))
   (if binary?
-      (close-file-stream (gli::call-fopen filename "ab"))
-      (close-file-stream (gli::call-fopen filename "a"))))
+      (close-file-stream (tli::call-fopen filename "ab"))
+      (close-file-stream (tli::call-fopen filename "a"))))
 
 (defun-for-macro binary-mode? (element-type)
   (cond ((subtypep element-type 'character)
@@ -364,36 +364,36 @@
 	   (return-type t))
   (case if-does-not-exist
     ((nil)
-     (gli::call-fopen filename "rb"))
+     (tli::call-fopen filename "rb"))
     (:error
-     (let ((file-stream (gli::call-fopen filename "rb")))
+     (let ((file-stream (tli::call-fopen filename "rb")))
        (if file-stream
 	   file-stream
 	   (error "File named ~s could not be opened for input, perhaps does not exist"
 		  filename))))
     (:create
-     (let ((file-stream (gli::call-fopen filename "rb")))
+     (let ((file-stream (tli::call-fopen filename "rb")))
        (cond (file-stream file-stream)
 	     (t (create-file filename t)
-		(gli::call-fopen filename "rb")))))))
+		(tli::call-fopen filename "rb")))))))
 
 (defun open-for-text-input (filename if-does-not-exist)
   (declare (string filename)
 	   (return-type t))
   (case if-does-not-exist
     ((nil)
-     (gli::call-fopen filename "r"))
+     (tli::call-fopen filename "r"))
     (:error
-     (let ((file-stream (gli::call-fopen filename "r")))
+     (let ((file-stream (tli::call-fopen filename "r")))
        (if file-stream
 	   file-stream
 	   (error "File named ~s could not be opened for input, perhaps does not exist"
 		  filename))))
     (:create
-     (let ((file-stream (gli::call-fopen filename "r")))
+     (let ((file-stream (tli::call-fopen filename "r")))
        (cond (file-stream file-stream)
 	     (t (create-file filename nil)
-		(gli::call-fopen filename "r")))))
+		(tli::call-fopen filename "r")))))
     (t (error "Unrecognized value ~s for keyword :IF-DOES-NOT-EXIST"
 	      if-does-not-exist))))
 
@@ -409,19 +409,19 @@
 		 (case if-exists
 		   (:error (error "File ~s already exists" filename))
 		   (t nil)))
-		(t (gli::call-fopen filename "ab")))))
+		(t (tli::call-fopen filename "ab")))))
        (:overwrite
 	;; Mode "rb+" opens for "update" without truncating
 	;;  (An alternative might be to open for append "a" and reset
 	;;      file-pointer to start of file)
-	(let ((file-stream (gli::call-fopen filename "rb+")))
+	(let ((file-stream (tli::call-fopen filename "rb+")))
 	  (cond (file-stream)
 		(t (create-file filename t)
-		   (gli::call-fopen filename "rb+")))))
+		   (tli::call-fopen filename "rb+")))))
        (:supersede
-	(gli::call-fopen filename "wb"))
+	(tli::call-fopen filename "wb"))
        (:append 
-	(gli::call-fopen filename "ab"))
+	(tli::call-fopen filename "ab"))
        (t (error "While attempting to open file ~s for output~%~
                                   unrecognized :IF-EXISTS keyword value ~s"
 		 filename
@@ -434,11 +434,11 @@
 		 (error "File ~s already exists" filename))
 		((nil) nil)
 		(:overwrite
-		 (gli::call-fopen filename "rb+"))
+		 (tli::call-fopen filename "rb+"))
 		(:supersede
-		 (gli::call-fopen filename "wb"))
+		 (tli::call-fopen filename "wb"))
 		(:append
-		 (gli::call-fopen filename "ab"))
+		 (tli::call-fopen filename "ab"))
 		(t (error "While attempting to open file ~s for output~%~
                                     unrecognized :IF-EXISTS keyword value ~s"
 			  filename
@@ -461,16 +461,16 @@
 		 (case if-exists
 		   (:error (error "File ~s already exists" filename))
 		   (t nil)))
-		(t (gli::call-fopen filename "a")))))
+		(t (tli::call-fopen filename "a")))))
        (:overwrite
-	(let ((file-stream (gli::call-fopen filename "r+")))
+	(let ((file-stream (tli::call-fopen filename "r+")))
 	  (cond (file-stream)
 		(t (create-file filename nil)
-		   (gli::call-fopen filename "r+")))))
+		   (tli::call-fopen filename "r+")))))
        (:supersede
-	(gli::call-fopen filename "w"))
+	(tli::call-fopen filename "w"))
        (:append 
-	(gli::call-fopen filename "a"))
+	(tli::call-fopen filename "a"))
        (t (error "While attempting to open file ~s for output~%~
                                   unrecognized :IF-EXISTS keyword value ~s"
 		 filename
@@ -483,11 +483,11 @@
 		 (error "File ~s already exists" filename))
 		((nil) nil)
 		(:overwrite
-		 (gli::call-fopen filename "r+"))
+		 (tli::call-fopen filename "r+"))
 		(:supersede
-		 (gli::call-fopen filename "w"))
+		 (tli::call-fopen filename "w"))
 		(:append
-		 (gli::call-fopen filename "a"))
+		 (tli::call-fopen filename "a"))
 		(t (error "While attempting to open file ~s for output~%~
                                     unrecognized :IF-EXISTS keyword value ~s"
 			  filename
@@ -517,7 +517,7 @@
 
 (defmacro close (stream &key abort &environment env)
   (setf stream (macroexpand stream env))
-  (let ((stream-type (gli::expression-result-type stream env)))
+  (let ((stream-type (tli::expression-result-type stream env)))
     (cond
       ((subtypep stream-type 'file-stream)
        `(close-file-stream ,stream :abort ,abort))
@@ -566,7 +566,7 @@
 
 
 
-;;; GL does not currently have a full read system with readtables and the like.
+;;; TL does not currently have a full read system with readtables and the like.
 ;;; Instead we are trying to get by on the simplest stuff possible.  The
 ;;; following function reads fixnums, double-floats, symbols, and strings but no
 ;;; other types of input.

@@ -1,6 +1,6 @@
-(in-package "GL")
+(in-package "TL")
 
-;;;; Module GL-UTIL
+;;;; Module TL-UTIL
 
 ;;; Copyright (c) 1999 The ThinLisp Group
 ;;; Copyright (c) 1996 Gensym Corporation.
@@ -30,8 +30,8 @@
 
 
 
-;;; This module implements utilities for GL.  It differs from GL-PRIM and
-;;; GL-BASICS only in that this file comes after LOOP and PACKAGES in the load
+;;; This module implements utilities for TL.  It differs from TL-PRIM and
+;;; TL-BASICS only in that this file comes after LOOP and PACKAGES in the load
 ;;; order, and so can use those facilities.
 
 
@@ -44,8 +44,8 @@
 
 
 
-;;; Pushnew is implemented here instead of in GLT because it refers to MEMBER,
-;;; which is defined in GL-BASICS.
+;;; Pushnew is implemented here instead of in TLT because it refers to MEMBER,
+;;; which is defined in TL-BASICS.
 
 (defmacro pushnew (&environment env item list-holding-place
 				&key (test '#'eql) (key nil))
@@ -59,9 +59,9 @@
 		 ,list-holding-place
 		 (cons ,item ,list-holding-place)))
       (multiple-value-bind (temps vals stores store-form access-form)
-	  (gl:get-setf-expansion list-holding-place env)
+	  (tl:get-setf-expansion list-holding-place env)
 	(let ((item-var (gensym)))
-	  `(gl:let*
+	  `(tl:let*
 	       ,(cons (list item-var item)
 		      (loop for var in (append temps stores)
 			    for val in (append
@@ -417,7 +417,7 @@
 
 
 ; Do not need to define fill-string here, since it is
-;   already defined in glt-prim.lisp
+;   already defined in tlt-prim.lisp
 
 
 (defun fill-array-unsigned-byte-8 (sequence elt)
@@ -453,7 +453,7 @@
 ;;; In particular, it should never be translated.
 
 (defun-for-macro append-type-to-name (name type)
-  (intern (string-upcase (format nil "~a~a" name type)) "GL"))
+  (intern (string-upcase (format nil "~a~a" name type)) "TL"))
 
 
 ;;; Generic fill
@@ -466,7 +466,7 @@
 		   nil)
                   (list
 		   (fill-list ,array-var ,elt))
-                  ,@(loop for type-triple in gli::primitive-array-types
+                  ,@(loop for type-triple in tli::primitive-array-types
 			  for type = (first type-triple)
 			  for type-name = (third type-triple)
                           collect
@@ -498,8 +498,8 @@
   ;; the pattern and source arguments now.
   (setq pattern (macroexpand pattern env))
   (setq source (macroexpand source env))
-  (let ((pattern-type (gli::expression-result-type pattern env))
-	(source-type (gli::expression-result-type source env))
+  (let ((pattern-type (tli::expression-result-type pattern env))
+	(source-type (tli::expression-result-type source env))
 	(local-test (make-symbol "SEARCH-PREDICATE")))
     (cond
       ((and (subtypep pattern-type 'string)
@@ -516,7 +516,7 @@
 		       :start1 ,start1 :end1 ,end1
 		       :start2 ,start2 :end2 ,end2)))
       (t
-       (gli::fat-and-slow-warning
+       (tli::fat-and-slow-warning
 	 env 'search
 	 `(search ,pattern ,source :test ,test
 		  :start1 ,start1 :end1 ,end1
@@ -541,7 +541,7 @@
 		     (equal test '#'char=))
 		 (null end1)
 		 (null end2))
-	    `(gli::search-string-1 ,pattern ,searched ,start1 ,start2)
+	    `(tli::search-string-1 ,pattern ,searched ,start1 ,start2)
 	    `(loop with ,pattern-length fixnum = (or ,end1 (length ,pattern))
 		   with ,searched-length fixnum = (or ,end2 (length ,searched))
 		   for index from ,start2 to (- ,searched-length ,pattern-length)
@@ -600,7 +600,7 @@
 
 
 ;;; This section implements sorting algorithms.  There is a problem in
-;;; implementing sorts in GL, since most of the comparison operations have been
+;;; implementing sorts in TL, since most of the comparison operations have been
 ;;; implemented as macros (e.g. <, string<) and so the predicate argument to
 ;;; sort will often be a macro instead of a function.  We work around this
 ;;; problem by open-coding the calls to the predicate and key operations.  Note
@@ -614,10 +614,10 @@
 			     &key (key '#'identity))
   (setq sequence (macroexpand sequence env))
   (cond
-    ((subtypep (gli::expression-result-type sequence env) 'list)
+    ((subtypep (tli::expression-result-type sequence env) 'list)
      `(sort-list ,sequence ,less-than-predicate ,key))
     (t
-     (gli::fat-and-slow-warning
+     (tli::fat-and-slow-warning
        env 'sort `(sort ,sequence ,less-than-predicate :key ,key))
      (let ((local-predicate (make-symbol "SORT-PREDICATE"))
 	   (seq (gensym)))
@@ -676,7 +676,7 @@
 	 (setf (car l) second)
 	 (setf (car cdr) first))))
     (t
-     (let* ((half-n (gli::fixnum-right-shift n 1)) ; split list and sort each half
+     (let* ((half-n (tli::fixnum-right-shift n 1)) ; split list and sort each half
 	    (l-tail (nthcdr (- half-n 1) l))
 	    (l2 (quick-sort-list (cdr-of-cons l-tail) (- n half-n) predicate))
 	    (l1 (progn
@@ -721,8 +721,8 @@
     (error "Position needs a constant :key argument, not ~s" key))
   (setq item (macroexpand item env))
   (setq sequence (macroexpand sequence env))
-  (let ((item-type (gli::expression-result-type item env))
-	(sequence-type (gli::expression-result-type sequence env)))
+  (let ((item-type (tli::expression-result-type item env))
+	(sequence-type (tli::expression-result-type sequence env)))
     (cond ((subtypep sequence-type 'string)
 	   (if (subtypep item-type 'character)
 	       `(position-string ,item ,sequence
@@ -749,7 +749,7 @@
 			    :key ,key))
 	  (t
 	   (let ((local-test (make-symbol "SEARCH-PREDICATE")))
-	     (gli::fat-and-slow-warning
+	     (tli::fat-and-slow-warning
 	       env 'position
 	       `(position ,item ,sequence
 			  :start ,start
@@ -813,7 +813,7 @@
 		     (equal test '#'eql))
 		 (equal key '#'identity)
 		 (null end))
-	    `(gli::position-in-string-1 ,char ,str ,start)
+	    `(tli::position-in-string-1 ,char ,str ,start)
 	    `(loop for ,index from ,start below ,(or end `(length ,str)) do
 	       (when (funcall ,test ,char (funcall ,key
 						   (char ,str ,index)))
@@ -1234,7 +1234,7 @@
 
 
 ;;; Within the old Lisp to C translators, we had made our own system for storing
-;;; large code constants, since none of them had done a half decent job.  GL
+;;; large code constants, since none of them had done a half decent job.  TL
 ;;; does a half decent job, so these had become no-ops.  However, there was a
 ;;; macro called copy-optimized-constant which was semantically guaranteed to
 ;;; return a mutable copy of the constant, but not the constant itself.  We now
@@ -1288,7 +1288,7 @@
     (simple-vector
      (let* ((length (length (the simple-vector arg)))
 	    (sv arg)
-	    (new-sv (gli::make-simple-vector length)))
+	    (new-sv (tli::make-simple-vector length)))
        (declare (fixnum length)
 		(simple-vector sv new-sv))
        (loop for index from 0 below length do
@@ -1298,7 +1298,7 @@
        new-sv))
     (string
      (let* ((length (length (the string arg)))
-	    (new-string (gli::make-string-1 length)))
+	    (new-string (tli::make-string-1 length)))
        (replace-strings new-string arg :end2 length)
        new-string))
     (t
@@ -1337,24 +1337,24 @@
   (declare (fixnum target-size)
 	   (return-type void))
   (let* ((region-number (region-number-of-name region-name))
-	 (size (gli::internal-region-bytes-size region-number)))
+	 (size (tli::internal-region-bytes-size region-number)))
     (declare (fixnum region-number size))
     (when (< size target-size)
-      (gli::malloc-block-into-region
+      (tli::malloc-block-into-region
 	region-number (the fixnum (- target-size size)) 1))))
 
 
 (defun region-bytes-size (region-name)
   (declare (return-type fixnum))
-  (gli::internal-region-bytes-size (region-number-of-name region-name)))
+  (tli::internal-region-bytes-size (region-number-of-name region-name)))
 
 (defun region-bytes-used (region-name)
   (declare (return-type fixnum))
-  (gli::internal-region-bytes-used (region-number-of-name region-name)))
+  (tli::internal-region-bytes-used (region-number-of-name region-name)))
 
 (defun region-bytes-available (region-name)
   (declare (return-type fixnum))
-  (gli::internal-region-bytes-available (region-number-of-name region-name)))
+  (tli::internal-region-bytes-available (region-number-of-name region-name)))
 
 
 
@@ -1419,7 +1419,7 @@
   (ab-lisp::sxhash double-float)
   #+translator
   (progn
-    (gli::decompose-float double-float
+    (tli::decompose-float double-float
 			  *decompose-float-buffer*)
     (loop with hash fixnum = 0
 	  for index from 0 to 3

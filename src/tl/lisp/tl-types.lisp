@@ -1,6 +1,6 @@
-(in-package "GL")
+(in-package "TL")
 
-;;;; Module GL-TYPES
+;;;; Module TL-TYPES
 
 ;;; Copyright (c) 1999 The ThinLisp Group
 ;;; Copyright (c) 1996 Gensym Corporation.
@@ -25,7 +25,7 @@
 
 
 
-;;;; Type Operations for GL
+;;;; Type Operations for TL
 
 
 
@@ -33,50 +33,50 @@
 ;;; This module implements type predicates and declarations.  There are also
 ;;; two variables needed by the memory allocation primitives.
 
-(defvar gli::current-region 0)
+(defvar tli::current-region 0)
 
-(defvar gli::temporary-area-top nil)
+(defvar tli::temporary-area-top nil)
 
-(deftype void () 'gli::void)
+(deftype void () 'tli::void)
 
-(deftype fixnum () 'gli::fixnum)
+(deftype fixnum () 'tli::fixnum)
 
 (defconstant most-positive-fixnum 536870911)
 
 (defconstant most-negative-fixnum -536870912)
 
 (defmacro fixnump (object)
-  `(typep ,object 'gli::fixnum))
+  `(typep ,object 'tli::fixnum))
 
-(deftype null () 'gli::null)
+(deftype null () 'tli::null)
 
 (defmacro null (object)
   `(not ,object))
 
-(deftype symbol () 'gli::symbol)
+(deftype symbol () 'tli::symbol)
 
 (defmacro symbolp (object)
-  `(typep ,object 'gli::symbol))
+  `(typep ,object 'tli::symbol))
 
-(deftype atom () 'gli::atom)
+(deftype atom () 'tli::atom)
 
 (defmacro atom (object)
   `(not (consp ,object)))
 
-(deftype cons () 'gli::cons)
+(deftype cons () 'tli::cons)
 
 (defmacro consp (object)
-  `(typep ,object 'gli::cons))
+  `(typep ,object 'tli::cons))
 
-(deftype list () 'gli::list)
+(deftype list () 'tli::list)
 
 (defmacro listp (object)
   `(typep ,object 'list))
 
-(deftype number () 'gli::number)
+(deftype number () 'tli::number)
 
 (defmacro numberp (object)
-  `(typep ,object 'gli::number))
+  `(typep ,object 'tli::number))
 
 
 
@@ -86,87 +86,82 @@
 ;;; Note that this would be OK, but we also do in fact attempt to pay attention
 ;;; to the unsigned-byte types by NOT expanding them.  When we have spare time
 ;;; (HA!) we should do the moral thing, expand all other integer type
-;;; specifications into an integer range spec, and then fix up gl-typep and
-;;; gl-subtypep to explicitly deal with the integer types.  -jra 1/8/97
+;;; specifications into an integer range spec, and then fix up tl-typep and
+;;; tl-subtypep to explicitly deal with the integer types.  -jra 1/8/97
 
 (deftype integer (&optional low-bound high-bound)
   (declare (ignore low-bound high-bound))
-  'gli::fixnum)
+  'tli::fixnum)
 
 (defmacro integerp (object)
-  `(typep ,object 'gli::fixnum))
+  `(typep ,object 'tli::fixnum))
 
 (deftype unsigned-byte (bit-length)
-  `(gli::unsigned-byte ,bit-length))
+  `(tli::unsigned-byte ,bit-length))
 
-(deftype float () 'gli::double-float)
+(deftype float () 'tli::double-float)
 
-; (deftype managed-float () 'gli::managed-float)
+; (deftype managed-float () 'tli::managed-float)
 
-(deftype double-float () 'gli::double-float)
-
-(deftype gensym-float () 'double-float)
-
-(defmacro gensym-float-type ()
-  ''double-float)
+(deftype double-float () 'tli::double-float)
 
 (defmacro floatp (object)
-  `(typep ,object 'gli::double-float))
+  `(typep ,object 'tli::double-float))
 
-(deftype character () 'gli::character)
+(deftype character () 'tli::character)
 
-(deftype string-char () 'gli::character)
+(deftype string-char () 'tli::character)
 
 (defmacro characterp (object)
-  `(typep ,object 'gli::character))
+  `(typep ,object 'tli::character))
 
-(deftype simple-vector () 'gli::simple-vector)
+(deftype simple-vector () 'tli::simple-vector)
 
 (defmacro simple-vector-p (object)
-  `(typep ,object 'gli::simple-vector))
+  `(typep ,object 'tli::simple-vector))
 
-(deftype string () 'gli::string)
+(deftype string () 'tli::string)
 
-(deftype simple-string () 'gli::string)
+(deftype simple-string () 'tli::string)
 
 (defmacro stringp (object)
-  `(typep ,object 'gli::string))
+  `(typep ,object 'tli::string))
 
 (defmacro simple-string-p (object)
-  `(typep ,object 'gli::string))
+  `(typep ,object 'tli::string))
 
-(deftype package () 'gli::package)
+(deftype package () 'tli::package)
 
 (defmacro packagep (object)
-  `(typep ,object 'gli::package))
+  `(typep ,object 'tli::package))
 
-(deftype compiled-function () 'gli::compiled-function)
+(deftype compiled-function () 'tli::compiled-function)
 
 (defmacro compiled-function-p (object)
-  `(typep ,object 'gli::compiled-function))
+  `(typep ,object 'tli::compiled-function))
 
-(deftype stream () 'gli::stream)
+(deftype stream () 'tli::stream)
 
 (defmacro streamp (object)
-  `(typep ,object 'gli::stream))
+  `(typep ,object 'tli::stream))
 
-(deftype string-stream () 'gli::gl-string-stream)
+(deftype string-stream () 'tli::tl-string-stream)
 
-(deftype file-stream () 'gli::file-stream)
+(deftype file-stream () 'tli::file-stream)
 
 (deftype and (&rest types)
-  `(gli::and ,@types))
+  `(tli::and ,@types))
 
 (deftype or (&rest types)
-  `(gli::or ,@types))
+  `(tli::or ,@types))
 
 (deftype not (type)
-  `(gli::not ,type))
+  `(tli::not ,type))
 
 (deftype values (&rest types)
-  `(gli::values ,@types))
+  `(tli::values ,@types))
 
-;;; All GL arrays are vectors and are considered simple-arrays.
+;;; All TL arrays are vectors and are considered simple-arrays.
 
 (defun-for-macro expand-array-type (original-array-type array-specs)
   (if array-specs
@@ -179,17 +174,17 @@
 	(cond ((or (null dimensions)
 		   (lisp:eql dimensions 1)
 		   (lisp:equal dimensions '(*))
-		   (lisp:equal dimensions '(gli::*)))
-	       `(gli::array ,elt-type))
+		   (lisp:equal dimensions '(tli::*)))
+	       `(tli::array ,elt-type))
 	      ((and (consp dimensions)
 		    (null (cdr dimensions))
 		    (fixnump (car dimensions)))
-	       `(gli::array ,elt-type ,dimensions))
+	       `(tli::array ,elt-type ,dimensions))
 	      (t
 	       (ab-lisp::error
-		 "GL doesn't support multi-dimensional arrays in type ~s."
+		 "TL doesn't support multi-dimensional arrays in type ~s."
 		 (cons original-array-type array-specs)))))
-      'gli::array))
+      'tli::array))
 
 (deftype vector (&optional (elt-type t) (length '*))
   (expand-array-type 'vector `(,elt-type (,length))))
@@ -201,7 +196,7 @@
   (expand-array-type 'array `(,elt-type ,dimensions)))
 
 (deftype c-type (held-c-type)
-  `(gli::c-type 
+  `(tli::c-type 
      ,(cond ((stringp held-c-type)
 	     held-c-type)
 	    ((and (consp held-c-type)
@@ -209,8 +204,8 @@
 		  (stringp (car (cdr held-c-type))))
 	     (let ((car (car (the cons held-c-type))))
 	       (if (or (eq car 'pointer)
-		       (eq car 'gli::pointer))
-		   `(gli::pointer ,(car (cdr held-c-type)))
+		       (eq car 'tli::pointer))
+		   `(tli::pointer ,(car (cdr held-c-type)))
 		   (ab-lisp::error
 		     "Badly formed C-TYPE, ~s"
 		     `(c-type ,held-c-type)))))
@@ -233,8 +228,8 @@
 ;;; compile time, and are not translatable runtime functions.
 
 (defun-for-macro upgraded-array-element-type (type)
-  (gli::upgraded-gl-array-element-type type))
+  (tli::upgraded-tl-array-element-type type))
 
 (defun-for-macro subtypep (subtype superior-type &optional environment)
   (declare (ignore environment))
-  (gli::gl-subtypep subtype superior-type))
+  (tli::tl-subtypep subtype superior-type))

@@ -1,4 +1,4 @@
-(in-package "GLI")
+(in-package "TLI")
 
 ;;;; Module SYMBOLS
 
@@ -43,11 +43,11 @@
 	  for home-package? = (symbol-package symbol)
 	  for package?
 	      = (if (eq home-package? *lisp-package*)
-		    (if (find-symbol symbol-name *gl-package*)
-			*gl-package*
+		    (if (find-symbol symbol-name *tl-package*)
+			*tl-package*
 			(translation-error
 			  "Attempting to make a pointer to ~s, a LISP symbol ~
-                               not accessible from the GL package."
+                               not accessible from the TL package."
 			  symbol))
 		    home-package?)
 	  for package-var? = (cdr (assq package? package-to-c-var-alist))
@@ -77,7 +77,7 @@
 	    (make-c-cast-expr 'obj (make-c-unary-expr #\& symbol-expr))
 	    (translate-string-constant-into-c
 	      symbol-name 'obj c-file nil symbols-func symbols-body :c-expr)
-	    (make-c-literal-expr (funcall 'gl:sxhash-string symbol-name))
+	    (make-c-literal-expr (funcall 'tl:sxhash-string symbol-name))
 	    (make-c-name-expr (if package? package-var? "NULL"))))
 	symbols-body)
 
@@ -100,7 +100,7 @@
 		 (make-c-direct-selection-expr symbol-expr "symbol_value")
 		 "=" (make-c-cast-expr 'obj (make-c-unary-expr #\& symbol-expr)))
 	       symbols-body))
-	    ((memqp (gl:variable-information symbol) '(:special :constant))
+	    ((memqp (tl:variable-information symbol) '(:special :constant))
 	     (let ((c-value-var-name (c-identifier-for-variable
 				       symbol *global-c-namespace*
 				       (c-func-namespace symbols-func))))
@@ -127,7 +127,7 @@
       ;; function-type of the symbol is :function, and when it does not have a
       ;; direct C translation function.
       (multiple-value-bind (function-type? local? decls)
-	  (gl:function-information symbol)
+	  (tl:function-information symbol)
 	(declare (ignore local?))
 	(when (and (eq function-type? :function)
 		   (or (assq 'computed-ftype decls)

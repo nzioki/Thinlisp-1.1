@@ -1,6 +1,6 @@
-(in-package "GLI")
+(in-package "TLI")
 
-;;;; Module GL-OUT
+;;;; Module TL-OUT
 
 ;;; Copyright (c) 1999 The ThinLisp Group
 ;;; Copyright (c) 1996 Gensym Corporation.
@@ -99,7 +99,7 @@
      (make-c-name-expr "write_double_into_str")
      (list double width string))))
 
-(def-c-translation gl:write-char-to-file-stream (character file-stream)
+(def-c-translation tl:write-char-to-file-stream (character file-stream)
   ((lisp-specs :ftype ((character file-stream) void))
    `(write-char ,character ,file-stream))
   ((trans-specs :c-type ((unsigned-char obj) void))
@@ -121,7 +121,7 @@
 	     (make-c-cast-expr '(pointer file-strm) file-stream)
 	     "output")))))
 
-(def-c-translation gl:write-string-to-file-stream (string file-stream)
+(def-c-translation tl:write-string-to-file-stream (string file-stream)
   ((lisp-specs :ftype ((string file-stream) void))
    `(write-string ,string ,file-stream))
   ((trans-specs :c-type (((pointer unsigned-char) obj) void))
@@ -163,7 +163,7 @@
 (defmacro derror (&rest args)
   `(lisp-translation-error ,@args))
 
-(def-c-translation gli-simple-error (string)
+(def-c-translation tli-simple-error (string)
   ((lisp-specs :ftype ((string) void))
    `(derror "~A" ,string))
   ((trans-specs :c-type (((pointer unsigned-char)) void))
@@ -183,7 +183,7 @@
 
 
 
-(gl:declaim (gl:functional c-eof-value))
+(tl:declaim (tl:functional c-eof-value))
 
 (def-c-translation c-eof-value ()
   ((lisp-specs :ftype (() fixnum))
