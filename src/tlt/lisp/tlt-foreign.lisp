@@ -94,12 +94,12 @@
 
 
 
-;;; The macro `underlying-def-foreign-callable' returns the symbol naming this
-;;; port's implementation of def-foreign-callable.  If this function returns
-;;; NIL, then no attempt will be made to enable this feature in Lisp
+;;; The function `underlying-def-foreign-callable' returns the symbol naming
+;;; this port's implementation of def-foreign-callable.  If this function
+;;; returns NIL, then no attempt will be made to enable this feature in Lisp
 ;;; development.
 
-(defmacro underlying-def-foreign-callable ()
+(defun underlying-def-foreign-callable ()
   #+lucid
   ''lcl:def-foreign-callable
   #-lucid

@@ -868,7 +868,7 @@
 			 (cdr (assq 'optional-arg-default-values decls)))
 		     (minimum-arg-count
 		       (- needed-arg-count optional-arg-count)))
-		(declare (fixnum optional-arg-count required-arg-count))
+		(declare (fixnum optional-arg-count minimum-arg-count))
 		(cond
 		  ((>= arg-count minimum-arg-count)
 		   (setf

@@ -73,6 +73,7 @@
     c-decls
     c-state
     c-func
+    c-type-util
     c-coerce
     trandata
     l-expr
@@ -136,7 +137,8 @@
     #+lucid                    "sbin"
     #+aclpc                    "acl"
     #+allegro                  "fasl"
-    #-(or lucid aclpc allegro) "bin")
+    #+cmu17                    "x86f"
+    #-(or lucid aclpc allegro cmu17) "bin")
 
 
 

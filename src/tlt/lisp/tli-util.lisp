@@ -314,7 +314,9 @@
 (defmacro cons-car (cons)
   #+fastest-glt
   `(car (the cons ,cons))
-  #-fastest-glt
+  #+(and (not fastest-glt) cmu17)
+  `(safe-car ,cons)
+  #+(and (not fastest-glt) (not cmu17))
   (cond ((and (constantp cons)
 	      (not (consp (eval cons))))
 	 `(cons-error ,cons))
@@ -329,13 +331,20 @@
 		  (car (the cons ,arg))
 		  (cons-error ,arg)))))))
 
+(defun safe-car (arg)
+  (if (consp arg)
+      (car (the cons arg))
+    (cons-error arg)))
+
 (defmacro cons-first (cons)
   `(cons-car ,cons))
 
 (defmacro cons-cdr (cons)
   #+fastest-glt
   `(cdr (the cons ,cons))
-  #-fastest-glt
+  #+(and (not fastest-glt) cmu17)
+  `(safe-cdr ,cons)
+  #+(and (not fastest-glt) (not cmu17))
   (cond ((and (constantp cons)
 	      (not (consp (eval cons))))
 	 `(cons-error ,cons))
@@ -349,6 +358,11 @@
 	      (if (consp ,arg)
 		  (cdr (the cons ,arg))
 		  (cons-error ,arg)))))))
+
+(defun safe-cdr (arg)
+  (if (consp arg)
+      (cdr (the cons arg))
+    (cons-error arg)))
 
 (defun cons-caar (conses)
   (cons-car (cons-car conses)))
@@ -872,7 +886,7 @@
 ;;; The special-form-p function has been removed from ANSI Common Lisp.
 ;;; Define it for those Lisp systems that haven't given us a replacement.
 
-#+allegro
+#+ansi-cl
 (defun special-form-p (symbol)
   (special-operator-p symbol))
 

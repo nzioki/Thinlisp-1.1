@@ -575,7 +575,7 @@
   (trivial-l-expr-lisp-result-type-ala-progn flet-l-expr))
 
 (def-l-expr-method choose-l-expr-types (named-lambda-l-expr lisp-type c-type)
-  (declare (ignore named-lambda-l-expr lisp-type c-type))
+  (declare (ignore lisp-type c-type))
   ;; Named-lambdas are only allowed at top level.  So they don't return anything.
   (setf (l-expr-lisp-return-type named-lambda-l-expr) 'void)
   (setf (l-expr-c-return-type named-lambda-l-expr) 'void)
@@ -686,7 +686,6 @@
   (trivial-l-expr-lisp-result-type-ala-progn progn-l-expr))
 
 (def-l-expr-method choose-l-expr-types (quote-l-expr lisp-type c-type)
-  (declare (ignore lisp-type))
   (let ((value (l-expr-form quote-l-expr)))
     (multiple-value-bind (lisp-return c-return)
 	(if (satisfies-c-required-type-p c-type 'boolean)
