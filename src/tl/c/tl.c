@@ -81,6 +81,7 @@ Thread_state *new_thread_state(uint32 new_id, int new_index) {
       free(thread_states);
     }
   }
+  ts->thread_index = new_index;
   thread_states[new_index] = ts;
   return ts;
 }
@@ -105,6 +106,12 @@ Thread_state *current_thread_state(void) {
     /* If we get here, no thread_state was found, create one. */
     return new_thread_state(earliest_null);
   }
+}
+
+void delete_thread_state(Thread_state *condemned) {
+  Binding b = condemned->global_bindings;
+  thread_states[condemned->thread_index] = NULL;
+  while (b != NULL) {}
 }
 #endif
 

@@ -431,7 +431,12 @@ typedef struct binding_type {
 #define THROW_STACK_MAX 2048
 
 typedef struct thread_state_type {
+  /* Thread_id is whatever pthread_self returns, but cast to a uint32. */
   uint32  thread_id;
+  /* Thread_index is the index of this thread_id withint the thread_states
+   * array.  This index is used during thread_state deletion to remove it from
+   * the array.*/
+  sint32  thread_index;
   /* When a Lisp function returns multiple values, the first value is always
    * returned on the C stack, and all additional values are stored into the
    * global Obj array Values_buffer.  The number of values cached into
