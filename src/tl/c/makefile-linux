@@ -1,7 +1,7 @@
 #
 # TL Linux Makefile
 #
-# Copyright (c) 1999 The ThinLisp Grouprd
+# Copyright (c) 1999 The ThinLisp Group
 
 CC=gcc -o
 

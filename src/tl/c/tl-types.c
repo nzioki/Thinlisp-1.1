@@ -33,14 +33,6 @@ Obj most_positive_fixnum = BOXFIX(536870911);
 
 Obj most_negative_fixnum = BOXFIX(-536870912);
 
-/* Translated from INSTALL-STRUCTURE-FUNCTION(T) = NULL */
-
-Obj install_structure_function (Obj ignored)
-{
-  (void)ignored;                                /* IGNORED was declared ignore */
-  return (Obj)NULL;
-}
-
 /* Translated from SYMS-TL-TL-TYPES() = VOID */
 
 void syms_tl_tl_types (void)

@@ -22,7 +22,7 @@
   ;; Used function type signatures.
   '((TL::FIND-PACKAGE-1 "find_package_1" FUNCTION (T) T))
   ;; Defined functions.
-  '((TL::INSTALL-STRUCTURE-FUNCTION . "install_structure_function"))
+  NIL
   ;; Used variables = (symbol c-name . type).
   '((*PACKAGE* "SpackageS" . OBJ))
   ;; Defined variables
