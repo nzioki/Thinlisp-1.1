@@ -1018,7 +1018,7 @@
      "MAKE-BROADCAST-STREAMS"
      "WITHIN-MANAGED-OBJECT-SCOPE"
      
-     ;; Gensym-specific numeric operations.
+     ;; ThinLisp-specific numeric operations.
      "FLOORF-POSITIVE"
      "FLOORF-POSITIVE-2"
      "MODF-POSITIVE"
@@ -1026,6 +1026,11 @@
      "MOD-FLOAT"
      "MOD-FLOAT-POSITIVE"
      "CEILINGF-POSITIVE"
+
+     ;; CLOS required symbols
+     "STANDARD-CLASS"
+     "BUILT-IN-CLASS"
+     "STRUCTURE-CLASS"
      ))
 
 

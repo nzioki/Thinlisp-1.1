@@ -48,15 +48,18 @@
 ;;; users may find that the details of implementation have changed at some point
 ;;; in the future.
 
-;;; See CLtL 2, Sec. 8.3, p. 204 for details.  Note that this version of
-;;; destructuring-bind-strict is strict about the given value matching the given
-;;; pattern.  This is in conformance with the standard, but is a change from
-;;; ThinLisp's previous destructuring bind, which supplied NILs for missing parts
-;;; of the pattern.  In tl/lisp/tl-extension.lisp there is a forgiving version of
-;;; tl:destructuring-bind that is exported for the interim.  When we can make
-;;; significant edits to the lisp directory, we will change the name of the
-;;; non-conforming destructuring-bind to destructuring-bind-forgiving and
-;;; re-adopt the Common Lisp version on the standard name.  -jra 1/10/97
+;; See CLtL 2, Sec. 8.3, p. 204 for details.  Note that this version of
+;; destructuring-bind-strict is strict about the given value matching the given
+;; pattern.  This is in conformance with the standard, but is a change from
+;; ThinLisp's previous destructuring bind, which supplied NILs for missing parts
+;; of the pattern.  In tl/lisp/tl-extension.lisp there is a forgiving version of
+;; tl:destructuring-bind that is exported for the interim.  When we can make
+;; significant edits to the lisp directory, we will change the name of the
+;; non-conforming destructuring-bind to destructuring-bind-forgiving and
+;; re-adopt the Common Lisp version on the standard name.  -jra 1/10/97
+
+;; Today's the day.  Tl:destructuring-bind has been changed to expand into
+;; tl:destructuring-bind-strict.  -jallard 9/25/99.
 
 (defvar destruct-action-queue nil)
 
@@ -239,17 +242,28 @@
 			   (intern (symbol-name (cons-car key)) "KEYWORD"))
 			  (t (cons-car (cons-car key)))))))
 	(if (eval-feature :translator)
-	    `(tl:do ((,key-to-check ,value-var (tl:cddr ,key-to-check)))
-		    ((tl:null ,key-to-check)
-		     nil)
-	       (tl:unless (tl:memq (tl:car-of-cons ,key-to-check) ',valid-keys)
-		 (tl:error
+	    `(tl:unless (tl:do ((,key-to-check ,value-var (tl:cddr ,key-to-check)))
+			       ((tl:null ,key-to-check) nil)
+			  (tl:when (tl:eq (tl:car-of-cons ,key-to-check) 
+					  :allow-other-keys)
+			    (return (tl:cadr ,key-to-check))))
+	      (tl:do ((,key-to-check ,value-var (tl:cddr ,key-to-check)))
+		     ((tl:null ,key-to-check)
+		      nil)
+	        (tl:unless (tl:memq (tl:car-of-cons ,key-to-check) ',valid-keys)
+		  (tl:error
 		   "The key ~A does not match any of the keyword arguments."
-		   (tl:car-of-cons ,key-to-check))))
-	    `(loop for ,key-to-check on ,value-var by #'cddr do
-	       (unless (memq (cons-car ,key-to-check) ',valid-keys)
-		 (error "The key ~A does not match any of the keyword arguments."
-			(cons-car ,key-to-check))))))))
+		   (tl:car-of-cons ,key-to-check)))))
+	    `(unless (loop named allow-other-keys-keyword
+			   for ,key-to-check on ,value-var by #'cddr do
+		       (when (eq ,key-to-check :allow-other-keys)
+			 (return-from allow-other-keys-keyword 
+				      (cons-cadr ,key-to-check)))
+		           finally (return-from allow-other-keys-keyword nil))
+	       (loop for ,key-to-check on ,value-var by #'cddr do
+		 (unless (memq (cons-car ,key-to-check) ',valid-keys)
+		   (error "The key ~A does not match any of the keyword arguments."
+			  (cons-car ,key-to-check)))))))))
   (loop with search-var = (gensym)
 	for key in key-list
 	do

@@ -4,9 +4,9 @@
 # Copyright (c) 1999 Jim Allard
 
 CC=gcc -o
-CFLAGS=-O2 -ansi -pedantic -W -Wall -fomit-frame-pointer -c
+CFLAGS=-ggdb3 -ansi -pedantic -W -Wall -c
 LINK=gcc -o
-LINKFLAGS=-O2
+LINKFLAGS=-g
 LIBS= ../../tl/bin/libtl.a
 SYSLIBS=-lm
 OBJECTS= main.o boot.o echo.o

@@ -727,7 +727,9 @@
 		'("extern") (list 'array 'func (1+ (cons-cdr last-func-defn?)))
 		(cons-car last-func-defn?) nil)
 	      h-file 0))
-	  ;; Dontcha love lexical closures?  -jra 11/16/95
+	  ;; Don'tcha just love lexical closures?  -jra 11/16/95 Don'tcha just
+	  ;; hate the way they cons up a storm and slow everything down?
+	  ;; -jallard 9/25/99
 	  (maphash #'(lambda (id decl) (push (cons id decl) variable-decls))
 		   (c-file-needed-variable-externs c-file))
 	  (maphash #'(lambda (id decl) (push (cons id decl) function-decls))

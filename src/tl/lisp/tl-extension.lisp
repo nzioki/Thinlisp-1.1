@@ -2928,8 +2928,14 @@
 
 
 
-;;; The macro `destructuring-bind' takes a (possibly dotted) cons tree of
-;;; symbols, a value argument, and a body, and performs an efficient
+(defmacro destructuring-bind ((destructure-pattern value) &body forms)
+  `(destructuring-bind-strict (,destructure-pattern ,value) ,@forms))
+
+
+
+
+;;; The macro `destructuring-bind-forgiving' takes a (possibly dotted) cons tree
+;;; of symbols, a value argument, and a body, and performs an efficient
 ;;; destructuring bind of the given symbols to the values in the corresponding
 ;;; positions of the list returned by the value argument.  If any of the symbols
 ;;; in the binding list are NIL, then that corresponding value will not be bound
@@ -2941,10 +2947,6 @@
 ;; This could be improved upon if all bindings could be made in a single LET*.
 ;; This would allow the first form of the body to be declarations about the
 ;; generated variable bindings.  -jra 7/27/89
-
-(defmacro destructuring-bind ((destructure-pattern value) &body forms)
-  `(destructuring-bind-forgiving (,destructure-pattern ,value) ,@forms)
-  )
 
 (defmacro destructuring-bind-forgiving ((destructure-pattern value) &body forms)
   (if destructure-pattern
