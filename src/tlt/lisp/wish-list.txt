@@ -214,3 +214,5 @@ pm-print prints integral floats without a decmal point, bummer.
   - ben 8aug97
 (I'm taking a stab at that by improving the value returned by
  pm-type-of, which is used by pm-describe)
+
+I want a pony. - ben
