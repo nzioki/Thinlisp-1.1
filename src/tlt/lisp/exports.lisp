@@ -1034,6 +1034,7 @@
      "CEILINGF-POSITIVE"
 
      ;; CLOS required symbols
+     "FUNCTION-KEYWORDS"
      "STANDARD-CLASS"
      "BUILT-IN-CLASS"
      "STRUCTURE-CLASS"
