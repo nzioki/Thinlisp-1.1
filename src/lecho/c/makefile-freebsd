@@ -3,26 +3,34 @@
 #
 # Copyright (c) 2000 The ThinLisp Group
 
-CC=gcc -o
+CC = gcc -o
 
-ifdef OPT
-CFLAGS=-O2 -ansi -pedantic -W -Wall -fomit-frame-pointer -c
-else
-CFLAGS=-ggdb3 -ansi -pedantic -W -Wall -c
+CFLAGS =
+
+ifdef THREAD
+CFLAGS += -DPTHREAD
 endif
 
-LINK=gcc -o
-
 ifdef OPT
-LINKFLAGS=-O2
-LIBS= ../../tl/opt/libtl.a
+CFLAGS += -O2 -fomit-frame-pointer
 else
-LINKFLAGS=-g
-LIBS= ../../tl/bin/libtl.a
+CFLAGS += -ggdb3
 endif
 
-SYSLIBS=-lm
-OBJECTS= main.o boot.o echo.o
+CFLAGS += -pipe -ansi -pedantic -W -Wall -c
+
+LINK = gcc -o
+
+ifdef OPT
+LINKFLAGS = -O2
+LIBS = ../../tl/opt/libtl.a
+else
+LINKFLAGS = -g
+LIBS = ../../tl/bin/libtl.a
+endif
+
+SYSLIBS = -lm
+OBJECTS =  main.o boot.o echo.o
 
 all : lecho
 

@@ -1,4 +1,10 @@
-MF=makefile-`uname -s | tr 'A-Z' 'a-z'`
+MF = makefile-`uname -s | tr 'A-Z' 'a-z'`
+
+ifdef THREAD
+THREADARG = THREAD=1
+else
+THREADARG =
+endif
 
 all : TAGS docs/tl-manual.pdf lisp bin
 
