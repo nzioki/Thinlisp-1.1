@@ -2,7 +2,7 @@
 
 ;;;; Module TL-TIME
 
-;;; Copyright (c) 2000 The ThinLisp Group
+;;; Copyright (c) 2000-2001 The ThinLisp Group
 ;;; Copyright (c) 1997 Gensym Corporation.
 ;;; All rights reserved.
 

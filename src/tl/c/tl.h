@@ -1,10 +1,9 @@
 /**
- *
  * Copyright (c) 1994-1995 Gensym Corporation.  All Rights Reserved.
  *
  * Module:      tlt.h
  *
- * Copyright (c) 1999 The Thinlisp Group
+ * Copyright (c) 1999-2001 The Thinlisp Group
  * All Rights Reserved.
  *
  * This file is part of ThinLisp.

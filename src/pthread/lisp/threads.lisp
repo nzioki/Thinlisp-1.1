@@ -2,7 +2,7 @@
 
 ;;;; Module THREADS
 
-;;; Copyright (c) 2000 The ThinLisp Group
+;;; Copyright (c) 2000-2001 The ThinLisp Group
 ;;; All rights reserved.
 
 ;;; This file is part of ThinLisp.

@@ -3,7 +3,7 @@
  *
  * Module:      tl.c
  *
- * Copyright (c) 1999 The Thinlisp Group
+ * Copyright (c) 1999-2001 The Thinlisp Group
  * All Rights Reserved.
  *
  * This file is part of ThinLisp.

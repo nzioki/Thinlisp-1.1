@@ -2,7 +2,7 @@
 
 ;;;; Module MAKEFILES
 
-;;; Copyright (c) 1999-2000 The ThinLisp Group
+;;; Copyright (c) 1999-2001 The ThinLisp Group
 ;;; All rights reserved.
 
 ;;; This file is part of ThinLisp.

@@ -2,7 +2,7 @@
 
 ;;;; Module C-NAMES
 
-;;; Copyright (c) 1999-2000 The ThinLisp Group
+;;; Copyright (c) 1999-2001 The ThinLisp Group
 ;;; Copyright (c) 1995 Gensym Corporation.
 ;;; All rights reserved.
 

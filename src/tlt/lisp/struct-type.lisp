@@ -2,7 +2,7 @@
 
 ;;; Module STRUCT-TYPE
 
-;;; Copyright (c) 1999-2000 The ThinLisp Group
+;;; Copyright (c) 1999-2001 The ThinLisp Group
 ;;; Copyright, Artificial Creatures, Inc., 1998
 ;;; Copyright, IS Robotics, Inc., 1998
 
