@@ -2,7 +2,7 @@
  *
  * Module:      lecho/c/main.c
  *
- * Copyright (c) 2001 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2002 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of lecho/lisp/main.lisp.
  *    by ThinLisp http://www.thinlisp.org

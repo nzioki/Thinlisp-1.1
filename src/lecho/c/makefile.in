@@ -1,9 +1,9 @@
 #
-# LECHO Config Makefile
+# LECHO Autoconf Makefile
 #
-# Copyright (c) 2001 The ThinLisp Group
+# Copyright (c) 2002 The ThinLisp Group
 
-CC = @CC@
+CC = @CC@ -o
 
 CFLAGS =
 
@@ -19,7 +19,7 @@ endif
 
 CFLAGS += @CFLAGS@ -pipe -ansi -pedantic -W -Wall -c
 
-LINK = gcc -o
+LINK = @CC@ -o
 
 ifdef OPT
 LINKFLAGS = -O2
@@ -32,15 +32,15 @@ endif
 SYSLIBS = 
 OBJECTS =  main.o boot.o echo.o
 
-all : lecho.exe
+all : lecho$(EXEEXT)
 
 clean :
 	-rm *.o
-	-( if [ -f lecho.exe ] ; then rm lecho.exe ; fi )
+	-( if [ -f lecho$(EXEEXT) ] ; then rm lecho$(EXEEXT) ; fi )
 
-lecho.exe : makefile.config $(OBJECTS) $(LIBS)
-	-( if [ -f lecho.exe ] ; then rm lecho.exe ; fi )
-	$(LINK) lecho.exe $(LINKFLAGS) $(OBJECTS) $(LIBS) $(SYSLIBS)
+lecho$(EXEEXT) : ../c/makefile $(OBJECTS) $(LIBS)
+	-( if [ -f lecho$(EXEEXT) ] ; then rm lecho$(EXEEXT) ; fi )
+	$(LINK) lecho$(EXEEXT) $(LINKFLAGS) $(OBJECTS) $(LIBS) $(SYSLIBS)
 
-%.o : ../c/%.c ../c/%.h makefile.config
+%.o : ../c/%.c ../c/%.h ../c/makefile
 	$(CC) $@ $(CFLAGS) -I ../c -I../../tl/c/ $<

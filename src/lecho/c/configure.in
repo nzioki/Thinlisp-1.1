@@ -1,0 +1,8 @@
+dnl File created by ThinLisp
+dnl   autoconf input for LECHO
+AC_PREREQ(2.13)
+AC_INIT(main.c)
+AC_PROG_CC
+AC_EXEEXT
+AC_OUTPUT(makefile)
+dnl End of file
