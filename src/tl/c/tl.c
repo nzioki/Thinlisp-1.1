@@ -534,8 +534,11 @@ Obj alloc_cons (Obj new_car, Obj new_cdr, sint32 region)
 {
   Cons *new;
 
-  if (region!=CURRENT_REGION_NUMBER)
-    bad_region_warning(region, "Pair");
+  if (region!=CURRENT_REGION_NUMBER) {
+    if (region != -1)
+      bad_region_warning(region, "Pair");
+    region = CURRENT_REGION_NUMBER;
+  }
   new = (Cons *)alloc_bytes(region, 4, sizeof(Cons));
   new->car = new_car;
   new->cdr = new_cdr;
@@ -570,9 +573,11 @@ Obj alloc_list (sint32 length, sint32 init_cars_p, Obj init_elt, sint32 region)
   Cons *cons_to_init;
   sint32 bytes_available, conses_available, alloc_count, index;
 
-  if (region!=CURRENT_REGION_NUMBER)
-    bad_region_warning(region, "List");
-
+  if (region!=CURRENT_REGION_NUMBER) {
+    if (region != -1)
+      bad_region_warning(region, "List");
+    region = CURRENT_REGION_NUMBER;
+  }
   first_cons = NULL;
   while (length>0) {
     last_cdr = first_cons;
@@ -606,8 +611,11 @@ Obj alloc_simple_vector (sint32 length, sint32 region, sint32 type_tag)
 {
   Sv *new;
 
-  if (region!=CURRENT_REGION_NUMBER)
-    bad_region_warning(region, "Sv");
+  if (region!=CURRENT_REGION_NUMBER) {
+    if (region != -1)
+      bad_region_warning(region, "Sv");
+    region = CURRENT_REGION_NUMBER;
+  }
 
   /* By default the Sv struct contains 1 element. */
   new = (Sv *)alloc_bytes(region, 4, sizeof(Sv)+((length-1)*sizeof(Obj)));
@@ -620,8 +628,11 @@ Obj alloc_string (sint32 dimension, sint32 region, sint32 type_tag)
 {
   Str *new;
 
-  if (region!=CURRENT_REGION_NUMBER)
-    bad_region_warning(region, "Str");
+  if (region!=CURRENT_REGION_NUMBER) {
+    if (region != -1)
+      bad_region_warning(region, "Str");
+    region = CURRENT_REGION_NUMBER;
+  }
 
   /* By default the Str struct contains 9 bytes, one of which is needed for the
      terminating NULL byte of the string. */ 
@@ -637,8 +648,11 @@ Obj alloc_uint8_array (sint32 length, sint32 region, sint32 type_tag)
 {
   Sa_uint8 *new;
 
-  if (region!=CURRENT_REGION_NUMBER)
-    bad_region_warning(region, "Sa_uint8");
+  if (region!=CURRENT_REGION_NUMBER) {
+    if (region != -1) 
+      bad_region_warning(region, "Sa_uint8");
+    region = CURRENT_REGION_NUMBER;
+  }
   /* By default the Sa_uint8 struct contains 4 elements. */
   new = (Sa_uint8 *)alloc_bytes(region, 4, sizeof(Sa_uint8)+(length-4));
   new->type = type_tag;
@@ -651,8 +665,11 @@ Obj alloc_uint16_array (sint32 length, sint32 region, sint32 type_tag)
 {
   Sa_uint16 *new;
 
-  if (region!=CURRENT_REGION_NUMBER)
-    bad_region_warning(region, "Sa_uint16");
+  if (region!=CURRENT_REGION_NUMBER) {
+    if (region != -1)
+      bad_region_warning(region, "Sa_uint16");
+    region = CURRENT_REGION_NUMBER;
+  }
   /* By default the Sa_uint16 struct contains 2 elements. */
   new = (Sa_uint16 *)alloc_bytes(region, 4, sizeof(Sa_uint16)+((length-2)*sizeof(uint16)));
   new->type = type_tag;
@@ -665,9 +682,11 @@ Obj alloc_double_array (sint32 length, sint32 region, sint32 type_tag)
 {
   Sa_double *new;
 
-  if (region!=CURRENT_REGION_NUMBER)
-    bad_region_warning(region, "Sv");
-
+  if (region!=CURRENT_REGION_NUMBER) {
+    if (region != -1)
+      bad_region_warning(region, "Sv");
+    region = CURRENT_REGION_NUMBER;
+  }
   /* By default the Sa_double struct contains 1 element. */
   new = (Sa_double *)alloc_bytes(region, 8, sizeof(Sa_double)+((length-1)*sizeof(double)));
   new->type = type_tag;
@@ -679,8 +698,11 @@ Obj alloc_ldouble (double new_value, sint32 region, sint32 type_tag)
 {
   Ldouble *new;
 
-  if (region!=CURRENT_REGION_NUMBER)
-    bad_region_warning(region, "Ldouble");
+  if (region!=CURRENT_REGION_NUMBER) {
+    if (region != -1)
+      bad_region_warning(region, "Ldouble");
+    region = CURRENT_REGION_NUMBER;
+  }
   new = (Ldouble *)alloc_bytes(region, 8, sizeof(Ldouble));
   new->type = type_tag;
   new->body = new_value;
@@ -691,8 +713,12 @@ Obj alloc_mdouble (double new_value, sint32 region, sint32 type_tag)
 {
   Mdouble *new;
 
-  if (region!=CURRENT_REGION_NUMBER)
-    bad_region_warning(region, "Mdouble");
+  if (region!=CURRENT_REGION_NUMBER) {
+    if (region != -1)
+      bad_region_warning(region, "Mdouble");
+    region = CURRENT_REGION_NUMBER;
+  }
+
   new = (Mdouble *)alloc_bytes(region, 8, sizeof(Mdouble));
   new->type = type_tag;
   new->body.value = new_value;
@@ -703,8 +729,12 @@ Obj alloc_symbol (sint32 region, sint32 type_tag)
 {
   Sym *new;
 
-  if (region!=CURRENT_REGION_NUMBER && region!=SYMBOL_REGION)
-    bad_region_warning(region, "Sym");
+  if (region!=CURRENT_REGION_NUMBER && region!=SYMBOL_REGION) {
+    if (region != -1)
+      bad_region_warning(region, "Sym");
+    region = CURRENT_REGION_NUMBER;
+  }
+
   new = (Sym *)alloc_bytes(region, 4, sizeof(Sym));
   new->type = type_tag;
   return (Obj)new;
@@ -716,8 +746,12 @@ Obj alloc_package (Obj name_string, Obj used, sint32 region, sint32 type_tag)
 {
   Pkg *new;
 
-  if (region!=CURRENT_REGION_NUMBER)
-    bad_region_warning(region, "Pkg");
+  if (region!=CURRENT_REGION_NUMBER) {
+    if (region != -1)
+      bad_region_warning(region, "Pkg");
+    region = CURRENT_REGION_NUMBER;
+  }
+
   new = (Pkg *)alloc_bytes(region, 4, sizeof(Pkg));
   new->type = type_tag;
   new->name = name_string;
@@ -730,8 +764,12 @@ Obj alloc_string_strm (sint32 region, sint32 type_tag)
 {
   String_strm *new;
 
-  if (region!=CURRENT_REGION_NUMBER)
-    bad_region_warning(region, "String_strm");
+  if (region!=CURRENT_REGION_NUMBER) {
+    if (region != -1)
+      bad_region_warning(region, "String_strm");
+    region = CURRENT_REGION_NUMBER;
+  }
+
   new = (String_strm *)alloc_bytes(region, 4, sizeof(String_strm));
   new->type = type_tag;
   new->strings = NULL;
@@ -746,8 +784,12 @@ Obj alloc_file_strm (FILE *input, FILE *output, char *filename,
 {
   File_strm *new;
 
-  if (region!=CURRENT_REGION_NUMBER)
-    bad_region_warning(region, "File_strm");
+  if (region!=CURRENT_REGION_NUMBER) {
+    if (region != -1)
+      bad_region_warning(region, "File_strm");
+    region = CURRENT_REGION_NUMBER;
+  }
+
   new = (File_strm *)alloc_bytes(region, 4, sizeof(File_strm));
   new->type = type_tag;
   new->input = input;
