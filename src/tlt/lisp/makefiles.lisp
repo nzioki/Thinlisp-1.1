@@ -99,6 +99,7 @@
      (cc          . "@CC@ -o")
      (cc-flags    . "@CFLAGS@ -pipe -ansi -pedantic -W -Wall -c")
      (link        . "@CC@ -o")
+     (system-libs . "@LIBS@")
      (exe-postfix . "$(EXEEXT)")
      )
 
@@ -297,9 +298,20 @@
       (format output "dnl File created by ThinLisp~%")
       (format output "dnl   autoconf input for ~a~%"
 	      (system-name system))
+      (format output "dnl --- standard prolog~%")
       (format output "AC_PREREQ(2.13)~%")
       (format output "AC_INIT(~a.c)~%" typical-c-file)
+      (format output "dnl --- checks for libraries~%")
+      (format output "AC_CHECK_LIB(m,log10)~%") ;; note a
+      (format output "dnl --- checks for programs~%")
       (format output "AC_PROG_CC~%")
+      (format output "dnl --- other junk~%")
       (format output "AC_EXEEXT~%")
+      (format output "dnl --- standard epilog~%")
       (format output "AC_OUTPUT(makefile)~%")
-      (format output "dnl End of file~%"))))
+      (format output "dnl End of file~%"))
+    ;; note b
+    ))
+
+;; note a: This should be computed from the system that needed it.
+;; note b: TBD: temp file and file-contents-equal

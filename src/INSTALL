@@ -49,8 +49,17 @@ directories for other makefiles for BSD, Cygnus, and Mac.
   cd ../../lecho/bin
   make -f makefile-linux
 
-7.  This should have produced an executable "lecho" in the lecho/bin
-directory.  You can make your own sytems by copying the boot file in
+or you can use the [experimental] platform independent autoconf 
+generated makefiles
+
+  cd tl/c; autoconf; ./configure
+  cd ../bin;  make -f ../c/makefile
+  cd ../../lecho/c
+  autoconf; ./configure;
+  cd ../bin; make -f ../c/makefile
+
+7.  Either of these should have produced an executable "lecho" in the 
+lecho/bin directory.  You can make your own sytems by copying the boot file in
 lecho/lisp into <your-sys>/lisp/boot.lisp, adding your own
 functionality, and running similar commands.  
 
@@ -62,4 +71,4 @@ Lisp-based libraries and executables.
 Enjoy.
 
 --------
-$Id: INSTALL,v 1.5 2001/10/22 14:57:10 bhyde Exp $
+$Id: INSTALL,v 1.6 2002/01/02 13:20:44 bhyde Exp $

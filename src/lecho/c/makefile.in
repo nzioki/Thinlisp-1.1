@@ -29,7 +29,7 @@ LINKFLAGS = -g
 LIBS = ../../tl/bin/libtl.a
 endif
 
-SYSLIBS = 
+SYSLIBS = @LIBS@
 OBJECTS =  main.o boot.o echo.o
 
 all : lecho$(EXEEXT)

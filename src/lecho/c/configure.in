@@ -1,8 +1,14 @@
 dnl File created by ThinLisp
 dnl   autoconf input for LECHO
+dnl --- standard prolog
 AC_PREREQ(2.13)
 AC_INIT(main.c)
+dnl --- checks for libraries
+AC_CHECK_LIB(math,log10)
+dnl --- checks for programs
 AC_PROG_CC
+dnl --- other junk
 AC_EXEEXT
+dnl --- standard epilog
 AC_OUTPUT(makefile)
 dnl End of file
