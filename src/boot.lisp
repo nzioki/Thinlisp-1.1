@@ -80,11 +80,19 @@
 
 ;;; Load the translator's boot file.
 
-(load "tlt/lisp/boot")
+(load
+ (merge-pathnames (make-pathname :directory '(:relative "tlt" "lisp") :name "boot")
+		  (or *load-pathname* *default-pathname-defaults*)))
+
+;; a less diverse world this would have read (load "tlt/lisp/boot"))
+
+
 
 ;;; Compile (and load) the translator.
 
 (compile-tlt)
+
+
 
 ;;; Define convenience forms for all systems (add your own to this list).
 
