@@ -380,13 +380,13 @@
 
 (def-translatable-lisp-var *standard-output* *terminal-io*)
 
-(def-translatable-lisp-var *error-output* *terminal-io*)
+(def-translatable-lisp-var *error-output* (tli::make-error-output-file-stream))
 
 (def-translatable-lisp-var *query-io* *terminal-io*)
 
 (def-translatable-lisp-var *debug-io* *terminal-io*)
 
-(def-translatable-lisp-var *trace-output* *terminal-io*)
+(def-translatable-lisp-var *trace-output* *error-output*)
 
 (def-translatable-lisp-var *print-case* :upcase)
 
