@@ -99,7 +99,7 @@
 ;;; specially, and that the value of the parameter glt-modules is not read until
 ;;; after any new versions of BOOT have already been compiled and loaded.
 
-(defun compile-glt (&key recompile from)
+(defun compile-glt (&key recompile from (safe t))
   ;; If BOOT is not compiled, or the compile is out of date, compile and load
   ;; it.  Otherwise don't bother to compile or load it, since we are already
   ;; running within a function within that file, and so can assume that it has
@@ -107,7 +107,9 @@
   (write-line "Compiling and loading GLT...")
   (unwind-protect
        (progn
-	 (fastest-compilations)
+	 (if safe
+	     (safest-compilations)
+	   (fastest-compilations))
 	 (compile-load-glt-module 'boot (and recompile (null from)))
 	 (loop with recompile-module? = (and recompile (null from))
 	       for module in glt-modules do
@@ -159,11 +161,13 @@
     ))
 
 (defun safest-compilations ()
-  (setq *features* (delete :fastest-glt *features*))
+  (setq *features* (delete :fastest-glt (the list *features*)))
   (proclaim '(optimize
-	      (compilation-speed 3)
-	      (speed 1)
-	      (safety 3))))
+	      #+cmu(debug 3)
+	      (compilation-speed #-cmu 3 #+cmu 2)
+	      (speed #-cmu 1 #+cmu 0)
+	      (safety 3)
+	      )))
 
 
 
@@ -293,12 +297,15 @@
 #+lucid
 (setq lcl::*load-verbose* nil)
 
-#+(or aclpc allegro)
+#+(or aclpc allegro cmu)
 (setq *load-verbose* nil)
 
-#+allegro
+#+(or allegro cmu)
 (setq *compile-verbose* nil
       *compile-print* nil)
+
+#+cmu
+(setq *GC-VERBOSE* nil)
 
 
 
