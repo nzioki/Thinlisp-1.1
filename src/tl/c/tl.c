@@ -964,6 +964,7 @@ Obj alloc_struct (sint32 bytes, sint32 align, sint32 region, sint32 type_tag) {
 #define WINDOWS95_CODE   27
 #define FREEBSD_CODE     28
 #define LINUX386_CODE    29
+#define MACOSX_CODE      30
 
 sint32 get_platform_code(void) {
     sint32 platform_code = 0;
@@ -1089,6 +1090,11 @@ sint32 get_platform_code(void) {
 
 #    ifdef __linux__
 	 platform_code = LINUX386_CODE;
+#    endif
+
+#    ifdef __APPLE__
+	 /* See gcc preprocessor manual, bundled with MacOSX's developer tools. */
+	 platform_code = MACOSX_CODE;
 #    endif
 
     return platform_code;

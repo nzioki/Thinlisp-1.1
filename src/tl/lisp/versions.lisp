@@ -171,6 +171,7 @@
 (defconstant windows95-code   27)
 (defconstant freebsd-code     28)
 (defconstant linux386-code    29)
+(defconstant macosx-code      30)
 
 
 
@@ -214,6 +215,7 @@
       ((= platform-code windows95-code)    'win32)
       ((= platform-code freebsd-code)      'unix)
       ((= platform-code linux386-code)     'unix)
+      ((= platform-code macosx-code)       'unix)
 
       ;; jh per jra, 8/26/93.  Made the "otherwise" clause more forgiving for
       ;; new ports.  Instead of an error, we assume that all new ports will be
@@ -261,6 +263,7 @@
       ((= platform-code windows95-code)    'windows95)
       ((= platform-code freebsd-code)      'freebsd)
       ((= platform-code linux386-code)     'linux)
+      ((= platform-code macosx-code)       'macosx)
       ;; jh per jra, 8/26/93.  Made the "otherwise" clause more forgiving for
       ;; new ports.  Instead of an error, we return a special symbol.
       (t                                   'experimental-port))))
@@ -309,6 +312,7 @@
 	      (dos "MS Windows 3.1")
 	      (ncr " NCR 386/486") ;jh per mes.  Needs official name.
 	      (windows95 " Windows 95") ;jh per mpc, 3/28/95.
+	      (macosx " PowerPC MacOSX")
 	      ;; jh per jra & mes, 8/26/93.  Made the "otherwise" clause more
 	      ;; articulate for new ports.  The wording may be changed, but
 	      ;; should produce a title block that will discourage illicit use

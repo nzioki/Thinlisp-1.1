@@ -89,12 +89,21 @@
 
     (("freebsd" "linux"))
 
+    (("macosx" "freebsd")
+     (exe-postfix . "")
+     (cc . "cc -o")
+     (link . "$(CC)")
+     (archive . "ar -r -c -u"))
+
     (("config")
      (cc          . "@CC@")
      (cc-flags    . "@CFLAGS@ -pipe -ansi -pedantic -W -Wall -c")
      )
 
     ))
+
+(defun port-requires-ranlib-p (port-name)
+  (string= "macosx" port-name))
 
 (defvar makefile-elements nil)
 
@@ -209,7 +218,11 @@
       (format output "-( if [ -f ~a ] ; then rm ~a ; fi )~%" target target)
       (tlt-write-char #\tab output)
       (cond ((system-is-library-p system)
-	     (format output "$(ARCHIVE) ~a $(OBJECTS)~%~%" target))
+	     (format output "$(ARCHIVE) ~a $(OBJECTS)~%" target)
+	     (when (port-requires-ranlib-p port-name)
+	       (tlt-write-char #\tab output)
+	       (format output "ranlib ~a~%" target))
+	     (format output "~%"))
 	    (t
 	     (format output "$(LINK) ~a $(LINKFLAGS) $(OBJECTS) " target)
 	     (format output "$(LIBS) $(SYSLIBS)~%~%")))

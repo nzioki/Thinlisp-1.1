@@ -66,7 +66,7 @@ typedef struct {
   unsigned char body[29];
 } Str_29;
 
-extern Sym tl_versions_symbols[36];
+extern Sym tl_versions_symbols[37];
 
 extern Obj SpackageS;
 

@@ -228,6 +228,8 @@ Obj freebsd_code = BOXFIX(28);
 
 Obj linux386_code = BOXFIX(29);
 
+Obj macosx_code = BOXFIX(30);
+
 Obj g2_operating_system = (Obj)(&Unbound);
 
 static const Str_45 str_const_3
@@ -318,7 +320,10 @@ static const Str_13 str_const_29
 static const Str_13 str_const_30
   = { 7, 11, 11, " Windows 95" };
 
-static const Str_21 str_const_31
+static const Str_17 str_const_31
+  = { 7, 15, 15, " PowerPC MacOSX" };
+
+static const Str_21 str_const_32
   = { 7, 18, 18, " Experimental Port" };
 
 /* Translated from MACHINE-MODEL() = * */
@@ -357,7 +362,7 @@ Obj machine_model (void)
     else if (g==(Obj)(tl_versions_symbols+17))      /* HP9000S800 */
       if_result_temp = (Obj)(&str_const_14);    /* " HP9000/800s" */
     else if ((g==(Obj)(tl_versions_symbols+7)) || (g==(Obj)(tl_versions_symbols     /* I386 */
-        +35)))                                  /* COMPAQ */
+        +36)))                                  /* COMPAQ */
       if_result_temp = (Obj)(&str_const_15);    /* " '386" */
     else if (g==(Obj)(tl_versions_symbols+18))      /* RS6000 */
       if_result_temp = (Obj)(&str_const_16);    /* " IBM POWERstation" */
@@ -389,126 +394,131 @@ Obj machine_model (void)
       if_result_temp = (Obj)(&str_const_29);    /* " NCR 386/486" */
     else if (g==(Obj)(tl_versions_symbols+31))      /* WINDOWS95 */
       if_result_temp = (Obj)(&str_const_30);    /* " Windows 95" */
+    else if (g==(Obj)(tl_versions_symbols+34))      /* MACOSX */
+      if_result_temp = (Obj)(&str_const_31);    /* " PowerPC MacOSX" */
     else 
-      if_result_temp = (Obj)(&str_const_31);    /* " Experimental Port" */
+      if_result_temp = (Obj)(&str_const_32);    /* " Experimental Port" */
     temp_1 = SET_GLOBAL(machine_model_var,if_result_temp);
     Values_count = 1;
     return temp_1;
   }
 }
 
-static const Str_9 str_const_32
+static const Str_9 str_const_33
   = { 7, 7, 7, "KEYWORD" };
 
-static const Str_13 str_const_33
+static const Str_13 str_const_34
   = { 7, 12, 12, "NICKNAMES-TO" };
 
-static const Str_9 str_const_34
+static const Str_9 str_const_35
   = { 7, 5, 5, "ALIAS" };
 
-static const Str_25 str_const_35
+static const Str_25 str_const_36
   = { 7, 23, 23, "SYSTEM-ALL-USED-SYSTEMS" };
 
-static const Str_5 str_const_36
+static const Str_5 str_const_37
   = { 7, 4, 4, "UNIX" };
 
-static const Str_5 str_const_37
+static const Str_5 str_const_38
   = { 7, 3, 3, "DOS" };
 
-static const Str_5 str_const_38
+static const Str_5 str_const_39
   = { 7, 3, 3, "VMS" };
 
-static const Str_9 str_const_39
+static const Str_9 str_const_40
   = { 7, 5, 5, "WIN32" };
 
-static const Str_5 str_const_40
+static const Str_5 str_const_41
   = { 7, 4, 4, "I386" };
 
-static const Str_9 str_const_41
+static const Str_9 str_const_42
   = { 7, 6, 6, "AVIION" };
 
-static const Str_5 str_const_42
+static const Str_5 str_const_43
   = { 7, 3, 3, "SGI" };
 
-static const Str_9 str_const_43
+static const Str_9 str_const_44
   = { 7, 7, 7, "SEQUENT" };
 
-static const Str_5 str_const_44
+static const Str_5 str_const_45
   = { 7, 4, 4, "NEXT" };
 
-static const Str_13 str_const_45
+static const Str_13 str_const_46
   = { 7, 10, 10, "DECSTATION" };
 
-static const Str_9 str_const_46
+static const Str_9 str_const_47
   = { 7, 8, 8, "MASSCOMP" };
 
-static const Str_13 str_const_47
+static const Str_13 str_const_48
   = { 7, 10, 10, "HP9000S300" };
 
-static const Str_13 str_const_48
+static const Str_13 str_const_49
   = { 7, 10, 10, "HP9000S400" };
 
-static const Str_13 str_const_49
+static const Str_13 str_const_50
   = { 7, 10, 10, "HP9000S700" };
 
-static const Str_13 str_const_50
+static const Str_13 str_const_51
   = { 7, 10, 10, "HP9000S800" };
 
-static const Str_9 str_const_51
+static const Str_9 str_const_52
   = { 7, 6, 6, "RS6000" };
 
-static const Str_5 str_const_52
+static const Str_5 str_const_53
   = { 7, 4, 4, "SUN3" };
 
-static const Str_5 str_const_53
+static const Str_5 str_const_54
   = { 7, 4, 4, "SUN4" };
 
-static const Str_9 str_const_54
+static const Str_9 str_const_55
   = { 7, 8, 8, "SPARCSOL" };
 
-static const Str_9 str_const_55
+static const Str_9 str_const_56
   = { 7, 8, 8, "ALPHAVMS" };
 
-static const Str_9 str_const_56
+static const Str_9 str_const_57
   = { 7, 8, 8, "MOTOROLA" };
 
-static const Str_9 str_const_57
+static const Str_9 str_const_58
   = { 7, 7, 7, "STRATUS" };
 
-static const Str_9 str_const_58
+static const Str_9 str_const_59
   = { 7, 6, 6, "HARRIS" };
 
-static const Str_5 str_const_59
+static const Str_5 str_const_60
   = { 7, 3, 3, "NEC" };
 
-static const Str_9 str_const_60
+static const Str_9 str_const_61
   = { 7, 8, 8, "ALPHAOSF" };
 
-static const Str_9 str_const_61
+static const Str_9 str_const_62
   = { 7, 7, 7, "ALPHANT" };
 
-static const Str_9 str_const_62
+static const Str_9 str_const_63
   = { 7, 7, 7, "INTELNT" };
 
-static const Str_5 str_const_63
+static const Str_5 str_const_64
   = { 7, 3, 3, "NCR" };
 
-static const Str_13 str_const_64
+static const Str_13 str_const_65
   = { 7, 9, 9, "WINDOWS95" };
 
-static const Str_9 str_const_65
+static const Str_9 str_const_66
   = { 7, 7, 7, "FREEBSD" };
 
-static const Str_9 str_const_66
+static const Str_9 str_const_67
   = { 7, 5, 5, "LINUX" };
 
-static const Str_21 str_const_67
+static const Str_9 str_const_68
+  = { 7, 6, 6, "MACOSX" };
+
+static const Str_21 str_const_69
   = { 7, 17, 17, "EXPERIMENTAL-PORT" };
 
-static const Str_9 str_const_68
+static const Str_9 str_const_70
   = { 7, 6, 6, "COMPAQ" };
 
-Sym tl_versions_symbols[36];
+Sym tl_versions_symbols[37];
 
 /* Translated from SYMS-TL-VERSIONS() = VOID */
 
@@ -516,85 +526,87 @@ void syms_tl_versions (void)
 {
   Obj cached_keyword_package, cached_tl_package;
 
-  cached_keyword_package = find_package_1((Obj)(&str_const_32));    /* "KEYWORD" */
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[0])),(Obj)(&str_const_33),   /* "NICKNAMES-TO" */
+  cached_keyword_package = find_package_1((Obj)(&str_const_33));    /* "KEYWORD" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[0])),(Obj)(&str_const_34),   /* "NICKNAMES-TO" */
       41336,cached_keyword_package);
   (tl_versions_symbols[0]).external = 1;
   (tl_versions_symbols[0]).symbol_value = (Obj)(&(tl_versions_symbols[0]));
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[1])),(Obj)(&str_const_34),   /* "ALIAS" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[1])),(Obj)(&str_const_35),   /* "ALIAS" */
       1925,cached_keyword_package);
   (tl_versions_symbols[1]).external = 1;
   (tl_versions_symbols[1]).symbol_value = (Obj)(&(tl_versions_symbols[1]));
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[2])),(Obj)(&str_const_35),   /* "SYSTEM-ALL-USED-SYSTEMS" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[2])),(Obj)(&str_const_36),   /* "SYSTEM-ALL-USED-SYSTEMS" */
       60613,cached_keyword_package);
   (tl_versions_symbols[2]).external = 1;
   (tl_versions_symbols[2]).symbol_value = (Obj)(&(tl_versions_symbols[2]));
   cached_tl_package = find_package_1((Obj)(&str_const));    /* "TL" */
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[3])),(Obj)(&str_const_36),   /* "UNIX" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[3])),(Obj)(&str_const_37),   /* "UNIX" */
       858,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[4])),(Obj)(&str_const_37),   /* "DOS" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[4])),(Obj)(&str_const_38),   /* "DOS" */
       477,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[5])),(Obj)(&str_const_38),   /* "VMS" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[5])),(Obj)(&str_const_39),   /* "VMS" */
       401,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[6])),(Obj)(&str_const_39),   /* "WIN32" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[6])),(Obj)(&str_const_40),   /* "WIN32" */
       1620,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[7])),(Obj)(&str_const_40),   /* "I386" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[7])),(Obj)(&str_const_41),   /* "I386" */
       706,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[8])),(Obj)(&str_const_41),   /* "AVIION" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[8])),(Obj)(&str_const_42),   /* "AVIION" */
       3836,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[9])),(Obj)(&str_const_42),   /* "SGI" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[9])),(Obj)(&str_const_43),   /* "SGI" */
       395,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[10])),(Obj)(&str_const_43),  /* "SEQUENT" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[10])),(Obj)(&str_const_44),  /* "SEQUENT" */
       6660,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[11])),(Obj)(&str_const_44),  /* "NEXT" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[11])),(Obj)(&str_const_45),  /* "NEXT" */
       896,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[12])),(Obj)(&str_const_45),  /* "DECSTATION" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[12])),(Obj)(&str_const_46),  /* "DECSTATION" */
       62852,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[13])),(Obj)(&str_const_46),  /* "MASSCOMP" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[13])),(Obj)(&str_const_47),  /* "MASSCOMP" */
       14974,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[14])),(Obj)(&str_const_47),  /* "HP9000S300" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[14])),(Obj)(&str_const_48),  /* "HP9000S300" */
       55172,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[15])),(Obj)(&str_const_48),  /* "HP9000S400" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[15])),(Obj)(&str_const_49),  /* "HP9000S400" */
       55192,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[16])),(Obj)(&str_const_49),  /* "HP9000S700" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[16])),(Obj)(&str_const_50),  /* "HP9000S700" */
       55188,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[17])),(Obj)(&str_const_50),  /* "HP9000S800" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[17])),(Obj)(&str_const_51),  /* "HP9000S800" */
       55208,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[18])),(Obj)(&str_const_51),  /* "RS6000" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[18])),(Obj)(&str_const_52),  /* "RS6000" */
       3664,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[19])),(Obj)(&str_const_52),  /* "SUN3" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[19])),(Obj)(&str_const_53),  /* "SUN3" */
       867,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[20])),(Obj)(&str_const_53),  /* "SUN4" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[20])),(Obj)(&str_const_54),  /* "SUN4" */
       868,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[21])),(Obj)(&str_const_54),  /* "SPARCSOL" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[21])),(Obj)(&str_const_55),  /* "SPARCSOL" */
       13062,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[22])),(Obj)(&str_const_55),  /* "ALPHAVMS" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[22])),(Obj)(&str_const_56),  /* "ALPHAVMS" */
       16025,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[23])),(Obj)(&str_const_56),  /* "MOTOROLA" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[23])),(Obj)(&str_const_57),  /* "MOTOROLA" */
       14405,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[24])),(Obj)(&str_const_57),  /* "STRATUS" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[24])),(Obj)(&str_const_58),  /* "STRATUS" */
       6337,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[25])),(Obj)(&str_const_58),  /* "HARRIS" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[25])),(Obj)(&str_const_59),  /* "HARRIS" */
       3593,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[26])),(Obj)(&str_const_59),  /* "NEC" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[26])),(Obj)(&str_const_60),  /* "NEC" */
       497,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[27])),(Obj)(&str_const_60),  /* "ALPHAOSF" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[27])),(Obj)(&str_const_61),  /* "ALPHAOSF" */
       16084,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[28])),(Obj)(&str_const_61),  /* "ALPHANT" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[28])),(Obj)(&str_const_62),  /* "ALPHANT" */
       8012,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[29])),(Obj)(&str_const_62),  /* "INTELNT" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[29])),(Obj)(&str_const_63),  /* "INTELNT" */
       7440,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[30])),(Obj)(&str_const_63),  /* "NCR" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[30])),(Obj)(&str_const_64),  /* "NCR" */
       492,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[31])),(Obj)(&str_const_64),  /* "WINDOWS95" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[31])),(Obj)(&str_const_65),  /* "WINDOWS95" */
       28611,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[32])),(Obj)(&str_const_65),  /* "FREEBSD" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[32])),(Obj)(&str_const_66),  /* "FREEBSD" */
       7250,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[33])),(Obj)(&str_const_66),  /* "LINUX" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[33])),(Obj)(&str_const_67),  /* "LINUX" */
       1858,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[34])),(Obj)(&str_const_67),  /* "EXPERIMENTAL-PORT" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[34])),(Obj)(&str_const_68),  /* "MACOSX" */
+      3690,cached_tl_package);
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[35])),(Obj)(&str_const_69),  /* "EXPERIMENTAL-PORT" */
       2607,cached_tl_package);
-  init_symbol_into_package((Obj)(&(tl_versions_symbols[35])),(Obj)(&str_const_68),  /* "COMPAQ" */
+  init_symbol_into_package((Obj)(&(tl_versions_symbols[36])),(Obj)(&str_const_70),  /* "COMPAQ" */
       3947,cached_tl_package);
   return;
 }
@@ -675,6 +687,8 @@ void init_tl_versions (void)
       if_result_temp = (Obj)(tl_versions_symbols+3);    /* UNIX */
     else if (platform_code==29) 
       if_result_temp = (Obj)(tl_versions_symbols+3);    /* UNIX */
+    else if (platform_code==30) 
+      if_result_temp = (Obj)(tl_versions_symbols+3);    /* UNIX */
     else {
       (temp_list[0]) = BOXFIX(platform_code);
       (temp_list[1]) = (Obj)NULL;
@@ -744,8 +758,10 @@ void init_tl_versions (void)
       if_result_temp_1 = (Obj)(tl_versions_symbols+32);     /* FREEBSD */
     else if (platform_code_1==29) 
       if_result_temp_1 = (Obj)(tl_versions_symbols+33);     /* LINUX */
+    else if (platform_code_1==30) 
+      if_result_temp_1 = (Obj)(tl_versions_symbols+34);     /* MACOSX */
     else 
-      if_result_temp_1 = (Obj)(tl_versions_symbols+34);     /* EXPERIMENTAL-PORT */
+      if_result_temp_1 = (Obj)(tl_versions_symbols+35);     /* EXPERIMENTAL-PORT */
     g2_machine_type = if_result_temp_1;
   }
   if (machine_model_var==(Obj)(&Unbound)) 

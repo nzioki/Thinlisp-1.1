@@ -48,6 +48,7 @@
     TL::WINDOWS95
     TL::FREEBSD
     TL::LINUX
+    TL::MACOSX
     TL::EXPERIMENTAL-PORT
     TL::COMPAQ)
   ;; Used compiled-functions = (name func-array . index).
@@ -99,6 +100,7 @@
     (TL::INTELNT-CODE . "intelnt_code")
     (TL::LINUX386-CODE . "linux386_code")
     (TL:MACHINE-MODEL-VAR . "machine_model_var")
+    (TL::MACOSX-CODE . "macosx_code")
     (TL::MASSCOMP-CODE . "masscomp_code")
     (TL::MOTOROLA-CODE . "motorola_code")
     (TL::NCR-CODE . "ncr_code")
