@@ -30,22 +30,11 @@
                                (STRING T FIXNUM T)
                                STRING))
   ;; Defined functions.
-  '((LECHO::BLATZ . "blatz")
-    (LECHO::COPY-UFFDA . "copy_uffda")
-    (TL-USER::MAIN . "main_1")
-    (LECHO::MAKE-UFFDA-FUNCTION . "make_uffda_function")
-    (LECHO::SETF-UFFDA-X . "setf_uffda_x")
-    (LECHO::SETF-UFFDA-Y . "setf_uffda_y")
-    (LECHO::SETF-UFFDA-Z . "setf_uffda_z")
-    (LECHO::UFFDA-P . "uffda_p")
-    (LECHO::UFFDA-X . "uffda_x_1")
-    (LECHO::UFFDA-Y . "uffda_y_1")
-    (LECHO::UFFDA-Z . "uffda_z_1"))
+  '((TL-USER::MAIN . "main_1"))
   ;; Used variables = (symbol c-name . type).
   '((*PACKAGE* "SpackageS" . OBJ))
   ;; Defined variables
   NIL
   ;; Used class typedefs.
-  '((LECHO::UFFDA "uffda" STRUCT ((UINT 24) "type") ((UINT 8) "extended_type")
-     (OBJ "uffda_x") (OBJ "uffda_y") (OBJ "uffda_z")))
+  NIL
   )

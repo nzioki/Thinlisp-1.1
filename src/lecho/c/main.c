@@ -63,6 +63,7 @@ int main (int argc, char **argv)
   syms_tl_versions();
   syms_tl_forward();
   syms_tl_tl_extension();
+  syms_tl_tl_time();
   syms_lecho_boot();
   syms_lecho_echo();
   init_tl_boot();
@@ -83,6 +84,7 @@ int main (int argc, char **argv)
   init_tl_versions();
   init_tl_forward();
   init_tl_tl_extension();
+  init_tl_tl_time();
   init_lecho_boot();
   init_lecho_echo();
   lisp_argv = (Obj)NULL;

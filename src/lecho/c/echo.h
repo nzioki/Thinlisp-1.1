@@ -31,14 +31,6 @@ typedef struct {
   unsigned char body[5];
 } Str_5;
 
-typedef struct {
-  unsigned int type : 24;
-  unsigned int extended_type : 8;
-  Obj          uffda_x;
-  Obj          uffda_y;
-  Obj          uffda_z;
-} uffda;
-
 extern Obj SpackageS;
 
 extern unsigned char * coerce_to_string(Obj);
