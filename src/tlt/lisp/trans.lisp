@@ -345,7 +345,9 @@
 	      for used-package-c-expr
 		  = (loop with accumulating-c-expr
 			    = (make-c-cast-expr 'obj (make-c-name-expr "NULL"))
-			  for used-package in (reverse (package-use-list package))
+			  for used-package
+			  in (intersection *global-package-registry*
+					   (reverse (package-use-list package)))
 			  for used-name = (package-name used-package)
 			  do
 		      (setq accumulating-c-expr
@@ -564,10 +566,10 @@
 	  for subsystem = (gl:find-system subsystem-name)
 	  do
       (loop for h-file in (system-extra-h-files subsystem) do
-	(format (c-file-c-stream c-file) "#include \"~a.h\"~%" h-file)))
+	(format (c-file-c-stream c-file) "#include \"~a.h\"~%" (namestring h-file))))
     (format (c-file-c-stream c-file)
 	    "#include \"~a\"~%~%"
-	    (system-h-file-name system module))
+	    (namestring (system-h-file-name system module)))
 	  
     (setf (c-file-h-file c-file)
 	  (make-c-file
