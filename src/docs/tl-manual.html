@@ -1,124 +1,30 @@
-\input texinfo   @c -*-texinfo-*-
-@c %**start of header
-@setfilename tl-manual.info
-@settitle ThinLisp Manual
-@setchapternewpage odd
-@c %**end of header
+<HTML>
+<HEAD>
+<!-- Created by texi2html 1.56k from tl-manual.texinfo on 5 October 1999 -->
 
-@ifinfo
-The manual and associated descriptions of ThinLisp, a Lisp-to-C translator for
-real time applications and anything that shouldn't be fat and slow.
-
-Copyright (c) 1999 The ThinLisp Group
-@end ifinfo
-
-@titlepage
-@title ThinLisp Manual
-@subtitle Version 0.5
-@subtitle @today{}
-@author The ThinLisp Group:
-@author Jim Allard
-@author Ben Hyde
-
-@c The following two commands start the copyright page.
-@page
-@vskip 0pt plus 1filll
-Copyright @copyright{} 1999 The ThinLisp Group
-@*Copyright @copyright{} 1995 Gensym Corporation.
-@*All rights reserved.
-
-This file is part of ThinLisp.
-
-ThinLisp is open source; you can redistribute it and/or modify it
-under the terms of the ThinLisp License as published by the ThinLisp
-Group; either version 1 or (at your option) any later version.
-
-ThinLisp is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-For additional information see @url{http://www.thinlisp.org/}.
-
-@end titlepage
-@iftex
-@everyfooting Version 1.0@|@|@today{}
-@end iftex
+<TITLE>ThinLisp Manual</TITLE>
+</HEAD>
+<BODY>
+<H1>ThinLisp Manual</H1>
+<P>
+<P><HR><P>
 
 
-@comment node-name, next,             previous, up
-@node    Top, Preface,                , (dir)
-
-@menu
-* Preface::            What is ThinLisp?
-* Acknowledgements::   Our Debts
-* Rant::               What Possessed Us to Make ThinLisp
-* Memory::             Type Tags, Memory Layout
-* Index::              Small, but growing.
-@end menu
-
-@node     Preface,    Acknowledgements, Top, Top
-@comment  node-name,  next,  previous,  up
-@unnumbered Preface
-
-ThinLisp is an open source Lisp to C translator for delivering commercial
-quality, Lisp-based application.  It implements a subset of Common Lisp with
-extensions.  ThinLisp itself is written in Common Lisp, and so must run on top
-of an underlying Common Lisp implementation such as Allegro, MCL, or CMU Lisp.
-The C code resulting from a translation can then be independently compiled to
-produce a small, efficient executable image.
-
-Originally designed for real-time control applications, ThinLisp is not a
-traditional Lisp environment.  It purposefully does not contain a garbage
-collector.  ThinLisp produces compile time warnings for uses of inherently slow
-Lisp operations, for consing operations, and for code that is unoptimizable due
-to a lack of sufficient type declarations.  These warnings can be suppressed by
-improving the code, or through use of lexical declarations acknowledging that
-the code is only of prototype quality.  Code meeting the stringent requirements
-imposed by ThinLisp cannot by sped up by rewriting it in C.
-
-Newest source distributions and this manual can be found at
-@url{http://www.thinlisp.org/}.  Bugs should be reported to
-@email{bugs@@thinlisp.org}
+<H1><A NAME="SEC1" HREF="tl-manual_toc.html#TOC1">Explanitory Rant</A></H1>
+<P>
+<A NAME="IDX1"></A>
+<A NAME="IDX2"></A>
 
 
-@node     Acknowledgements, Rant, Preface, Top
-@comment  node-name,  next,  previous,  up
-@unnumbered Acknowledgements
-
-ThinLisp was begun in 1995 as a late night project born of the frustration of
-attempting to ship commercial quality software products written in Lisp.  Four
-years later I'm still obsessed by the issues that drove me to it in the first
-uplace --- practical use of high level languages to implement complex
-applications while achieving the performance that seems easy when using
-languages that are semantically "close to the silicon".  Hopefully this
-implementation will lead to some useful insights towards that goal.
-
-Thanks to Ben Hyde for convincing Gensym and myself that this system should be
-taken off the shelf, polished up, and released as open source software.  Mike
-Colena and Glen Iba wrote significant parts of the implementation.  Nick Caruso,
-Joe Devlin, Rick Harris, and John Hodgkinson and also contributed their time,
-sage opinions, and code.  Thanks to Lowell Hawkinson, Jim Pepe, and Dave Riddell
-for their support of this work at Gensym Corporation.  Thanks to Kim Barrett and
-David Sotkowitz of IS Robotics, Inc. for contributions of multiple-inheritance
-code and opinions, and to Rod Brooks and Dave Barrett for their ideas.  Finally,
-thanks to my wife, Gerry Zipser, for putting up with the bleary-eyed aftermath
-of coding sessions, and for helping to focus efforts during this past summer's
-release push.
-
-@*Jim Allard@*Newton, Massachusetts@*October 6, 1999
-
-@node     Rant,       Memory, Acknowledgements, Top
-@comment  node-name,  next,  previous,  up
-@chapter Explanatory Rant
-@cindex explanatory rant
-@cindex rant
-
+<P>
 The long and probably uninteresting story of why TL was written.
 
-@node     Memory,     Index, Rant,      Top
-@comment  node-name,  next,  previous,  up
-@chapter Memory Architecture
 
+
+
+<H1><A NAME="SEC2" HREF="tl-manual_toc.html#TOC2">Memory Architecture</A></H1>
+
+<P>
 Use pointers to a one word (4 byte) header structure as the basic mechanism.
 The type should be an 8-bit unsigned byte value.  The upper 3 bytes of the
 header word should be used for type specific data.  For vectors this should be
@@ -136,32 +42,41 @@ argument for 4 byte alignment is that we would not need to occasionally skip
 forward 4 bytes when allocating from heap in order to find the next 8 byte
 aligned address.  For now, the 4 byte alignment wins.
 
+
+<P>
 The exceptions to the pointer to a type tag rule are the following types, which
 have immediate type tags.  These types are fixnums, conses, and managed-floats.
 If all pointers are 4 byte aligned, then the lower 2 bits of all pointers are
 always zeros.  This gives us 3 non-zero immediate type tags.  The following are
 the immediate type tag assignments:
 
-@example
+
+
+<PRE>
   0:  pointer to header of Lisp object
   1:  immediate fixnum
   2:  pointer to cons (mask with -4 for car*, follow for cdr*)
   3:  immediate character
-@end example
+</PRE>
 
+<P>
 A determination of type can be made from a hex value of the pointer.
 
-@example
+
+<P>
   hex 0, 4, 8, C are pointers to Lisp objects
   hex 1, 5, 9, and D are fixnums,
   hex 2, 6, A, and E are pointers to conses
   hex 3, 7, B, and F are immediate characters.
-@end example
 
+
+<P>
 The arguments for a 30 bit fixnum instead of a 31 is that it makes for fast
 fixnum additions and subtractions without risking overflow.  31 bit fixnums
 require a sequence point between operations to avoid the potential for overflow.
 
+
+<P>
 Characters could be either immediate or remote, though there is some performance
 benefit to characters being immediate.  We could have a preallocated array of
 remote character objects, and allocate a Lisp character is arefing into this
@@ -169,13 +84,19 @@ array.  For now we are going with immediate characters, especially since we are
 thinking hard about UNICODE characters, which require 16 bits and so make a
 pre-allocated array become somewhat too large.
 
+
+<P>
 The type tags in headers should not conflict with any of the immediate type
 tags, so that type-case can turn into a fixnum-case of the type values.
 
+
+<P>
 Given these set ups, type tests against straight types are at worst a null test,
 a mask and an integer equality test, a character byte fetch, and another integer
 equality test.
 
+
+<P>
 In C, the type for object should be an unsigned integer type 32 bits long.
 There are several advantages to this.  All architectures (including the Alpha
 OSF when using a linker option) can have pointer values be represented in 32
@@ -187,6 +108,8 @@ example, we could put immediate floats into odd-indexed simple vector locations,
 and those floats would consume 2 elements.  For structures and frames, this
 could provide significant savings.  -jra 8/30/95]
 
+
+<P>
 The type for managed float should have an immediate type tag so that we may have
 the smallest possible representation for floats, since so many are used.  For
 each type that involves a heap allocated block of memory (i.e. all but fixnum
@@ -197,21 +120,27 @@ Even in production systems, we could check for double reclamation of data
 structures.  Note that this is not possible for heap allocated data structures
 that use an immediate type tag.
 
+
+<P>
 The type tags for heap allocated data structures have no special issues, except
 that these values should not collide with any immediate type tags (i.e. be
 greater than 3), and be able to quickly determine if a data structure is
 reclaimed (i.e. use bit 7 as a flag).
 
+
+<P>
 So the type tag table is as follows:
 
-@example
+
+
+<PRE>
 Tag Value							Reclaimed Tag
-Dec     Hex	Lisp Type		C Type & Conv		Dec    Hex
+Dec     Hex	Lisp Type		C Type &#38; Conv		Dec    Hex
 -------------	---------		-------------		-------------
 0	00	immed pointer		(Header *)Obj
-1	01	immed fixnum		((sint32)Obj)>>2
+1	01	immed fixnum		((sint32)Obj)&#62;&#62;2
 2	02	cons			(Obj *)(Obj-2)
-3	03	immed character		(unsigned char)(Obj>>2)
+3	03	immed character		(unsigned char)(Obj&#62;&#62;2)
 4	04	managed-float		(Mdouble *)Obj		132	84
 5	05	double-float		(Ldouble *)Obj		133	85
 6	06	simple-vector		(Sv *)Obj	 	134	86
@@ -222,58 +151,76 @@ Dec     Hex	Lisp Type		C Type & Conv		Dec    Hex
 11	0B	symbol			(Sym *)Obj	 	139	8B
 12	0C	compiled-function	(Func *)Obj	 	140	8C
 13	0D	package			(Package *)Obj	 	141	8D
-@end example
+</PRE>
 
+<P>
 Each of the data structures are described below.
 
-@section Simple-vectors
 
+
+
+<H3><A NAME="SEC3" HREF="tl-manual_toc.html#TOC3">Simple-vectors</A></H3>
+
+<P>
 Simple vectors are the most often used data structure, so we'd like to keep it
 as small and fast as possible.  It has a one word (i.e. 4 byte) header.  The
 only components of a simple vector are the type tag, the length, and the body of
 the array.  If the type tag is 8 bits wide (unsigned) then the length can be 24
-bits of unsigned integer, giving a maximum length of 16 Meg.
+bits of unsigned integer, giving a maximum length of 16 meg.
 
-@example
-typedef struct @{
+
+
+<PRE>
+typedef struct {
   unsigned int:8:type;
   unsigned int:24:length;
   Obj[1]:body;
-@} Sv
-@end example
+} Sv
+</PRE>
 
+<P>
 In C references to array are guaranteed to not be bounds clicked.  this means
 that this one type can be used to all elements of arbitrarily sized simple
 vectors.  Constant vectors can be made by having a type of simple-vector local
 to the C file containing the constant so that we can use an initialized
 structure.  For example, a constant simple vector containing 5 fixnums could be
-emitted as C code as follows.
+emitteed as C code as follows.
 
-@example
-typedef struct @{
+
+
+<PRE>
+typedef struct {
   unsigned int:8:type;
   unsigned int:24:length;
   Obj[5]:body;
-@} Sv_5
+} Sv_5
 
-static Sa_5 const1 = @{8, 5, @{fix(23), fix(2), fix(3), fix(9), fix(-12)@}@};
-@end example
+static Sa_5 const1 = {8, 5, {fix(23), fix(2), fix(3), fix(9), fix(-12)}};
+</PRE>
 
+<P>
 An example of the translation of a fetch of a simple vector element follows.
 
-@example
-  Lisp: (setq x (svref y 5))
-  C:    x = (Sv *)y->body[5];
-@end example
 
+
+<PRE>
+  Lisp: (setq x (svref y 5))
+  C:    x = (Sv *)y-&#62;body[5];
+</PRE>
+
+<P>
 Though the detail of casting and fetching the body component could be hidden in
 a C macro, at first we will leave all the details exploded out.  One criticism
 of Chestnut's translations is that no one can figure out what the implementation
 is actually doing.  Exploding out the details will help train development in the
 details.
 
-@section Strings
 
+
+
+<H3><A NAME="SEC4" HREF="tl-manual_toc.html#TOC4">Strings</A></H3>
+
+<P>
 In order to give fast performance for all strings, we will have fill pointers
 for all strings in G2.  The fill pointer and length will both consume 3 bytes,
 plus one byte for the tag.  The body of the string will be packed directly
@@ -284,25 +231,34 @@ byte to the length as compared to the loop length of the string.  Having 1 extra
 byte in the header word will allow us to efficiently pack strings into words
 when they have lengths that are multiples of 4.
 
-@example
-typedef struct @{
+
+
+<PRE>
+typedef struct{
   unsigned int: 8: type;
   unsigned int:24: length;
   unsigned int:24:fill_length;
   char[9]: body
-@} Str
-@end example
+} Str
+</PRE>
 
-@section Immediate integer and double arrays
 
+
+<H3><A NAME="SEC5" HREF="tl-manual_toc.html#TOC5">Immediate integer and double arrays</A></H3>
+
+<P>
 All of these types are implemented in the same way, with a 4 byte-aligned one
 byte type tag, a 3 byte length, and then a body.  These types are Sa_uint8 and
 Sa_uint16.  Sa_double is similar except that it is 8 byte aligned..  The type
 for bit-vectors is built on top of Sa_uint8, by fetching bytes and bit-shifting
 to fetch values and modify values.
 
-@section Symbol
 
+
+
+<H3><A NAME="SEC6" HREF="tl-manual_toc.html#TOC6">Symbol</A></H3>
+
+<P>
 There are several different optimizations that one can imagine for the slots of
 symbols.  In the first pass of this implementation, no such memory squeezing
 will be attempted, and all five typical slots of symbols will be directly
@@ -310,8 +266,10 @@ provided in the symbol structure.  Also, since virtually all symbols are
 included in packages in G2 and TW, the slots needed for holding the symbol in
 package balanced binary trees will be included in the symbol itself.
 
-@example
-typedef struct @{
+
+
+<PRE>
+typedef struct {
   unsigned int:8:type;
   unsigned int:1:local_value;
   unsigned int:1:external;
@@ -325,9 +283,10 @@ typedef struct @{
   Obj:symbol_function;
   Obj:package_left_branch;
   Obj:package_right_branch;
-@} Symbol
-@end example
+} Symbol
+</PRE>
 
+<P>
 The symbol-value slot is typically a pointer to the location containing the true
 symbol value, which will typically be a C global variable.  When a runtime
 generated symbol has a value, the local-value bit will be 1, and the value is
@@ -335,14 +294,20 @@ directly within the symbol-value slot.  Note that slows down explicit calls to
 Lisp symbol-value since it has to check the local_value bit, but these explicit
 calls are rare and so I don't think that's so bad.
 
+
+<P>
 If packages are implemented as balanced binary trees, using the hash value of
 the name as an index, then there can be collisions between these hash values.
 In this case, the symbol names will be alphabetically ordered to determine left,
 right or match.  These choices give us a constant size for symbols, given the
 size of the symbol-name.
 
-@section Compiled Functions
 
+
+
+<H3><A NAME="SEC7" HREF="tl-manual_toc.html#TOC7">Compiled Functions</A></H3>
+
+<P>
 Compiled functions will contain a pointer to the C function for this compiled
 function, the number of arguments for the function; the number of those
 arguments that are optional in the Lisp function, and a list of the constants
@@ -354,38 +319,50 @@ the default value semantics require more than a constant, the no-arg argument
 value will be passed, and further computation will happen within the function to
 implement the default value selection).
 
-@example
-typedef struct @{
+
+
+<PRE>
+typedef struct {
   unsigned int:8:type;
   unsigned int:8:arg_count;
   unsigned int:8:optional_arguments;
   Obj:default_arguments;
   void *f(): c_function;
-@} Func
-@end example
+} Func
+</PRE>
 
+<P>
 The type spec for compiled functions will typically have arguments of type 
 Obj: and a return type Obj: In special cases we may provide unsafe 
 optimizations for functions that do not have object type arg and return 
 values, but these should never be given to the default funcall operations.
 
-@section Characters
 
+
+
+<H3><A NAME="SEC8" HREF="tl-manual_toc.html#TOC8">Characters</A></H3>
+
+<P>
 Since all immediate type tags are in use, we will use heap allocated 
 character objects.  To avoid the need to reclaim them, we will preallocate 
 all 256 character objects (at 8 bytes per, that's 2K).  The value is explicitly 
 unsigned to avoid confusion in parts that have a default signed char type.
 
-@example
-typedef struct @{
+
+
+<PRE>
+typedef struct {
   double [0]: align;
   unsigned int:8:type;
   unsigned char:value
-@} Lchar
-@end example
+} Lchar
+</PRE>
 
-@section Package
 
+
+<H3><A NAME="SEC9" HREF="tl-manual_toc.html#TOC9">Package</A></H3>
+
+<P>
 Packages are implemented as balanced binary trees.  They contain a list of used
 packages, and a symbol (or null pointer) that is the root node of the balanced
 binary tree.  The balanced binary tree of symbol structures will hold only
@@ -397,26 +374,35 @@ function will be implemented by searching through the binary trees of this
 package then through the binary trees of used packages and their used packages,
 but only accepting external symbols.
 
-@example
-typedef struct @{
+
+
+<PRE>
+typedef struct {
   unsigned int:8:type;
   Obj:root_symbol;
   Obj:used_package_list;
-@} Pkg
-@end example
+} Pkg
+</PRE>
 
-@section Obsolete 8 Byte Alignments
 
+
+<H3><A NAME="SEC10" HREF="tl-manual_toc.html#TOC10">Obsolete 8 Byte Alignments</A></H3>
+
+<P>
 [The following section describes tagging for 8 byte alignments.  Keeping for
 historical perspective.  -jra 8/30/95]
 
+
+<P>
 The exceptions to the pointer to a type tag rule are the following types,
 which have immediate type tags.  These types are fixnums, characters,
 managed-floats, and conses.  If all pointers are 8 byte aligned, then the
 lower 3 bits of all pointers are always zeros.  This gives us 7 non-zero
 immediate type tags.  The following are the immediate type tag assignments:
 
-@example
+
+
+<PRE>
   0:  pointer to header of Lisp object
   1:  immediate even fixnum
   2:  immediate character
@@ -425,12 +411,15 @@ immediate type tags.  The following are the immediate type tag assignments:
   5:  immediate odd fixnum
   6:  pointer to double-float (mask with -8 for double*)
   7:  unused
-@end example
+</PRE>
 
+<P>
 With this implementation, some determination of type can be made from the
 printed hex value of the pointer:
 
-@example
+
+
+<PRE>
   hex 0 and 8 are pointers to Lisp objects,
   hex 1, 5, 9, and D are fixnums,
   hex 2 and A are characters,
@@ -438,30 +427,37 @@ printed hex value of the pointer:
   hex 4 and C are conses,
   hex 6 and E are double-floats,
   hex 7 and F are unused, so must be corrupted objects
-@end example
+</PRE>
 
+<P>
 By having a cons tag of 4 and a headerless cons, the access to one of the
 elements of the cons will be a straight pointer dereference.  The other
 requires subtracting 4 from the pointer first.  (On the Alpha OSF or other 8
 byte pointer, machines, some address computation is necessary for both the car
 and cdr, unless we make object a 4 byte wide data type, which we could do).
 
+
+<P>
 The type tags for heap allocated data structures have no special issues,
 except that these values should not collide with any immediate type tags
 (i.e. be greater than 7), and be able to quickly determine if a data structure
 is reclaimed (i.e. use bit 7 as a flag).
 
+
+<P>
 So the type tag table is as follows:
 
-@example
+
+
+<PRE>
   Tag	(Hex)	Lisp Type		C Type		 Reclaimed Tag
   -------------	---------		------		 -------------
   0	00	immed pointer		(Header *)Obj
-  1	01	immed even fixnum	(sint32)Obj>>2
-  2	02	immed character		(char)(Obj>>2)
+  1	01	immed even fixnum	(sint32)Obj&#62;&#62;2
+  2	02	immed character		(char)(Obj&#62;&#62;2)
   3	03	managed-float		(double *)Obj
   4	04	cons			(Obj *)Obj-1
-  5	05	immed odd fixnum	(sint32)Obj>>2
+  5	05	immed odd fixnum	(sint32)Obj&#62;&#62;2
   6	06	double-float		(double *)Obj
   7	07	unused
   8	08	simple-vector		(Sv *)Obj	 136	88
@@ -472,8 +468,9 @@ So the type tag table is as follows:
   13	0D	symbol			(Sym *)Obj	 141	8D
   14	0E	compiled-function	(Func *)Obj	 142	8E
   15	0F	package			(Package *)Obj	 143	8F
-@end example
+</PRE>
 
+<P>
 Note the use of a zero length double array at the beginning of the struct.
 This ensures double word alignment, which gives us two things.  The first is
 that pointers to constant structures of this type will be on 8 byte
@@ -484,13 +481,29 @@ extensions I would like to make.  The Harbison and Steele manual suggests that
 this zero length double array technique will ensure alignment, but this has
 not yet been tested.
 
-@comment node-name, next,  previous, up
-@node    Index,         ,  Memory          , Top
-@unnumbered Index
 
-@printindex cp
 
-@contents
 
-@bye
+<H1><A NAME="SEC11" HREF="tl-manual_toc.html#TOC11">Index</A></H1>
 
+<P>
+Jump to:
+<A HREF="#cindex_e">e</A>
+-
+<A HREF="#cindex_r">r</A>
+<P>
+<H2><A NAME="cindex_e">e</A></H2>
+<DIR>
+<LI><A HREF="tl-manual.html#IDX1">explanitory rant</A>
+</DIR>
+<H2><A NAME="cindex_r">r</A></H2>
+<DIR>
+<LI><A HREF="tl-manual.html#IDX2">rant</A>
+</DIR>
+
+
+<P><HR><P>
+This document was generated on 5 October 1999 using
+<A HREF="http://wwwinfo.cern.ch/dis/texi2html/">texi2html</A>&nbsp;1.56k.
+</BODY>
+</HTML>
