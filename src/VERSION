@@ -1,0 +1,6 @@
+0.9
+
+The first line of this file should contain the version number for ThinLisp.
+This is used when creating the names for distribution tarballs and zip files.
+This version number must also be updated within docs/tl-manual.texinfo and
+within the function LISP-IMPLEMENTATION-VERSION in tl/lisp/tl-basics.lisp.
