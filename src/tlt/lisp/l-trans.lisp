@@ -1769,7 +1769,9 @@
 	(make-c-direct-selection-expr compiled-function "closure_environment")
 	"=" (translate-l-expr-into-c
 	      (prepare-l-expr-for-translation 
-		(make-quoted-constant-l-expr nil env env) 't 'obj)
+	       ;; Add reference to closure object here.  -jallard 3/24/02
+		(make-quoted-constant-l-expr nil env env)
+		't 'obj)
 	      top-c-func top-c-body :c-expr))
       top-c-body)
     (emit-expr-to-compound-statement
