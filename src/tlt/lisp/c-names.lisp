@@ -64,12 +64,14 @@
 ;;; setting will directly set the given namespace.
 
 (defun c-namespace-get-identifier (c-namespace identifier-string)
-  (loop for namespace = c-namespace
+  (loop with name-entry?
+	for namespace = c-namespace
 		      then (c-namespace-surrounding-c-namespace? namespace)
         while namespace
-	for name-entry? = (gethash identifier-string
-				   (c-namespace-local-identifiers namespace))
-	when name-entry? return name-entry?))
+	when (setq name-entry? 
+		   (gethash identifier-string
+			    (c-namespace-local-identifiers namespace)))
+	return name-entry?))
 
 (defmacro set-c-namespace-get-identifier
     (c-namespace identifier-string declaration-info)
@@ -609,11 +611,12 @@
 (defun legalize-as-c-identifier (string)
   (unless (simple-string-p string)
     (error "Identifier string wasn't simple."))
-  (loop with length fixnum = (length string)
+  (loop with char 
+	with length fixnum = (length string)
 	for index fixnum from 0
 	while (< index length)
-	for char = (schar string index)
 	do
+    (setq char (schar string index))
     (unless (valid-c-identifier-char-p char)
       (case (the character char)
 	((#\-)
@@ -709,25 +712,26 @@
     (loop for (long . short) in c-name-mnemonic-alist do
       (setf (gethash long c-name-mnemonic-hash) short)))
   (let ((name-list
-	  (loop with length = (length string)
+	  (loop with next-break?
+		with length = (length string)
 		for start = 0 then (1+ next-break?)
 		while (< start length)
-		for next-break?
-		    = (loop for index from start below length
-			    when (char= (schar string index) #\_)
-			      return index)
 		collect
-		(if next-break?
+		(if (setq next-break?
+			  (loop for index from start below length
+				when (char= (schar string index) #\_)
+				return index))
 		    (subseq string start next-break?)
 		    (subseq string start))
 		while next-break?)))
-    (loop while (> (+ (length (car name-list))
+    (loop with mnemonic?
+	  for name-cons on name-list
+	  while (> (+ (length (car name-list))
 		      (loop for string in (cdr name-list)
 			    sum (1+ (length string))))
 		   (- maximum-c-identifier-length 2))
-	  for name-cons on name-list
-	  for mnemonic? = (gethash (car name-cons) c-name-mnemonic-hash)
 	  do
+      (setq mnemonic? (gethash (car name-cons) c-name-mnemonic-hash))
       (when mnemonic?
 	(setf (car name-cons) mnemonic?)))
     (loop with result
@@ -935,8 +939,8 @@
 		     (subseq string 0 (- maximum-c-identifier-length digits 1)))
 	   do
        (loop while (< index index-limit)
-	     for new-string = (format nil "~a_~d" base-string index)
 	     do
+	 (let ((new-string (format nil "~a_~d" base-string index)))
 	 (when (null (c-namespace-get-identifier
 		       referencing-namespace new-string))
 	   (setf (c-namespace-get-identifier id-namespace new-string)
@@ -944,7 +948,7 @@
 	   (when last-index-description?
 	     (setf (cdr last-index-description?) index))
 	   (return-from c-identifier-for-string new-string))
-	 (incf index))))))
+	 (incf index)))))))
 
 
 

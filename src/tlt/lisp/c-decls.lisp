@@ -272,10 +272,11 @@
 ;;; over the list, repeatedly calling emit-declaration-to-c-file.
 
 (defun emit-c-decl-list-to-c-file (c-decl-list c-file indent)
-  (loop for c-decl-cons = c-decl-list then (cons-cdr c-decl-cons)
+  (loop with c-decl
+	for c-decl-cons = c-decl-list then (cons-cdr c-decl-cons)
 	while c-decl-cons
-	for c-decl = (cons-car c-decl-cons)
 	do
+    (setq c-decl (cons-car c-decl-cons))
     (if (and (c-var-decl-p c-decl)
 	     (symbolp (c-var-decl-c-type c-decl))
 	     (null (c-var-decl-init-expr? c-decl)))

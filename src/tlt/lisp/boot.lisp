@@ -146,8 +146,14 @@
 	 (compile-tlt-modules recompile from))
     (safest-compilations)))
 
+(defmacro with-deferred-warnings (&body forms) 
+  #+clisp
+  `(progn ,@forms)
+  #-clisp
+  `(with-compilation-unit () ,@forms))
+
 (defun compile-tlt-modules (recompile from)
-  (with-compilation-unit ()
+  (with-deferred-warnings
     (loop with *readtable* = (copy-readtable nil)
 	with recompile-module? = (and recompile (null from))
 	with total-modules = (1+ (length tlt-modules))
@@ -252,8 +258,8 @@
 	 (bin-file 
 	  (finalize-pathname (make-pathname
 			      :directory 
-			      #-clisp '(:relative "tlt" "dev")
-			      #+clisp '(:relative "tlt" "lisp")
+			      #-clisp-old '(:relative "tlt" "dev")
+			      #+clisp-old '(:relative "tlt" "lisp")
 			      :name file-name
 			      :type binary-file-type)))
 	 (relative-bin-file 
@@ -269,7 +275,7 @@
 	 (bin-date? (and (probe-file bin-file)
 			 (file-write-date bin-file)))
 	 (load-date? (get module :tlt-load-date)))
-    #+clisp
+    #+clisp-old
     (declare (ignore relative-bin-file))
     (when (null lisp-date)
       (warn "Module ~a does not have a corresponding lisp file ~a."
@@ -283,15 +289,18 @@
 		   (<= bin-date? lisp-date))
 	      (and exports-file-write-date
 		   (<= bin-date? exports-file-write-date)))
-      (format t "Compiling   ~40a    [~3d/~3d] ~%" lisp-file count total)
+      ;; The following weird construction forces line output buffering.
+      (write-string (format nil "Compiling   ~40a    [~3d/~3d] ~%" lisp-file count total))
       (force-output)
-      (compile-file lisp-file #-clisp :output-file #-clisp relative-bin-file)
+      (compile-file lisp-file #-clisp-old :output-file #-clisp-old relative-bin-file
+		    :verbose nil :print nil)
       (setq bin-date? (file-write-date bin-file)))
     (when (or (null load-date?)
 	      (/= load-date? bin-date?))
-      (format t "Loading     ~40a    [~3d/~3d] ~%" bin-file count total)
+      ;; The following weird construction forces line output buffering.
+      (write-string (format nil "Loading     ~40a    [~3d/~3d] ~%" bin-file count total))
       (force-output)
-      (load bin-file)
+      (load bin-file :verbose nil)
       (setf (get module :tlt-load-date) bin-date?))))
 
 

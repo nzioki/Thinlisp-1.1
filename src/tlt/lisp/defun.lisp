@@ -302,9 +302,10 @@
 					 for declare in decls do
 				     (loop for decl in (cdr declare) do
 				       (when (eq (car decl) 'tl:return-type)
-					 (return-from type-search (second decl)))))))
+					 (return-from type-search 
+						      (second decl)))))))
 			     ``(tl:let ,(list ,@(loop for var in var-list
-						      collect `(list ',var ,var)))
+						      collect (list 'list (list 'quote var) var)))
 				 ,@',decls
 				 (,@',(if declared-result-type?
 					  `(tl:the ,declared-result-type?)

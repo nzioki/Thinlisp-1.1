@@ -144,11 +144,11 @@
 	 shoulda-been-nil))
 
 (defun single-var-lambda-key-p (key lambda-list)
-  (loop for sublist = lambda-list then (cdr next-cons)
-      while (consp sublist)
-      for next-cons = (cons-cdr sublist)
-      while (consp next-cons)
-      do
+  (loop with next-cons
+	for sublist = lambda-list then (cdr next-cons)
+	while (and (consp sublist)
+		   (consp (setq next-cons (cons-cdr sublist))))
+	do
     (when (eq (cons-car sublist) key)
       (return (cons-car next-cons)))))
 
