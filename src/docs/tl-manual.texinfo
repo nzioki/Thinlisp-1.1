@@ -15,7 +15,7 @@ Copyright (c) 1999 The ThinLisp Group
 
 @titlepage
 @title ThinLisp Manual
-@subtitle Version 0.9
+@subtitle Version 0.6
 @subtitle @today{}
 @author The ThinLisp Group:
 @author Jim Allard
@@ -43,7 +43,7 @@ For additional information see @url{http://www.thinlisp.org/}.
 @end titlepage
 
 @iftex
-@everyfooting Version 0.9@|@|@today{}
+@everyfooting Version 0.6@|@|@today{}
 @end iftex
 
 
