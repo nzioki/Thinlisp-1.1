@@ -1910,6 +1910,22 @@
 
 
 
+;;; In CMU Lisp, if you give a fill-pointered string to make-symbol, the
+;;; compiler can croak on that later on.  Since GL always allocates
+;;; fill-pointered strings, this is especially a problem.  So, within the base
+;;; Lisp environment, make sure that all strings given to make-symbol are in
+;;; fact simple-strings.
+
+(defun make-symbol-safely (string)
+  (when (not (simple-string-p string))
+    (let ((new-string (make-string (length string))))
+      (replace new-string string)
+      (setq string new-string)))
+  (make-symbol string))
+
+
+
+
 
 
 ;;;; Compiled Functions
