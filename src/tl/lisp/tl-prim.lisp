@@ -145,7 +145,7 @@
 	       (gli::init-symbol
 		 (gli::make-empty-symbol)
 		 ,var (sxhash-string ,var)))))
-      `(lisp:make-symbol ,string)))
+      `(gli::make-symbol-safely ,string)))
 
 (defmacro boundp (symbol)
   (if (eval-feature :translator)
