@@ -74,6 +74,23 @@
 			    collect (list var val)))
 	     ,store-form)))))
 
+
+
+
+;;; The function `pairlis' conforms to ANSI Common Lisp specifications, using
+;;; the out given there at allows the new elements to be reversed as they are
+;;; added onto the alist.
+
+(defun pairlis (new-keys new-data &optional (alist nil))
+  (declare (type list new-keys new-data alist)
+	   (return-type list)
+	   (consing-area either))
+  (loop for key in new-keys
+	for data in new-data
+	do
+    (setq alist (cons (cons key data) alist)))
+  alist)
+
 (defun compute-new-plist (plist property new-value)
   (declare (return-type t))
   (with-permanent-area

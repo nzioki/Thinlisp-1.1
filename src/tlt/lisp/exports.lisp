@@ -504,6 +504,7 @@
      "BUTLAST"
      "REVERSE"
      "NREVERSE"
+     "PAIRLIS"
      "ASSOC"
      "ASSQ"
      "MEMBER"
