@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename tl-manual.info
 @settitle ThinLisp Manual
-@setchapternewpage odd
+@setchapternewpage on
 @c %**end of header
 
 @ifinfo
@@ -46,17 +46,18 @@ For additional information see @url{http://www.thinlisp.org/}.
 
 
 @comment node-name, next,             previous, up
-@node    Top, Preface,                , (dir)
+@node    Top, Preface, (dir), (dir)
 
 @menu
-* Preface::            What is ThinLisp?
-* Acknowledgements::   Our Debts
-* Rant::               What Possessed Us to Make ThinLisp
-* Memory::             Type Tags, Memory Layout
-* Index::              Small, but growing.
+* Preface::                     What is ThinLisp?
+* Acknowledgements::            Our Debts
+* Rant::                        What Possessed Us to Make ThinLisp
+* Original-Introduction::       Rant, circa 1995
+* Memory::                      Type Tags, Memory Layout
+* Index::                       Small, but growing.
 @end menu
 
-@node     Preface,    Acknowledgements, Top, Top
+@node     Preface, Acknowledgements, Top, Top
 @comment  node-name,  next,  previous,  up
 @unnumbered Preface
 
@@ -76,9 +77,10 @@ improving the code, or through use of lexical declarations acknowledging that
 the code is only of prototype quality.  Code meeting the stringent requirements
 imposed by ThinLisp cannot by sped up by rewriting it in C.
 
-Newest source distributions and this manual can be found at
-@url{http://www.thinlisp.org/}.  Bugs should be reported to
-@email{bugs@@thinlisp.org}
+
+The ThinLisp home is @url{http://www.thinlisp.org/}.  The newest source
+distributions of TL and this manual can be found here.  Bugs should be
+reported to @email{bugs@@thinlisp.org}.
 
 
 @node     Acknowledgements, Rant, Preface, Top
@@ -107,15 +109,252 @@ release push.
 
 @*Jim Allard@*Newton, Massachusetts@*October 6, 1999
 
-@node     Rant,       Memory, Acknowledgements, Top
+
+@node     Rant, Original-Introduction, Acknowledgements, Top
 @comment  node-name,  next,  previous,  up
-@chapter Explanatory Rant
-@cindex explanatory rant
+@chapter Rant
 @cindex rant
 
-The long and probably uninteresting story of why TL was written.
+@section My Excuse for Ranting
 
-@node     Memory,     Index, Rant,      Top
+I've imagined the reactions people will have when they see that there is yet
+another Lisp to C translator implementation being released.  Mostly I've
+expected that people would think I'm stark raving mad to engage is a large work,
+to serve an almost non-existent user base of programmers in a language that is
+largely discredited while being actively antagonistic towards many of the design
+principles this language has employed for decades.  Since I'm expecting that
+people will think I'm mad (and half believing it myself), I then feel entitled
+(even obligated) to engage in a rant to explain the motivations of such a
+curious endeavor.  Please excuse this indulgence and look charitably upon it as
+a form of self-therapy.
+
+@section Lisp Background
+
+More than fifteen years ago I was in a recitation session of an Introduction to
+Artificial Inteligence course.  The lecturer, Patrick Winston, had come in for a
+session on autyomated planning.  At one point I asked a question about how a
+certain situation might be handled in the system we were studying, and he
+answered that it couldn't be handled in that system and that solving that
+problem was a research topic.  The fact that problems as simple (so I thought at
+the time) as what we were describing were research, and that as a sophomore in
+college I could grasp them seemed amazing to me then, as it still does now.  On
+the spot I could imagine six different ways to attack that problem, and none of
+them felt any less plausable than some of the established techniques that we
+were studying.  I was hooked.
+
+At the time, this sort of optimism and arrogance about the immediacy and
+inevitablity of technical success in AI was rampant.  The convergence of
+breakthroughs in techniques, tools, and venture capital money that flowed like
+wine was intoxicating for everyone.
+
+No one thought this work would be trivial, so the best software development
+tools available would be required.  And of course the best tools from the
+perspective of the AI community included the language that this community had
+been developing since the late 1950's, Lisp.
+
+Originally, Lisp was developed as an experiment in providing a direct means of
+implementing lambda calculus, where operations were first class objects that
+could be manipulated in the same manner as data.  The presumption behind many of
+the Lisp design choices was that the most important goal was to maximize a
+programmer's productivity in developing new functionality by enabling the purest
+form possible of coded solutions, and so to hide as many of the platform
+specific details as possible.  In the ongoing evolution of Lips, considerations
+of the efficiency of processing speed and memory use came in a distant second to
+programmer convenience and to the attempt to protect the programmer from bugs
+caused by mathematically abhorrant behaviors such as integer wraparound.
+
+Perhaps because of this devotion to developer productivity; perhaps because of
+the synergy between language syntax, parsing, and data; perhaps because of the
+invention of the Lisp macro facility; or perhaps because it was invented down
+the hall, Lisp became the language of choice for research and experimentation in
+new programming constructs (at least at MIT).  Many of the different possible
+approaches to object oriented programming were first tried out in Lisp.
+Examples are multiple inheritance, multi-methods, prototype-based object sytems,
+and automatic method combination via whoppers, wrappers, before, and after
+methods.  Other innovations experimented with in Lisp are error handling
+systems, multi-platform file naming approaches, and guaranteed execution of
+clean-up code (i.e.  unwind-protect).
+
+In 1984 a group formed to attempt to unify as many of the best features of
+different Lisp dialects as possible into one central standard.  From this effort
+came the excellent books @cite{Common Lisp, The Language} by Guy Steele and it's
+second edition, which incorporated many of the changes that would eventually be
+codified into ISO Common Lisp.  This is the dialect that dominates Lisp work
+today, at least in the U.S.
+
+@section Mathematician's Languages
+
+From the beginning Lisp was a mathematian's language.  To understand what I mean
+by Lisp this, I must explain my view of the differences between the goals of
+scientists, mathematicians, and engineers.  @footnote{All apologies in advance
+to my father-in-law (a scientist) and my brother-in-law (a mathematician).}
+
+The goal of scientists is to learn truths about the world around them, using
+observation, analysis, hypothesis, and experimentation to advance and buttress
+their claims of discovery.  Pure science aspires to being unconcerned with the
+utility or applicability of the information they seek.  The ultimate goal is to
+discover what @emph{is}.
+
+Mathematicians aspire to an even higher goal --- understanding what truths there
+are or that might be, regardless of or even entirely divorced from the limits of
+the physical world.  The studies of mathematicians are the stuff of pure thought
+and imagination, yet bound by the strictest of rules of proof.  To build robust
+castles in the air based on proofs combining into a single monolithic whole
+requires that all pieces must act perfectly in concert.  Therefore the
+mathematician must constantly be vigilant against contradictions between the
+different portions of his whole proof, where one technique carries with it
+constraints which must be respected within all other parts of the proof.  With
+this rigorous technique in hand, the ultimate goal is to discover what is
+@emph{true}.
+
+On the other hand the goal of the engineer, in the abstract, is to bend the
+behavior of an uncooperative world to his will.  Whether it is the stereotypical
+train engineer, civil engineer, accoustic, electrical, mechanical, or software
+engineer, their work is to use the fruits of science and mathematics, exploiting
+practicality and expediency, to operate or design a physical entity so that it
+performs a specific task, usually with the motivation of the almighty dollar.
+Within the constraints of the physical world, the ultimate goal is to accomplish
+what is @emph{practical}.
+
+Most computer langauges is use today are exemplars of the engineering style.
+Building primarily from the operations that could be implemented on the
+computing devices that could be made at the time, and perhaps secondarily on the
+needs of a user base at hand, languages were designed to allow people to command
+computers to do things.  Typically the operations in the language were
+semanticly thin (or shallow, if you prefer), to the extent that a programmer of
+medium experience could almost predict the number of machine instructions
+required to carry out any given command in the language.  Fortran, Pascal,
+Basic, and C are all examples of languages in this category, with C (and it's
+derivative, C++) now being the default choice for people building big systems.
+
+Lisp and other Languages (such as Smalltalk, Eiffel, and recently Java) were
+developed along along a different tack.  The operations in these languages were
+defined with deep semantics in mind.  Here the focus was not on what an operation
+@emph{did} but on what it @emph{meant}.  Of course there had to be
+implementations of these operations, but the actual machine instructions carried
+out were allowed (even expected) to vary widely depending on the manner and
+situation in which it was used.
+
+An example of how this difference in design perspective plays out can be found
+in the behavior of the @code{goto} statement in C and the @code{go} special
+operator in Common Lisp.  Consider the following two code fragments.
+
+In C:
+
+@example
+@group
+int find_big_int(int *set, int start, int end) @{
+  @i{Iterate through the set} @{
+    if @i{test}
+      goto bad;
+      @dots{}
+  @}
+ bad:
+  @dots{}
+@}
+@end group
+@end example
+
+In Lisp:
+
+@example
+@group
+(defun find-big-int (set start end)
+  (tagbody
+    (@i{Iterate through the set}
+      (if @i{test}
+        (go bad))
+      @dots{})
+    bad
+    @dots{}))
+@end group
+@end example
+
+Describe why a lexical closure surrounding the @code{(go bad)} could make this
+very expensive. @footnote{This needs further work.  Describe Godelizing, the
+tendency of "mathematical" programmers to choose such correct, but overweight
+implementation approaches, and the underestimation by the abstract minded of the
+difficulty of abstracts to the teams of people needed to finish a complex
+software system.}
+
+@section Lisp in Action
+
+In any case, the bulk of the research labs and companies that attempted to
+commercialize AI technologies used Common Lisp to implement their products.  The
+most broadly deployed AI-based technique was expert systems, also called
+rule-based systems.  @footnote{Of course this is ignoring other, more broadly
+applicable developments, such as multi-tasking operating systems.}  Early
+results were encouraging.  In the lab, sometimes on specialized hardware, the
+software engineers were able to demonstrate the beginnings of the functionality
+that they were promising.  However, when it came to deploying these systems,
+things didn't turn out so smoothly.  Most software products of that era were
+coded in languages such as Fortran, Cobol, Pascal, C, and a assembly language.
+It turned out that Software developers who could breathe fire in Lisp were
+clumsy, inefficient, or flatly unwilling to port their systems to these
+traditional languages.
+
+which were used at the time to deliver the majority of commercial products
+
+Customers were loathe to buy expensive,
+special purpose hardware for these applications while cheap, ever more powerful
+PC computers were rolling out.  
+Stories of this sort are rife thoughout the
+industry, but I'll speak to just the cases I personnally was involvded in.
+
+
+
+
+
+@node Original-Introduction, Memory, Rant, Top
+@comment  node-name,  next,  previous,  up
+@chapter Original Introduction
+
+@emph{This introduction was written at the beginning of the effort to make a new
+Lisp to C translator.  At the time I was working for Gensym Corporation, and
+named the project after the company.  -jallard 10/9/99}
+
+The Gensym Language Translator (GLT) is being made to enable Gensym to control
+the means of distribution of its products.  Since 1986 till now (January,
+1995), we have used 6 different brands of Lisp compiler, abandoning each one in
+turn for platform availability, portability, and performance reasons.  Most
+recently we have been using the Chestnut Lisp to C translator to deliver our
+Lisp-based products for releases 3 and 4.  Between these two releases of our
+products, we took a new release from Chestnut, and it took a full man-year of
+my time to resolve the problems that had been introduced.  I've made the
+judgment that for less labor than is devoted to maintaining our use of
+Chestnut's product, we can implement and maintain our own translator.  It's my
+intent to implement a translator that meets or beats Chestnut's characteristics
+for the portions of Lisp that we use, and that does not waste time or attention
+on the portions that we do not use.  Time can be taken later to extend it into
+areas we would like to use, but currently cannot because we can't depend on
+non-consing implementations.
+
+The base of GLT consists of a small hand-written C include file, a small
+hand-written memory allocation C file, and a translator written in Common Lisp
+that can translate a minimal set of primitives from Lisp to C.  The primitives
+in the translator implement data structure allocation and manipulation, the
+defining of constants, parameters, variables, macros, and functions.  The system
+will not contain many of the features normally present in a full Common Lisp
+implementation, most notably no garbage collector, lexical closures, rest
+arguments, condition system, bignums, complex numbers, or CLOS.  @footnote{Rest
+arguments have since been added.  -jallard 10/9/99.}  The built-in types will be
+limited to packages, symbols, conses, fixnums, doubles, simple-vectors, simple-
+arrays of unsigned-byte 1, 8, and 16 bits, simple-arrays of doubles, and
+fill-pointered non-adjustable strings.  Notable complex features that will be
+included are special variables, catch and throw, unwind-protect,
+multiple-values, optional arguments, defstruct, macrolet, labels, flet, and
+deftype.
+
+Particular attention will be paid to using C integer and double types for
+variables, function arguments, and function values when type declarations
+allow, largely because it bugs me when these things aren't handled right and I
+believe it is a significant performance loss to always be boxing and unboxing
+at function boundaries.  We will also make special efforts to optimize calls to
+functions that return a single value.
+
+
+
+@node     Memory, Index, Original-Introduction, Top
 @comment  node-name,  next,  previous,  up
 @chapter Memory Architecture
 
@@ -143,19 +382,23 @@ always zeros.  This gives us 3 non-zero immediate type tags.  The following are
 the immediate type tag assignments:
 
 @example
+@group
   0:  pointer to header of Lisp object
   1:  immediate fixnum
   2:  pointer to cons (mask with -4 for car*, follow for cdr*)
   3:  immediate character
+@end group
 @end example
 
 A determination of type can be made from a hex value of the pointer.
 
 @example
+@group
   hex 0, 4, 8, C are pointers to Lisp objects
   hex 1, 5, 9, and D are fixnums,
   hex 2, 6, A, and E are pointers to conses
   hex 3, 7, B, and F are immediate characters.
+@end group
 @end example
 
 The arguments for a 30 bit fixnum instead of a 31 is that it makes for fast
@@ -205,6 +448,7 @@ reclaimed (i.e. use bit 7 as a flag).
 So the type tag table is as follows:
 
 @example
+@group
 Tag Value							Reclaimed Tag
 Dec     Hex	Lisp Type		C Type & Conv		Dec    Hex
 -------------	---------		-------------		-------------
@@ -222,6 +466,7 @@ Dec     Hex	Lisp Type		C Type & Conv		Dec    Hex
 11	0B	symbol			(Sym *)Obj	 	139	8B
 12	0C	compiled-function	(Func *)Obj	 	140	8C
 13	0D	package			(Package *)Obj	 	141	8D
+@end group
 @end example
 
 Each of the data structures are described below.
@@ -235,11 +480,13 @@ the array.  If the type tag is 8 bits wide (unsigned) then the length can be 24
 bits of unsigned integer, giving a maximum length of 16 Meg.
 
 @example
+@group
 typedef struct @{
   unsigned int:8:type;
   unsigned int:24:length;
   Obj[1]:body;
 @} Sv
+@end group
 @end example
 
 In C references to array are guaranteed to not be bounds clicked.  this means
@@ -250,20 +497,25 @@ structure.  For example, a constant simple vector containing 5 fixnums could be
 emitted as C code as follows.
 
 @example
+@group
 typedef struct @{
   unsigned int:8:type;
   unsigned int:24:length;
   Obj[5]:body;
 @} Sv_5
 
-static Sa_5 const1 = @{8, 5, @{fix(23), fix(2), fix(3), fix(9), fix(-12)@}@};
+static Sa_5 const1 = @{8, 5, @{fix(23), fix(2), fix(3), 
+  fix(9), fix(-12)@}@};
+@end group
 @end example
 
 An example of the translation of a fetch of a simple vector element follows.
 
 @example
+@group
   Lisp: (setq x (svref y 5))
   C:    x = (Sv *)y->body[5];
+@end group
 @end example
 
 Though the detail of casting and fetching the body component could be hidden in
@@ -285,12 +537,14 @@ byte in the header word will allow us to efficiently pack strings into words
 when they have lengths that are multiples of 4.
 
 @example
+@group
 typedef struct @{
   unsigned int: 8: type;
   unsigned int:24: length;
   unsigned int:24:fill_length;
   char[9]: body
 @} Str
+@end group
 @end example
 
 @section Immediate integer and double arrays
@@ -311,6 +565,7 @@ included in packages in G2 and TW, the slots needed for holding the symbol in
 package balanced binary trees will be included in the symbol itself.
 
 @example
+@group
 typedef struct @{
   unsigned int:8:type;
   unsigned int:1:local_value;
@@ -326,6 +581,7 @@ typedef struct @{
   Obj:package_left_branch;
   Obj:package_right_branch;
 @} Symbol
+@end group
 @end example
 
 The symbol-value slot is typically a pointer to the location containing the true
@@ -355,6 +611,7 @@ value will be passed, and further computation will happen within the function to
 implement the default value selection).
 
 @example
+@group
 typedef struct @{
   unsigned int:8:type;
   unsigned int:8:arg_count;
@@ -362,6 +619,7 @@ typedef struct @{
   Obj:default_arguments;
   void *f(): c_function;
 @} Func
+@end group
 @end example
 
 The type spec for compiled functions will typically have arguments of type 
@@ -377,11 +635,13 @@ all 256 character objects (at 8 bytes per, that's 2K).  The value is explicitly
 unsigned to avoid confusion in parts that have a default signed char type.
 
 @example
+@group
 typedef struct @{
   double [0]: align;
   unsigned int:8:type;
   unsigned char:value
 @} Lchar
+@end group
 @end example
 
 @section Package
@@ -398,11 +658,13 @@ package then through the binary trees of used packages and their used packages,
 but only accepting external symbols.
 
 @example
+@group
 typedef struct @{
   unsigned int:8:type;
   Obj:root_symbol;
   Obj:used_package_list;
 @} Pkg
+@end group
 @end example
 
 @section Obsolete 8 Byte Alignments
@@ -417,6 +679,7 @@ lower 3 bits of all pointers are always zeros.  This gives us 7 non-zero
 immediate type tags.  The following are the immediate type tag assignments:
 
 @example
+@group
   0:  pointer to header of Lisp object
   1:  immediate even fixnum
   2:  immediate character
@@ -425,12 +688,14 @@ immediate type tags.  The following are the immediate type tag assignments:
   5:  immediate odd fixnum
   6:  pointer to double-float (mask with -8 for double*)
   7:  unused
+@end group
 @end example
 
 With this implementation, some determination of type can be made from the
 printed hex value of the pointer:
 
 @example
+@group
   hex 0 and 8 are pointers to Lisp objects,
   hex 1, 5, 9, and D are fixnums,
   hex 2 and A are characters,
@@ -438,6 +703,7 @@ printed hex value of the pointer:
   hex 4 and C are conses,
   hex 6 and E are double-floats,
   hex 7 and F are unused, so must be corrupted objects
+@end group
 @end example
 
 By having a cons tag of 4 and a headerless cons, the access to one of the
@@ -454,6 +720,7 @@ is reclaimed (i.e. use bit 7 as a flag).
 So the type tag table is as follows:
 
 @example
+@group
   Tag	(Hex)	Lisp Type		C Type		 Reclaimed Tag
   -------------	---------		------		 -------------
   0	00	immed pointer		(Header *)Obj
@@ -472,6 +739,7 @@ So the type tag table is as follows:
   13	0D	symbol			(Sym *)Obj	 141	8D
   14	0E	compiled-function	(Func *)Obj	 142	8E
   15	0F	package			(Package *)Obj	 143	8F
+@end group
 @end example
 
 Note the use of a zero length double array at the beginning of the struct.
@@ -485,7 +753,7 @@ this zero length double array technique will ensure alignment, but this has
 not yet been tested.
 
 @comment node-name, next,  previous, up
-@node    Index,         ,  Memory          , Top
+@node    Index,  , Memory, Top
 @unnumbered Index
 
 @printindex cp
