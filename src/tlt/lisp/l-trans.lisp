@@ -1217,7 +1217,8 @@
 		    :test #'equal)
       (emit-declaration-to-c-file
 	(make-c-typedef-decl const-array-type (c-type-string const-array-type))
-	c-file 0)
+	(or (c-file-h-file c-file) c-file)
+	0)
       (push const-array-type (c-file-defined-c-types c-file)))
     const-array-type))
 
