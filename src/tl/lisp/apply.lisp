@@ -133,6 +133,7 @@
 #+nil
 (defun distilled-trouble ()
   (loop repeat lambda-parameters-limit collect nil))
+
 ;"ILISP: Type-error in KERNEL::OBJECT-NOT-TYPE-ERROR-HANDLER:
 ;          #S(GLI::GL-STRING-STREAM
 ;               :STRINGS (\"GL-LOOP-REPEAT-20\")
@@ -142,3 +143,9 @@
 ;                                                        COMMON-LISP::STRING-OUTPUT-STREAM
 ;                                                        COMMON-LISP::FILL-POINTER-OUTPUT-STREAM
 ;                                                        COMMON-LISP::STRING-INPUT-STREAM)"
+
+;; Even more concisely
+#+nil
+(gl:format nil "boo")
+
+;; So ...  (see warnings upon compiling format.lisp).
