@@ -181,7 +181,7 @@
 		,@(if junk-allowed `(:junk-allowed ,junk-allowed) nil)))
 
 (defmacro type-of (object)
-  `(lisp:type-of ,object))
+  `(tli::tl-type-of ,object))
 
 (defmacro functionp (object)
   `(lisp:functionp ,object))

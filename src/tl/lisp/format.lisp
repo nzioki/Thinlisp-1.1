@@ -234,6 +234,7 @@
     (#.(char-code #\tab) "tab")
     (#.(char-code #\backspace) "backspace")
     (#.(char-code #\return) "return")
+    (#.(char-code #\null) "null")
     ;; Linefeed is the same as newline.  -jra 12/30/96
     ;; (#.(char-code #\linefeed) "linefeed")
     (t nil)))
