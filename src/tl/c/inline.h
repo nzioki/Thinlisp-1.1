@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/inline.h
  *
- * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2001 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/inline.lisp.
  *    by ThinLisp http://www.thinlisp.org

@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/tl-basics.c
  *
- * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2001 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/tl-basics.lisp.
  *    by ThinLisp http://www.thinlisp.org

@@ -1,6 +1,6 @@
 ;;;; Module tl/c/tl-types.c
 
-;;; Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
+;;; Copyright (c) 2001 The Thinlisp Group All Rights Reserved.
 
 ;;; Translation data for tl/lisp/tl-types.lisp.
 ;;; The following is the value of the trans-data-tlt-version parameter.

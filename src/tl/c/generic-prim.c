@@ -2,7 +2,7 @@
  *
  * Module:      tl/c/generic-prim.c
  *
- * Copyright (c) 2000 The Thinlisp Group All Rights Reserved.
+ * Copyright (c) 2001 The Thinlisp Group All Rights Reserved.
  *
  * Description: Translation of tl/lisp/generic-prim.lisp.
  *    by ThinLisp http://www.thinlisp.org
