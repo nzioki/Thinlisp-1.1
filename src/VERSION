@@ -22,7 +22,7 @@ is a need to issue a patch to this release.  From within the src directory of a
 checked out source repository, run the following command to create a new
 exported src directory.
 
-  cvs export -r TL-<version>-BASE thinlisp-1.0/src -d src
+  cvs export -r TL-<version>-BASE -d src thinlisp-1.0/src
 
 Then run a "make distribution" to make a new directory called "dist" within the
 sandbox src directory.  The dist directory will contain the files for a new
