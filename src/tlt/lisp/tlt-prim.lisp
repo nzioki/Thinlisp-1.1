@@ -2022,6 +2022,7 @@
 (tl:declaim (tl:side-effect-free compiled-function-arg-count
 			   compiled-function-optional-arguments
 			   compiled-function-default-arguments
+			   compiled-function-closure-environment
 			   compiled-function-name))
 
 (def-c-translation compiled-function-arg-count (compiled-function)
@@ -2050,7 +2051,8 @@
   ((lisp-specs :ftype ((compiled-function) fixnum))
    `(progn
       (derror "No Lisp env implementation of (compiled-function-optional-arguments ~s)"
-	     ,compiled-function)))
+	     ,compiled-function)
+      0))
   ((trans-specs :c-type ((obj) sint32))
    (make-c-cast-expr
      'sint32 (make-c-indirect-selection-expr
@@ -2068,6 +2070,39 @@
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer func) compiled-function)
      "default_arguments")))
+
+(def-c-translation compiled-function-closure-environment (compiled-function)
+  ((lisp-specs :ftype ((compiled-function) t))
+   `(progn
+      (derror "No Lisp env implementation of (compiled-function-closure-environment ~s)"
+	     ,compiled-function)))
+  ((trans-specs :c-type ((obj) obj))
+   (make-c-indirect-selection-expr
+     (make-c-cast-expr '(pointer func) compiled-function)
+     "closure_environment")))
+
+(def-c-translation set-compiled-function-closure-environment (compiled-function 
+							      closure-env)
+  ((lisp-specs :ftype ((compiled-function t) t))
+   `(progn
+      (derror "No Lisp env implementation of (set-compiled-function-closure-environment ~s ~s)"
+	     ,compiled-function ,closure-env)))
+  ((trans-specs :c-type ((obj obj) obj))
+   (make-c-infix-expr
+     (make-c-indirect-selection-expr
+       (make-c-cast-expr '(pointer func) compiled-function)
+       "closure_environment")
+     "=" closure-env)))
+
+(tl:defsetf compiled-function-closure-environment
+	    set-compiled-function-closure-environment)
+
+(def-c-translation set-thread-closure-env (new-closure-env)
+  ((lisp-specs :ftype ((t) t))
+   new-closure-env)
+  ((trans-specs :c-type ((obj) obj))
+   (make-c-infix-expr
+     (make-c-name-expr "Closure_env") "=" new-closure-env)))
 
 (def-c-translation compiled-function-name (compiled-function)
   ((lisp-specs :ftype ((compiled-function) t))

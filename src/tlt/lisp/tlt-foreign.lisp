@@ -96,6 +96,7 @@
     (:double-float           . double-float)
     (:8-bit-unsigned-array   . (array (unsigned-byte 8)))
     (:16-bit-unsigned-array  . (array (unsigned-byte 16)))
+    (:16-bit-signed-array    . (array (signed-byte 16)))
     (:object                 . t)
     (:void                   . void)))
 

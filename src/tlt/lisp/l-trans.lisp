@@ -1633,23 +1633,16 @@
 (defun translate-compiled-function-constant-into-c
     (compiled-function-name decls c-file l-expr? c-func c-body return-directive)
   (let ((compiled-func-reference?
-	  (gethash compiled-function-name *global-compiled-function-registry*))
-	(last-definition? (c-file-last-compiled-function-definition? c-file)))
-    (if compiled-func-reference?
-	;; Don't register duplicate externs to the compiled-function array for
-	;; this file.
-	(unless (and last-definition?
-		     (string= (cons-car last-definition?)
-			      (cons-car compiled-func-reference?)))
-	  (register-needed-variable-extern
-	    c-file '("extern") '(array func)
-	    (cons-car compiled-func-reference?))
-	  (setf (gethash compiled-function-name
-			 (c-file-used-compiled-functions c-file))
-		compiled-func-reference?))
-	(setq compiled-func-reference?
+	  (or (gethash compiled-function-name *global-compiled-function-registry*)
 	      (make-and-initialize-new-compiled-function-reference
-		compiled-function-name decls c-file c-func l-expr?)))
+	        compiled-function-name decls c-file c-func l-expr?)))
+	(last-definition? (c-file-last-compiled-function-definition? c-file)))
+    (register-needed-variable-extern
+      c-file '("extern") '(array func)
+      (cons-car compiled-func-reference?))
+    (setf (gethash compiled-function-name
+		   (c-file-used-compiled-functions c-file))
+	  compiled-func-reference?)
     (emit-c-expr-as-directed
       (make-c-cast-expr
 	'obj (make-c-unary-expr
@@ -1661,8 +1654,7 @@
 			 (format nil "#'~a" compiled-function-name))))))
       l-expr? c-func c-body return-directive)))
 
-(defun make-and-initialize-new-compiled-function-reference
-    (compiled-function-name decls c-file c-func l-expr?)
+(defun make-global-compiled-function-location (compiled-function-name c-file c-func)
   (let* ((last-definition? (c-file-last-compiled-function-definition? c-file))
 	 (new-definition 
 	   (if last-definition?
@@ -1673,7 +1665,18 @@
 		   (intern (format nil "~(~a_~a~)_funcs"
 				   *current-system-name* *current-module-name*))
 		   '(variable) *global-c-namespace* (c-func-namespace c-func))
-		 0)))
+		 0))))
+    (setf (gethash compiled-function-name *global-compiled-function-registry*)
+	  new-definition)
+    (setf (c-file-last-compiled-function-definition? c-file)
+	  new-definition)
+    (push compiled-function-name (c-file-compiled-functions-defined c-file))
+    new-definition))
+
+(defun make-and-initialize-new-compiled-function-reference
+    (compiled-function-name decls c-file c-func l-expr?)
+  (let* ((new-definition (make-global-compiled-function-location
+			   compiled-function-name c-file c-func))
 	 (ftype (or (cdr (assq 'ftype decls))
 		    (cdr (assq 'computed-ftype decls))))
 	 (c-return-type
@@ -1705,17 +1708,13 @@
 	 (c-func-identifier (c-identifier-for-function
 			      compiled-function-name *global-c-namespace*
 			      (c-func-namespace c-func)))
+
 	 (compiled-function
 	   (make-c-subscript-expr
 	     (make-c-name-expr (cons-car new-definition))
 	     (make-c-literal-expr (cons-cdr new-definition))))
 	 (env (if l-expr? (l-expr-env l-expr?) nil))
-	 (safe? (>= (tl:optimize-information 'safety env) 3)))
-    (setf (gethash compiled-function-name *global-compiled-function-registry*)
-	  new-definition)
-    (setf (c-file-last-compiled-function-definition? c-file)
-	  new-definition)
-    (push compiled-function-name (c-file-compiled-functions-defined c-file))    
+	 (safe? (>= (tl:optimize-information 'safety env) 3)))    
     (when (register-used-function
 	    c-file compiled-function-name c-func-identifier ftype)
       (register-needed-function-extern
@@ -1764,6 +1763,14 @@
 		  (list 'quote optional-argument-defaults)
 		  env env)
 		't 'obj)
+	      top-c-func top-c-body :c-expr))
+      top-c-body)
+    (emit-expr-to-compound-statement
+      (make-c-infix-expr
+	(make-c-direct-selection-expr compiled-function "closure_environment")
+	"=" (translate-l-expr-into-c
+	      (prepare-l-expr-for-translation 
+		(make-quoted-constant-l-expr nil env env) 't 'obj)
 	      top-c-func top-c-body :c-expr))
       top-c-body)
     (emit-expr-to-compound-statement
