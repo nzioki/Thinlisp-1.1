@@ -71,8 +71,9 @@
 	  (t
 	   (macro-function symbol)))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun set-macro-function (symbol function)
-  (setf (macro-function symbol) function))
+  (setf (macro-function symbol) function)))
 
 (defsetf gl:macro-function set-macro-function)
 
@@ -139,8 +140,7 @@
 	     (eval-when (:compile-toplevel :load-toplevel :execute)
 	       (defun ,macro-defn-name
 		   ,@(cons-cdr (gl:parse-macro name lambda-list body)))
-	       (setf (macro-function ',name)
-		     (function ,macro-defn-name)))
+	       (set-macro-function ',name (function ,macro-defn-name)))
 	     ',name)))))
 
 (defmacro def-gl-macro (name lambda-list &body body)
