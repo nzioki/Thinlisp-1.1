@@ -55,43 +55,14 @@
    (make-c-cast-expr
      'obj
      (make-c-infix-expr (make-c-cast-expr 'uint32 c-expr) "+" 2)))
-  ((sint32 uint32)
-   (make-c-cast-expr
-     'obj
-     (make-c-infix-expr
-       (make-c-infix-expr c-expr "<<" (make-c-literal-expr 2))
-       "+" (make-c-literal-expr 1))))
-  ((uint16 uint8 int long size-t)
-   (make-c-cast-expr
-     'obj
-     (make-c-infix-expr
-       (make-c-infix-expr
-	 (make-c-cast-expr 'sint32 c-expr) "<<" (make-c-literal-expr 2))
-       "+" (make-c-literal-expr 1))))
+  ((sint32 uint32 uint16 uint8 int long size-t)
+   (make-c-function-call-expr (make-c-name-expr "BOXFIX") (list c-expr)))
   ((unsigned-char)
-   (make-c-cast-expr
-     'obj (make-c-infix-expr
-	    (make-c-infix-expr
-	      (make-c-cast-expr 'uint32 c-expr) "<<" (make-c-literal-expr 2))
-	    "+" (make-c-literal-expr 3))))
+   (make-c-function-call-expr (make-c-name-expr "BOXCHAR") (list c-expr)))
   (((pointer obj))
-   (make-c-cast-expr
-     'obj (make-c-infix-expr (make-c-cast-expr 'uint32 c-expr) "-"
-			     (make-c-sizeof-expr (c-type-string 'hdr)))))
+   (make-c-function-call-expr (make-c-name-expr "ObjSvHDR") (list c-expr)))
   (((pointer unsigned-char))
-   (make-c-cast-expr
-     'obj
-     (make-c-infix-expr
-       (make-c-cast-expr 'uint32 c-expr) "-"
-       (make-c-cast-expr
-	 'uint32
-	 (make-c-unary-expr
-	   #\&
-	   (make-c-subscript-expr
-	     (make-c-indirect-selection-expr
-	       (make-c-cast-expr '(pointer str) (make-c-name-expr "NULL"))
-	       "body")
-	     (make-c-literal-expr 0)))))))
+   (make-c-function-call-expr (make-c-name-expr "ObjStrHDR") (list c-expr)))
    (((pointer uint8))
     (make-c-cast-expr
      'obj
@@ -149,7 +120,7 @@
 	   (make-c-literal-expr (c-type-tag 'ldouble)))))
   (((pointer uint32))
     ;; Objects masquerading as something else coming in from C sometimes are
-    ;; passed as pointer to uint32.  Just case them to Obj.
+    ;; passed as pointer to uint32.  Just cast them to Obj.
     (make-c-cast-expr 'obj c-expr))
   ((void)
    (make-void-cast-stand-in-expr
@@ -171,6 +142,8 @@
 	(make-c-comma-expr exprs))))
 
 (def-c-pointer-type-coercion obj (c-expr original-type)
+  (((pointer sv))
+   (make-c-indirect-selection-expr c-expr "body"))
   ((obj)
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer sv) c-expr)
@@ -199,8 +172,8 @@
 
 (def-c-type-coercion sint32 (c-expr original-type)
   ((obj)
-   (make-c-infix-expr
-     (make-c-cast-expr 'sint32 c-expr) ">>" (make-c-literal-expr 2)))
+   (make-c-function-call-expr 
+    (make-c-name-expr "UNBOXFIX") (list c-expr)))
   ((uint32 uint8 uint16 unsigned-char int long size-t)
    (make-c-cast-expr 'sint32 c-expr))
   ((double)
@@ -318,17 +291,16 @@
 
 (def-c-type-coercion unsigned-char (c-expr original-type)
   ((obj)
-   (make-c-cast-expr
-     'unsigned-char (coerce-c-expr-result-to-type c-expr 'obj 'sint32 env)))
-  ((sint32 uint8 uint16)
-   (make-c-cast-expr 'unsigned-char c-expr))
-  ((char)
+   (make-c-function-call-expr (make-c-name-expr "UNBOXCHAR") (list c-expr)))
+  ((sint32 uint8 uint16 char)
    (make-c-cast-expr 'unsigned-char c-expr))
   ((void)
    (make-void-cast-stand-in-expr
      c-expr original-type 'unsigned-char (make-c-literal-expr 0))))
 
 (def-c-pointer-type-coercion unsigned-char (c-expr original-type)
+  (((pointer str))
+   (make-c-indirect-selection-expr c-expr "body"))
   ((obj)
    (make-c-indirect-selection-expr
      (make-c-cast-expr '(pointer str) c-expr)
@@ -343,7 +315,8 @@
 (def-c-type-coercion char (c-expr original-type)
   ((obj)
    (make-c-cast-expr
-     'char (coerce-c-expr-result-to-type c-expr 'obj 'sint32 env)))
+    'char 
+    (make-c-function-call-expr (make-c-name-expr "UNBOXCHAR") (list c-expr))))
   ((sint32 uint8 uint16)
    (make-c-cast-expr 'char c-expr))
   ((unsigned-char)
@@ -353,6 +326,10 @@
      c-expr original-type 'char (make-c-literal-expr 0))))
 
 (def-c-pointer-type-coercion char (c-expr original-type)
+  (((pointer str))
+   (make-c-cast-expr
+    '(pointer char)
+    (make-c-indirect-selection-expr c-expr "body")))
   ((obj)
    (make-c-cast-expr
      '(pointer char)
@@ -416,7 +393,28 @@
 
 (def-c-type sv "Sv" "Sv *" simple-vector 6)
 
+(def-c-pointer-type-coercion sv (c-expr original-type)
+  (((pointer obj))
+   (make-c-function-call-expr (make-c-name-expr "SvHDR") (list c-expr)))
+  ((obj)
+   (make-c-cast-expr '(pointer sv) c-expr))
+  ((void)
+   (make-void-cast-stand-in-expr
+    c-expr original-type '(pointer sv) 
+    (default-value-for-c-type '(pointer sv)))))
+  
+
 (def-c-type str "Str" "Str *" string 7)
+
+(def-c-pointer-type-coercion str (c-expr original-type)
+  (((pointer unsigned-char))
+   (make-c-function-call-expr (make-c-name-expr "StrHDR") (list c-expr)))
+  ((obj)
+   (make-c-cast-expr '(pointer str) c-expr))
+  ((void)
+   (make-void-cast-stand-in-expr
+    c-expr original-type '(pointer str) 
+    (default-value-for-c-type '(pointer str)))))
 
 (def-c-type sa-uint8 "Sa_uint8" "Sa_uint8 *" (array (unsigned-byte 8)) 8)
 
@@ -461,4 +459,3 @@
 ;;; Note that you never manipulate files in C, only pointers to them.
 
 (def-c-type file "FILE" "FILE *" nil nil)
-

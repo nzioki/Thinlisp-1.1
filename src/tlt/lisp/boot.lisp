@@ -85,6 +85,7 @@
     glt-prim
     glt-math
     glt-out
+    makefiles
     trans
     ))
 
@@ -116,28 +117,35 @@
 	       for module in glt-modules 
 	       do
 	   (when (and delete-from-preventer
-		      (string= (symbol-name delete-from-preventer) (symbol-name module)))
+		      (string= (symbol-name delete-from-preventer) 
+			       (symbol-name module)))
 	     (setq delete-from-preventer nil))
 	   (unless delete-from-preventer
 	     (delete-glt-module-binary module)))
-	 (with-compilation-unit ()
-	   (compile-load-glt-module 'boot (and recompile (null from)))
-	   (loop with recompile-module? = (and recompile (null from))
-	       for module in glt-modules do
-	     (when (and recompile
-			(null recompile-module?)
-			(string= (symbol-name from) (symbol-name module)))
-	       (setq recompile-module? t))
-	     (compile-load-glt-module module recompile-module?)))
-	 (let ((gli-compile-glt (intern "COMPILE-GLT" "GLI"))
-	       (gl-compile-glt (intern "COMPILE-GLT" "GL")))
-	   (unless (fboundp gli-compile-glt)
-	     (setf (symbol-function gli-compile-glt)
-		   (symbol-function 'compile-glt)))
-	   (unless (fboundp gl-compile-glt)
-	     (setf (symbol-function gl-compile-glt)
-		   (symbol-function 'compile-glt)))))
+	 (compile-load-glt-module 'boot (and recompile (null from)))
+	 ;; After loading BOOT, call this function to get into the
+	 ;; newest compiled form.
+	 (compile-glt-modules recompile from))
     (safest-compilations)))
+
+(defun compile-glt-modules (recompile from)
+  (with-compilation-unit ()
+    (loop with *readtable* = (copy-readtable nil)
+	with recompile-module? = (and recompile (null from))
+	for module in glt-modules do
+      (when (and recompile
+		 (null recompile-module?)
+		 (string= (symbol-name from) (symbol-name module)))
+	(setq recompile-module? t))
+      (compile-load-glt-module module recompile-module?)))
+  (let ((gli-compile-glt (intern "COMPILE-GLT" "GLI"))
+	(gl-compile-glt (intern "COMPILE-GLT" "GL")))
+    (unless (fboundp gli-compile-glt)
+      (setf (symbol-function gli-compile-glt)
+	(symbol-function 'compile-glt)))
+    (unless (fboundp gl-compile-glt)
+      (setf (symbol-function gl-compile-glt)
+	(symbol-function 'compile-glt)))))
 
 (defconstant lisp-file-type 
    #-aclpc "lisp"
@@ -286,7 +294,14 @@
 
 
 
-;;; For Lucid, we suppress messages about every file being read or created with
+;;; Set the default float format to doubles.
+
+(setq *read-default-float-format* 'double-float)
+
+
+
+
+ ;;; For Lucid, we suppress messages about every file being read or created with
 ;;; the :file-messages option.  We suppress the messages about which compiler is
 ;;; being used with the :optimize-message option.  All other options are left at
 ;;; their defaults as documented in the Lucid 4.0 User's Guide, pp. 6-13 through

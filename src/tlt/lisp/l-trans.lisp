@@ -1218,7 +1218,7 @@
        (make-c-literal-expr value)
        quote-l-expr c-func c-body return-directive))
     (t
-     (let ((comment-string-max-length 25)
+     (let ((comment-string-max-length 50)
 	   (string-var (gethash value (c-file-used-constants c-file)))
 	   (const-array-type
 	     (declared-const-array-type 'str (length value) c-file)))
@@ -1236,28 +1236,34 @@
 	     (make-c-str-init-expr value))
 	   c-file 0))
        (emit-c-expr-as-directed
-	 (make-c-line-comment-expr
-	   (if (satisfies-c-required-type-p c-type '(pointer unsigned-char))
-	       (make-c-indirect-selection-expr
-		 (make-c-cast-expr
-		   '(pointer str)
-		   (make-c-unary-expr #\&(make-c-name-expr string-var)))
-		 "body")
-	       (make-c-cast-expr
-		 'obj (make-c-unary-expr #\& (make-c-name-expr string-var))))
-	   (let ((length (length value)))
-	     (declare (fixnum length))
-	     (if (> length comment-string-max-length)
-		 (format nil "\"~a...\"" (subseq value 0 comment-string-max-length))
-		 (let ((new-string (make-string (+ length 2))))
-		   (setf (schar new-string 0) #\")
-		   (loop for index fixnum from 0 below length
-			 for new-index fixnum = (+ index 1) do
+	(make-c-line-comment-expr
+	 (cond 
+	  ((satisfies-c-required-type-p c-type '(pointer unsigned-char))
+	   (make-c-indirect-selection-expr
+	    (make-c-cast-expr 
+	     '(pointer str)
+	     (make-c-unary-expr #\& (make-c-name-expr string-var)))
+	    "body"))
+	  ((satisfies-c-required-type-p c-type '(pointer str))
+	   (make-c-cast-expr
+	    '(pointer str)
+	    (make-c-unary-expr #\& (make-c-name-expr string-var))))
+	  (t
+	   (make-c-cast-expr
+	    'obj (make-c-unary-expr #\& (make-c-name-expr string-var)))))
+	 (let ((length (length value)))
+	   (declare (fixnum length))
+	   (if (> length comment-string-max-length)
+	       (format nil "\"~a...\"" (subseq value 0 comment-string-max-length))
+	     (let ((new-string (make-string (+ length 2))))
+	       (setf (schar new-string 0) #\")
+	       (loop for index fixnum from 0 below length
+		   for new-index fixnum = (+ index 1) do
 		     (setf (schar new-string new-index)
-			   (char value index)))
-		   (setf (schar new-string (+ length 1)) #\")
-		   new-string))))
-	 quote-l-expr c-func c-body return-directive)))))
+		       (char value index)))
+	       (setf (schar new-string (+ length 1)) #\")
+	       new-string))))
+	quote-l-expr c-func c-body return-directive)))))
 
 ;(defun translate-managed-float-constant-into-c
 ;    (value c-file quote-l-expr c-func c-body return-directive)

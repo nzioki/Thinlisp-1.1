@@ -48,11 +48,10 @@
 	    (,wid ,width)
 	    (,str ,string))
 	(format ,str "~Vd" ,wid ,fix))))
-  ((trans-specs :c-type ((sint32 sint32 obj) void))
+  ((trans-specs :c-type ((sint32 sint32 (pointer str)) void))
    (make-c-function-call-expr
      (make-c-name-expr "write_fixnum_into_str")
-     (list fixnum width
-	   (make-c-cast-expr '(pointer str) string)))))
+     (list fixnum width string))))
 
 (def-c-translation princ-double-to-file (double width file-stream)
   ((lisp-specs :ftype ((double-float fixnum file-stream) void))
@@ -82,10 +81,10 @@
 	    (,wid ,width)
 	    (,str ,string))
 	(format ,str "~Vg" ,wid ,float))))
-  ((trans-specs :c-type ((double sint32 obj) void))
+  ((trans-specs :c-type ((double sint32 (pointer str)) void))
    (make-c-function-call-expr
      (make-c-name-expr "write_double_into_str")
-     (list double width (make-c-cast-expr '(pointer str) string)))))
+     (list double width string))))
 
 (def-c-translation gl:write-char-to-file-stream (character file-stream)
   ((lisp-specs :ftype ((character file-stream) void))

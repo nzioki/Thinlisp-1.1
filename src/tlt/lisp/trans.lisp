@@ -141,7 +141,7 @@
 		 :total-modules total-modules :module-number module-number)
 	       (gc-a-little))
 		 until (eq module to))
-	   (dump-makefile-information system))
+	   (dump-makefile-information system verbose))
       (setq *features* (delete :translator *features*))
       (setq *features* (delete :no-macros *features*)))))
 
@@ -212,7 +212,7 @@
 ;;; The function `dump-makefile-information' is used to print out data files
 ;;; that will be used by the makefile generators.
 
-(defun dump-makefile-information (system)
+(defun dump-makefile-information (system verbose)
   (unless (system-is-library-p system)
     (with-open-c-file (c-file system 'main)
       (let* ((main-body (make-c-compound-statement nil nil nil nil))
@@ -404,11 +404,10 @@
 
 	;; Emit the main function to the file.
 	(emit-function-to-c-file main-func c-file))))
-  ;; Finally, dump a list of C file names for the makefile generator to use.
-  (with-open-file (output (system-makefile-info-file system) :direction :output)
-    (unless (system-is-library-p system)
-      (glt-write-string "main" output)
-      (glt-write-char #\newline output))
+  ;; Dump a list of C file names for the makefile generator to use.
+  (with-open-file (output (system-makefile-info-file system) 
+		   :direction :output
+		   :if-exists :supersede)
     (loop for file-name in (system-extra-c-files system)
 	  do
       (glt-write-string file-name output)
@@ -417,7 +416,9 @@
 	  do
       (when (system-module-included-p system module)
 	(glt-write-string (module-file-name-string module) output)
-	(glt-write-char #\newline output)))))
+	(glt-write-char #\newline output))))
+  ;; Generate a makefile from the list of files.
+  (generate-makefile system verbose))
 
 (defun emit-top-level-function-calls (system c-file main-func main-body prefix)
   (loop for subsystem-name in (system-all-used-systems system)
@@ -540,7 +541,7 @@
     (setf (c-file-temporary-pathname c-file) c-temporary-pathname)
     (setf (c-file-final-pathname c-file) c-final-pathname)
     (setf (c-file-c-stream c-file)
-	  (open c-temporary-pathname :direction :output))
+	  (open c-temporary-pathname :direction :output :if-exists :supersede))
     (unless debugging-translate
       (format (c-file-c-stream c-file)
 	      "/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -570,9 +571,10 @@
 	  
     (setf (c-file-h-file c-file)
 	  (make-c-file
-	    :c-stream (open h-temporary-pathname :direction :output)
-	    :temporary-pathname h-temporary-pathname
-	    :final-pathname h-final-pathname))
+	   :c-stream (open h-temporary-pathname 
+			   :direction :output :if-exists :supersede)
+	   :temporary-pathname h-temporary-pathname
+	   :final-pathname h-final-pathname))
     (unless debugging-translate
       (format (c-file-c-stream (c-file-h-file c-file))
 	      "/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

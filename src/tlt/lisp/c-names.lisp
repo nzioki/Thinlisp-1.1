@@ -158,6 +158,10 @@
       ("UNBOXFIX" macro)
       ("BOXCHAR" macro)
       ("UNBOXCHAR" macro)
+      ("StrHDR" macro)
+      ("ObjStrHDR" macro)
+      ("SvHDR" macro)
+      ("ObjSvHDR" macro)
 
       ;; Externs for libcprim
       ("current_time" function)
@@ -317,6 +321,7 @@
       ("long" type)
       ("float" type)
       ("longjmp" function)
+      ("main" function)
       ("malloc" function)
       ("matherr" function)
       ("mblen" function)
@@ -361,7 +366,7 @@
       ("register" reserved)
       ("reinterpret_cast" reserved)
       ("relalloc" function)
-       ("remainder" function)
+      ("remainder" function)
       ("remove" function)
       ("rename" function)
       ("return" reserved)

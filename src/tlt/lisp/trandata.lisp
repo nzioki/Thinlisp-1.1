@@ -114,7 +114,8 @@
 
 (defun write-trans-data-file (c-file)
   (with-open-file (stream (c-file-trans-data-final-pathname c-file)
-			  :direction :output)
+		   :direction :output
+		   :if-exists :supersede)
     (when debugging-translate
       (return-from write-trans-data-file nil))
     (let ((system (c-file-system c-file))

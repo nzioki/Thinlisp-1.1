@@ -958,4 +958,13 @@
 (defun gc-a-little ()
   #+lucid
   (lcl:ephemeral-gc)
+  #+allegro
+  (excl:gc :tenure)
+  nil)
+
+(defun gc-a-lot ()
+  #+lucid
+  (lcl:full-gc)
+  #+allegro
+  (excl:gc t)
   nil)

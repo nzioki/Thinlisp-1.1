@@ -3,7 +3,9 @@
 ;;;; Module EXPORTS
 
 ;;; Copyright (c) 1995-1997 Gensym Corporation.
+;;; Copyright (c) 1999 Jim Allard
 ;;; All rights reserved.
+
 
 ;;; Jim Allard, Mike Colena
 

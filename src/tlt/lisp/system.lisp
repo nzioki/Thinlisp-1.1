@@ -166,6 +166,8 @@
   (unless (or library main-function)
     (warn "System ~a must be declared a library or have a main function."
 	  name))
+  (unless library
+    (setq extra-c-files (append extra-c-files '("main"))))
   (setq nicknames
 	(loop for nickname in nicknames
 	      collect (normalize-system-name nickname)))
@@ -348,15 +350,70 @@
   (make-system-file-pathname
     module-name-symbol temporary-h-file-type nil (system-c-dir system)))
 
+(defun system-h-file-name (system module-name-symbol)
+  (declare (ignore system))
+  (make-pathname :name (module-file-name-string module-name-symbol)
+		 :type h-file-type))
+
 (defun system-makefile-info-file (system)
   (make-system-file-pathname
     (intern (format nil "~a-FILES" (system-name system)))
     "txt" nil (system-c-dir system)))
 
-(defun system-h-file-name (system module-name-symbol)
-  (declare (ignore system))
-  (make-pathname :name (module-file-name-string module-name-symbol)
-		 :type h-file-type))
+(defun system-makefile (system)
+  (make-system-file-pathname
+   'makefile nil nil (system-c-dir system)))
+
+(defun system-temporary-makefile (system)
+  (make-system-file-pathname
+   'maketemp "txt" nil (system-c-dir system)))
+
+(defun system-bin-dir (system)
+  (let ((c-dir (system-c-dir system)))
+    (make-pathname 
+     :directory (append (butlast (pathname-directory c-dir)) '("bin"))
+     :defaults c-dir)))
+
+(defun system-binary-makefile (system)
+  (make-system-file-pathname
+   'makefile nil nil (system-bin-dir system)))
+
+
+(defun relative-path-to-directory (start-pathname end-pathname output)
+  (let* ((source-directory (pathname-directory start-pathname))
+	 (target-directory (pathname-directory end-pathname))
+	 (new-path
+	  (cond 
+	   ((eq (car target-directory) :absolute)
+	    target-directory)
+	   ((eq (car source-directory) :absolute)
+	    (translation-error "Can't make a path to ~a from ~a"
+			       start-pathname end-pathname))
+	   ((not (and (eq (car source-directory) :relative)
+		      (eq (car target-directory) :relative)))
+	    (translation-error
+	     "Pathnames weren't :absolute or :relative.  Huh?: ~a ~a"
+	     start-pathname end-pathname))
+	   (t
+	    (loop for source = source-directory then (cdr source)
+		for target = target-directory then (cdr target)
+		while (and source target 
+			   (equalp (car source) (car target)))
+		finally
+		  (return 
+		    (append '(:relative)
+			    (loop repeat (length source) collect :up)
+			    target)))))))
+    (dolist (dir new-path)
+      (cond ((eq dir :relative)
+	     ;; do nothing
+	     nil)
+	    ((eq dir :absolute)
+	     (glt-write-char #\/ output))
+	    ((eq dir :up)
+	     (glt-write-string "../" output))
+	    (t
+	     (format output "~a/" dir))))))
 
 
 
@@ -641,7 +698,8 @@
 	  (force-output))
 	(load binary-file :verbose print :print print)
 	(setf (loaded-system-lisp-binary-write-date system module)
-	      binary-write-date?)))
+	  binary-write-date?)))
+    (gc-a-little)
 	until (eq module to)))
 
 
@@ -708,4 +766,4 @@
     (export symbols *gl-package*)
     (import symbols (find-package "USER"))))
 
-(def-system-convenience-forms gl lecho tw gsi g2)
+(def-system-convenience-forms gl lecho)

@@ -37,17 +37,13 @@
   ((lisp-specs :ftype ((t) fixnum))
    `(length ,sequence))
   ((trans-specs :lisp-type ((simple-vector) fixnum)
-		:c-type ((obj) sint32))
+		:c-type (((pointer sv)) sint32))
    (make-c-cast-expr
-     'sint32 (make-c-indirect-selection-expr
-	       (make-c-cast-expr '(pointer sv) sequence)
-	       "length")))
+     'sint32 (make-c-indirect-selection-expr sequence "length")))
   ((trans-specs :lisp-type ((string) fixnum)
-		:c-type ((obj) sint32))
+		:c-type (((pointer str)) sint32))
    (make-c-cast-expr
-     'sint32 (make-c-indirect-selection-expr
-	       (make-c-cast-expr '(pointer str) sequence)
-	       "fill_length")))
+    'sint32 (make-c-indirect-selection-expr sequence "fill_length")))
   ((trans-specs :lisp-type (((array (unsigned-byte 8))) fixnum)
 		:c-type ((obj) sint32))
    (make-c-cast-expr
@@ -85,17 +81,11 @@
   ((lisp-specs :ftype ((t) fixnum))
    `(array-dimension ,vector 0))
   ((trans-specs :lisp-type ((simple-vector) fixnum)
-		:c-type ((obj) sint32))
-   (make-c-cast-expr
-     'sint32 (make-c-indirect-selection-expr
-	       (make-c-cast-expr '(pointer sv) vector)
-	       "length")))
+		:c-type (((pointer sv)) sint32))
+   (make-c-cast-expr 'sint32 (make-c-indirect-selection-expr vector "length")))
   ((trans-specs :lisp-type ((string) fixnum)
-		:c-type ((obj) sint32))
-   (make-c-cast-expr
-     'sint32 (make-c-indirect-selection-expr
-	       (make-c-cast-expr '(pointer str) vector)
-	       "length")))
+		:c-type (((pointer str)) sint32))
+   (make-c-cast-expr 'sint32 (make-c-indirect-selection-expr vector "length")))
   ((trans-specs :lisp-type (((array (unsigned-byte 8))) fixnum)
 		:c-type ((obj) sint32))
    (make-c-cast-expr
@@ -126,11 +116,9 @@
   ((lisp-specs :ftype ((array) fixnum))
    `(fill-pointer ,vector))
   ((trans-specs :lisp-type ((string) fixnum)
-		:c-type ((obj) sint32))
+		:c-type (((pointer str)) sint32))
    (make-c-cast-expr
-     'sint32 (make-c-indirect-selection-expr
-	       (make-c-cast-expr '(pointer str) vector)
-	       "fill_length")))
+    'sint32 (make-c-indirect-selection-expr vector "fill_length")))
   ((trans-specs :lisp-type (((array (unsigned-byte 8))) fixnum)
 		:c-type ((obj) sint32))
    (make-c-cast-expr
@@ -169,7 +157,7 @@
    (translation-error
      "Cannot set the fill-pointer of a simple-vector, it doesn't have one."))
   ((trans-specs :lisp-type ((string fixnum) fixnum)
-		:c-type ((obj sint32) sint32))
+		:c-type (((pointer str) sint32) sint32))
    (let* ((env (l-expr-env function-call-l-expr))
 	  (string-ref
 	    (reusable-c-variable-identifier 'string c-func '(pointer str) env))
@@ -177,8 +165,7 @@
 	    (unless (c-name-expr-p new-fill-pointer)
 	      (reusable-c-variable-identifier 'fill c-func 'sint32 env))))
      (emit-expr-to-compound-statement
-       (make-c-infix-expr (make-c-name-expr string-ref)
-			  "=" (make-c-cast-expr '(pointer str) vector))
+       (make-c-infix-expr (make-c-name-expr string-ref) "=" vector)
        c-compound-statement)
      (when fill-ref?
        (emit-expr-to-compound-statement
