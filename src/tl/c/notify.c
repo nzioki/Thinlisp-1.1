@@ -150,7 +150,7 @@ void write_fixnum_into_str (sint32 value, sint32 width, Str *output)
     sprintf(current_end, "%*ld", (int)width, (long)value);
   else
     sprintf(current_end, "%ld", (long)value);
-  new_end = strchr(current_end, NULL);
+  new_end = strchr(current_end, 0);
 
   if (new_end > base + output->length)
     error("Overflow in write_string_into_str.");
@@ -170,7 +170,7 @@ void write_double_into_str (double value, sint32 width, Str *output)
     sprintf(current_end, "%*g", (int)width, value);
   else
     sprintf(current_end, "%g", value);
-  new_end = strchr(current_end, NULL);
+  new_end = strchr(current_end, 0);
 
   if (new_end > base + output->length)
     error("Overflow in write_string_into_str.");
