@@ -128,6 +128,11 @@
 (defmacro simple-vector-p (object)
   `(typep ,object 'tli::simple-vector))
 
+(deftype structure () 'tli::structure)
+
+(defmacro structurep (object)
+  `(typep ,object 'tli::structure))
+
 (deftype string () 'tli::string)
 
 (deftype simple-string () 'tli::string)
