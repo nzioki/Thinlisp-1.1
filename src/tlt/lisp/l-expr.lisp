@@ -434,9 +434,18 @@
   (let ((form (l-expr-form eval-when-l-expr)))
     (setf (second form)
 	  (loop for situation in (second form)
-		collect (or (cdr (assq situation '((gl:compile . compile)
-						   (gl:load . load)
-						   (gl:eval . eval))))
+		collect (or (cdr (assq situation 
+				       #+lucid
+				       '((gl:compile . compile)
+					 (gl:load . load)
+					 (gl:eval . eval))
+				       #-lucid
+				       '((gl:compile . :compile-toplevel)
+					 (gl:load    . :load-toplevel)
+					 (gl:eval    . :execute)
+					 (compile    . :compile-toplevel)
+					 (load       . :load-toplevel)
+					 (eval       . :execute))))
 			    situation)))))
 
 

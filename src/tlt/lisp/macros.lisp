@@ -97,23 +97,23 @@
   (declare (ignore env))
   (if lambda-list
       (multiple-value-bind (decls subbody) (split-declarations-and-body body)
-	`(lambda (initial-form env)
-	   ;; Make a call on env to avoid unused variable warnings.
-	   (identity env)
-	   (let ((cons-error-message
-		   ,(format nil "The arguments to ~a didn't match up, ~
+       `(lambda (initial-form env)
+	  ;; Make a call on env to avoid unused variable warnings.
+	  (identity env)
+	  (let ((cons-error-message
+		 ,(format nil "The arguments to ~a didn't match up, ~
                                   ~~s found instead of a cons."
-			    name)))
-	     (gl:destructuring-bind-strict
-		 ,(cons nil lambda-list) initial-form
-		 ,@decls
-		 (let ((cons-error-message default-cons-error-message))
-		   (block ,name
-		     ,@subbody))))))
-      `(lambda (initial-form env)
-	 (declare (ignore initial-form env))
-	 (block ,name
-	   ,@body))))
+			  name)))
+	    (gl:destructuring-bind-strict
+	     ,(cons nil lambda-list) initial-form
+	     ,@decls
+	     (let ((cons-error-message default-cons-error-message))
+	       (block ,name
+		      ,@subbody))))))
+    `(lambda (initial-form env)
+       (declare (ignore initial-form env))
+       (block ,name
+	      ,@body))))
 			    
 
 
@@ -132,11 +132,11 @@
 	     name))
     ;; When possible, use the built-in defmacro so that arglist fetching in the
     ;; editor works.
-    (if (not (memq '&env lambda-list))
+    (if (not (memq '&environment lambda-list))
 	`(defmacro ,name ,lambda-list ,@body)
 	(let ((macro-defn-name (intern (format nil "~a-MACRO-FUNCTION" name))))
 	  `(progn
-	     (eval-when (compile load eval)
+	     (eval-when (:compile-toplevel :load-toplevel :execute)
 	       (defun ,macro-defn-name
 		   ,@(cons-cdr (gl:parse-macro name lambda-list body)))
 	       (setf (macro-function ',name)
@@ -282,7 +282,7 @@
 (defmacro gl:define-compiler-macro (name lambda-list &body body)
   (unless (eval-feature :translator)
     `(gl:progn
-       (gl:eval-when (compile load eval)
+       (gl:eval-when (:compile-toplevel :load-toplevel :execute)
 	 (gl:setf (gl:compiler-macro-function ',name)
 		  (function ,(gl:parse-macro name lambda-list body))))
        ',name)))
@@ -480,18 +480,18 @@
 
 (defmacro gl:defun-for-macro (name arglist &body body)
   (unless (eval-feature :translator)
-    `(eval-when (compile load eval) 
+    `(eval-when (:compile-toplevel :load-toplevel :execute) 
        (defun ,name ,arglist
 	 ,@body))))
 
 (defmacro gl:defvar-for-macro (name &body body)
   (unless (eval-feature :translator)
-    `(eval-when (compile load eval)
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
        (defvar ,name ,@body))))
 
 (defmacro gl:defparameter-for-macro (name &body body)
   (unless (eval-feature :translator)
-    `(eval-when (compile load eval)
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
        (defparameter ,name ,@body))))
 
 

@@ -111,6 +111,15 @@
 	 (if safe
 	     (safest-compilations)
 	   (fastest-compilations))
+	 (loop while recompile
+	       with delete-from-preventer = from
+	       for module in glt-modules 
+	       do
+	   (when (and delete-from-preventer
+		      (string= (symbol-name delete-from-preventer) (symbol-name module)))
+	     (setq delete-from-preventer nil))
+	   (unless delete-from-preventer
+	     (delete-glt-module-binary module)))
 	 (compile-load-glt-module 'boot (and recompile (null from)))
 	 (loop with recompile-module? = (and recompile (null from))
 	       for module in glt-modules do
@@ -246,6 +255,27 @@
 
 
 
+;;; The function `delete-glt-module-binary' takes a symbol naming a GLT module.
+;;; If the binary file for that module exists, it will be deleted.  This is used
+;;; when recompiling, so that a failed recompile can't play gotcha with old
+;;; binary files when you attempt to continue compiling after fixing a bug.
+
+(defun delete-glt-module-binary (module)
+  (let* ((file-name (string-downcase (symbol-name module)))
+	 (bin-file 
+	  (finalize-pathname 
+	   (make-pathname :directory '(:relative "glt" "lisp" "dev")
+			  :name file-name
+			  :type binary-file-type))))
+    (when (probe-file bin-file)
+      (delete-file bin-file))))
+
+			  
+	  
+
+
+
+
 
 
 ;;;; Lisp Implementation Specific Switches
@@ -369,7 +399,9 @@
 ;;; forms.  Doc can be found on pp. 7-33 to 7-34 of the ACL 4.3 Volume 1
 ;;; User Manual.
 
-#+allegro
+;;; Turning these warnings back on for now.  -jallard 5/10/99
+
+#+(and allegro ignore)
 (setq comp:*cltl1-compile-file-toplevel-compatibility-p* nil)
 
 
@@ -382,7 +414,7 @@
 
 
 
-;;; The :glt feature is pushed onto features to represent that this translator
+;;; The :gl feature is pushed onto features to represent that this translator
 ;;; has been loaded into the environment.
 
 (pushnew :gl *features*)
@@ -402,20 +434,6 @@
 
 #+(and lucid :lcl4.0)
 (pushnew :lucid-4 *features*)
-
-
-
-
-;;; The following features are old deadwood that are needed by various bits of
-;;; AB lisp code, but which have not been expunged from the sources.  As much as
-;;; possible, these should be eliminated sometime in the rosy future when we
-;;; have all the time we could ever want.  -jra 12/30/96
-
-#+unix
-(pushnew :x11-windows *features*)
-
-#+unix
-(pushnew :x11-unix *features*)
 
 
 
@@ -460,7 +478,7 @@
 ;;; seem to get the eval-when semantics right.  Sigh, here we go again.
 
 (defmacro defmacro-replacement (name arglist &body decls-and-forms)
-  `(eval-when (compile load eval)
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
      (defmacro ,name ,arglist ,@decls-and-forms)))
 
 (defun install-replacement-defmacro ()
@@ -475,5 +493,5 @@
           replacement)
     nil))
 
-#+allegro
+#+(and allegro ignore)
 (install-replacement-defmacro)

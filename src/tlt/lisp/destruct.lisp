@@ -242,7 +242,10 @@
 		  (variable
 		    (if fancy-key?
 			(cons-car (cons-cdr (cons-car key)))
-			(cons-car key))))
+			(cons-car key)))
+		  (supplied-p-var? (caddr key)))
+	     (when supplied-p-var?
+	       (add-destruct-binding supplied-p-var? nil))
 	     (add-destruct-binding
 	       variable
 	       (if (eval-feature :translator)
@@ -251,10 +254,15 @@
 				   (gl:eq (gl:car-of-cons ,search-var)
 					  ',keyword))
 			    (gl:if ,search-var
-				   (gl:car-of-cons (gl:cdr-of-cons ,search-var))
+				   (gl:progn
+				    ,@(when supplied-p-var?
+					`((gl:setq ,supplied-p-var? t)))
+				    (gl:car-of-cons (gl:cdr-of-cons ,search-var)))
 				   ,init)))
 		   `(loop for ,search-var on ,value-var by #'cddr do
 		      (when (eq (cons-car ,search-var) ',keyword)
+			,@(when supplied-p-var?
+			    `((setq ,supplied-p-var? t)))
 			(return (cons-car (cons-cdr ,search-var))))
 			  finally (return ,init))))))))
   (clear-destruct-actions))

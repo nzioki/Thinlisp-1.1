@@ -33,7 +33,7 @@
 	  (split-declarations-and-body body)
 	`(progn
 	   (deftype ,name ,arglist ,@body)
-	   (eval-when (compile load eval)
+	   (eval-when (:compile-toplevel :load-toplevel :execute)
 	     (defun ,type-expander ,arglist
 	       ,@decls
 	       (block ,name

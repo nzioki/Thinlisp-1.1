@@ -41,13 +41,13 @@
   (error "You have called the stand-in for a forward referenced GLI function."))
 
 (defmacro declare-forward-function-references (&rest functions)
-  `(eval-when (compile)
+  `(eval-when (:compile-toplevel)
      ,@(loop for func in functions
 	     collect `(unless (fboundp ',func)
 			(setf (symbol-function ',func) #'stand-in)))))
 
 (defmacro declare-forward-variable-references (&rest variables)
-  `(eval-when (compile)
+  `(eval-when (:compile-toplevel)
      (proclaim '(special ,@variables))))
 	       
   

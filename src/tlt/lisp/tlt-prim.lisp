@@ -27,8 +27,6 @@
 
 ;;;; Arrays
 
-
-
 (gl:declaim (gl:functional length-trans gl:fill-pointer gl:aref gl:elt
 			   gl:svref gl:schar))
 
@@ -806,8 +804,8 @@
 
 (def-gl-macro gl:make-array
     (&environment env dimensions &key (element-type t)
-		(initial-element nil element-supplied?)
-		initial-contents fill-pointer)
+		  (initial-element nil element-supplied?)
+		  initial-contents fill-pointer)
   (let* ((expanded-element-type (gl:macroexpand-all element-type env))
 	 (upgraded-type
 	   (if (constantp expanded-element-type)
@@ -851,15 +849,16 @@
 	(cond (element-supplied?
 	       (if (eq array-type 'gl:string)
 		   `(gl:make-string ,length-form :initial-element ,initial-element)
-		   `(gl:let* ((,iteration-length-var ,length-form)
-			      (,array-var (,maker-function ,iteration-length-var))
-			      (,initial-var ,initial-element))
-		      (gl:declare (gl:fixnum ,iteration-length-var)
-				  (gl:type ,array-type ,array-var)
-				  (gl:type ,upgraded-type ,initial-var))
-		      (gl:dotimes (,index-var ,iteration-length-var)
-			(gl:setf (gl:aref ,array-var ,index-var) ,initial-var))
-		      ,array-var)))
+		 `(gl:let* ((,iteration-length-var ,length-form)
+			    (,array-var (,maker-function ,iteration-length-var))
+			    (,initial-var ,initial-element))
+		   (gl:declare (gl:fixnum ,iteration-length-var)
+			       (gl:type ,array-type ,array-var)
+			       (gl:type ,upgraded-type ,initial-var))
+		   (gl:dotimes (,index-var ,iteration-length-var)
+		     (gl:declare (gl:fixnum ,index-var))
+		     (gl:setf (gl:aref ,array-var ,index-var) ,initial-var))
+		   ,array-var)))
 	      (initial-contents
 	       `(gl:let* ((,iteration-length-var ,length-form)
 			  (,array-var (,maker-function ,iteration-length-var))
@@ -867,6 +866,7 @@
 		  (gl:declare (gl:fixnum ,iteration-length-var)
 			      (gl:type ,array-type ,array-var))
 		  (gl:dotimes (,index-var ,iteration-length-var)
+		    (gl:declare (gl:fixnum ,index-var))
 		    (gl:setf (gl:aref ,array-var ,index-var)
 			     (gl:the ,upgraded-type
 				     (gl:car (gl:the gl:cons ,initial-var))))

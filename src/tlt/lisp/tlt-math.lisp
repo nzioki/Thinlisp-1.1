@@ -464,9 +464,8 @@
 (def-c-translation decompose-float (float uint16-array)
   ((lisp-specs :ftype ((double-float (array (unsigned-byte 16)))
 		       void))
-   (ignore float)
-   (ignore uint16-array)
-   `(error "No LISP implementation of DECOMPOSE-FLOAT"))
+   `(error "No LISP implementation of DECOMPOSE-FLOAT.  Args = ~s, ~s"
+	   ,float ,uint16-array))
   ((trans-specs :c-type ((double (array uint16)) void))
    (make-c-function-call-expr
      (make-c-name-expr "memcpy")  ;; arg order is  dest, src

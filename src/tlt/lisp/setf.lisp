@@ -102,7 +102,7 @@
     (return-from gl:define-setf-method nil))
   (let ((setf-method-name (intern (format nil "~a-SETF-METHOD" name))))
     `(progn
-       (eval-when (compile load eval)
+       (eval-when (:compile-toplevel :load-toplevel :execute)
 	 (defun ,setf-method-name
 	     ,@(cons-cdr (gl:parse-macro name lambda-list body)))
 	 (setf (setf-method ',name)
@@ -114,7 +114,7 @@
 				    &rest store-var-and-body)
   (when (eval-feature :translator)
     (return-from gl:defsetf nil))
-  `(gl:eval-when (compile load eval)
+  `(gl:eval-when (:compile-toplevel :load-toplevel :execute)
      ,(cond
 	((null store-var-and-body)
 	 `(setf (simple-setf-update-fn ',access-fn)

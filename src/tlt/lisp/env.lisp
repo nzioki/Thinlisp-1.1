@@ -126,10 +126,11 @@
 (defmacro env-or-default (environment?)
   (let ((env? (gensym)))
     `(let ((,env? ,environment?))
-       (if (or (null ,env?)
-	       (consp ,env?))		; Lucid uses conses for its environments.
-	   global-glt-environment
-	   ,env?))))
+       ;; Lucid uses conses for its environments, CMULisp uses structures.  Test
+       ;; for our specific structure type here.
+       (if (environment-p ,env?)
+	   ,env?
+	 global-glt-environment))))
 
 
 
@@ -333,9 +334,18 @@
 (defmacro gl:eval-when (situations &body forms)
   (let ((lisp-situations
 	  (loop for situation in situations
-		collect (or (cdr (assq situation '((gl:compile . compile)
-						   (gl:load . load)
-						   (gl:eval . eval))))
+		collect (or (cdr (assq situation 
+				       #+lucid
+				       '((gl:compile . compile)
+					 (gl:load    . load)
+					 (gl:eval    . eval))
+				       #-lucid
+				       '((gl:compile . :compile-toplevel)
+					 (gl:load    . :load-toplevel)
+					 (gl:eval    . :execute)
+					 (compile    . :compile-toplevel)
+					 (load       . :load-toplevel)
+					 (eval       . :execute))))
 			    situation))))
     `(eval-when ,lisp-situations ,@forms)))
 
