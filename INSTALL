@@ -1,6 +1,2 @@
-These instructions need work!
-
-You will need a working Common Lisp environment.
-
-Then src/boot.lisp should get you started.
-
+For further information on getting started see the
+src/INSTALL file as well as the doc in src/doc.
