@@ -66,7 +66,6 @@
 	 (actual-arg-count
 	   (tli::compiled-function-arg-count compiled-function)))
     (declare (type fixnum rest-length given-arg-count actual-arg-count))
-;    #+nil
     (when (/= given-arg-count actual-arg-count)
       (if (and (< given-arg-count actual-arg-count)
 	       (>= (+ given-arg-count
@@ -141,5 +140,7 @@
 			 (error "Calling APPLY on ~a with ~a args, it can only handle ~a."
 				,compiled-function-var ,actual-arg-count-var
 				,lambda-parameters-limit)))))))
+      (tli::set-thread-closure-env 
+        (tli::compiled-function-closure-environment compiled-function))
       (dispatch-to-apply-primitive
 	function-args actual-arg-count compiled-function))))
