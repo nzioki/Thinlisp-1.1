@@ -1,0 +1,37 @@
+This file contains the PGP keys of various ThinLisp community
+members.  We do not typically use these for mail.  Their primary
+purpose is for signing releases.  
+
+Users, to add these keys to your local keyring:
+  pgp < KEYS
+  gpg --import KEYS
+
+Developers, to add your keys to this file:
+  pgp -kxa <your name> and append it to this file.
+  (pgpk -ll <your name> && pgpk -xa <your name>) >> this file.
+  (gpg --list-sigs <your name>
+     && gpg --armor --export <your name>) >> this file.
+
+pub  1024R/187BD68D 1997-09-30 Ben Hyde <bhyde@apache.org>
+sig        187BD68D 2001-05-28  Ben Hyde <bhyde@apache.org>
+uid                            Ben Hyde <bhyde@pobox.com>
+sig        187BD68D 1997-09-30  Ben Hyde <bhyde@apache.org>
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1.0.5 (FreeBSD)
+Comment: Ascription is an anathema to any enthusiasm.
+
+mQCPAzQw9+YAAAEEAJ2cQQdKNJQg59Q8BVptokgJcETs4vNGevSxjS/oKt3IkslN
+pqTmjrwrwvAg8lojPZZbsBnHTm7bS5+2ZqzNzEUHEjKPFahxFxa/0RQxCmzPxFho
+HltMmFD5kB8tJOJTlhIDpCdWDegU5bl04j0QWATEGlbpUAxDGmSwzQUYe9aNABEB
+AAG0GkJlbiBIeWRlIDxiaHlkZUBwb2JveC5jb20+iQCVAwUQNDD352SwzQUYe9aN
+AQH/XgP/YOSC7/wGroXCyQ3lSTqLcWAeTFrOzZdS91Vemyd+3Zzfcqul7iHQeTCb
+3E+2lIxa6ljaD9HbNcAiNZ43HuDMXjqGuFHUqSjLBzjCR/l0qcWG7Ss1mf35eIH9
+zu0JmWRNCGmRvdMNOSc4Ymj0HJlbJTWBA8QVr+nx4GKNfZSOjd+0G0JlbiBIeWRl
+IDxiaHlkZUBhcGFjaGUub3JnPokAlQMFEzsScCFksM0FGHvWjQEBsX0D/0o55qhg
+a4+lAuHmw3h351kzv622+TSjVEsOXTxqd1HoSRDrFqEph+k6aAzgzY4NVwjc4gbb
+q8c/j1hvt0v5mByyJ6G9VO9Fy1/ILWAnJXY1qDVFFaWAVPj/7xjBWTNVB4rCXY0v
+FZvR7d78sFvzt8tn9RtZHxlD8TFZqFmpeXxG
+=00rB
+-----END PGP PUBLIC KEY BLOCK-----
+
