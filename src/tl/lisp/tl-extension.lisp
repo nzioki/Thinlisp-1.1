@@ -263,17 +263,6 @@
 ;;; the macro-variables argument of expand-by-substituting-args-if-all-trivial
 ;;; is not evaluated.
 
-
-;;; `substitition-function-p' is a macro time predicate used to declare
-;;; that a symbol was defined using the def-substitution mechinism.  This
-;;; knowledge is useful to code walkers which then know they may treat
-;;; the forms as function like.
-
-(defmacro substitition-function-p (name)
-  `(get ,name 'substitition-function-p))
-
-
-
 ;;;   `Legal-substitution-macro' is a utility function used by the substitution
 ;;;   macros.  It checks that the body is absolutly safe given our extremely
 ;;;   stupid code walker.  For example: (def-substitution-macro listify (list)
@@ -325,7 +314,7 @@
 		,@body)
 	      ,@(unless (eval-feature :no-macros)
 		  `((eval-when (compile load eval)
-		      (setf (substitition-function-p ',name) t))))
+		      (setf (substitution-function-p ',name) t))))
 	      (defmacro ,name ,variables
 		,@declarations-and-documentation
 		(expand-by-substituting-args-if-all-trivial
@@ -432,7 +421,7 @@
        `(progn
 	  ,@(unless (eval-feature :no-macros)
 	      `((eval-when (compile load eval)
-		  (setf (substitition-function-p ',name) t))))
+		  (setf (substitution-function-p ',name) t))))
 	  (defmacro ,name ,variables
 	    (list ',development-function-name ,@variables))
 	  (defun ,development-function-name ,variables
@@ -2637,16 +2626,17 @@
 	      (gensym)))
 	(l (gensym)))
     `(loop with ,l = ,plist
-	   ,@(if indicator-var? `(with ,indicator-var? = ,indicator))
-	   ,@(if default-var? `(with ,default-var? = ,default))
-	   do
-	     (cond ((null ,l)
-		    (return ,(or default-var? default)))
-		   ((eq (car-of-cons ,l) ,(or indicator-var? indicator))
-		    (setq ,l (car-of-cons (cdr-of-cons ,l)))
-		    (return ,l))
-		   (t
-		    (setq ,l (cdr-of-cons (cdr-of-cons ,l) )))))))
+	 ,@(if indicator-var? `(with ,indicator-var? = ,indicator))
+	 ,@(if default-var? `(with ,default-var? = ,default))
+	 while ,l
+	 do
+      (cond ((eq (car-of-cons ,l) ,(or indicator-var? indicator))
+	     (setq ,l (car-of-cons (cdr-of-cons ,l)))
+	     (return ,l))
+	    (t
+	     (setq ,l (cdr-of-cons (cdr-of-cons ,l) ))))
+	 finally
+	   (return ,(or default-var? default)))))
 
 (declare-side-effect-free-function getfq-function-no-default)
 

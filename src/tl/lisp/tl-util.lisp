@@ -46,7 +46,7 @@
 		 ,list-holding-place
 		 (cons ,item ,list-holding-place)))
       (multiple-value-bind (temps vals stores store-form access-form)
-	  (gl:get-setf-method list-holding-place env)
+	  (gl:get-setf-expansion list-holding-place env)
 	(let ((item-var (gensym)))
 	  `(gl:let*
 	       ,(cons (list item-var item)
@@ -76,7 +76,7 @@
 
 (defmacro remf (&environment env plist property)
   (multiple-value-bind (temps vals stores store-form access-form)
-      (get-setf-method plist env)
+      (get-setf-expansion plist env)
     (when (cdr stores)
       (ab-lisp::error "REMF doesn't support multiple store variables: ~s"
 		      plist))
@@ -109,7 +109,7 @@
 (define-setf-method getf
     (&environment env property-list property &optional default?)
   (multiple-value-bind (temps vals stores store-form access-form)
-      (get-setf-method property-list env)
+      (get-setf-expansion property-list env)
     ;; Prop is the incoming property-name, new-prop-value is the incoming new
     ;; property-value we are storing, and new-plist is the outgoing new
     ;; property-list to be stored back into the original location.
@@ -146,7 +146,7 @@
 	while next-place-cons
 	do
     (multiple-value-setq (temps vals stores store-form access-form)
-      (get-setf-method (car-of-cons place-cons) env))
+      (get-setf-expansion (car-of-cons place-cons) env))
     (when (cdr stores)
       (ab-lisp::error "SHIFTF doesn't support multiple store values : ~s"
 		      (car-of-cons place-cons)))
@@ -175,7 +175,7 @@
 	for place-cons on places
 	do
     (multiple-value-setq (temps vals stores store-form access-form)
-      (get-setf-method (car-of-cons place-cons) env))
+      (get-setf-expansion (car-of-cons place-cons) env))
     (when (cdr stores)
       (ab-lisp::error "ROTATEF doesn't support multiple store variables: ~s"
 		      (car-of-cons place-cons)))
@@ -199,11 +199,11 @@
 	       nil))))
 
 (defmacro psetf (&whole whole &environment env &rest places-and-values)
-  (loop with temps and vals and stores and store-form and access-form
+  (loop with temps and vals and stores and store-form
 	for place-cons on places-and-values by #'cddr
 	do
-    (multiple-value-setq (temps vals stores store-form access-form)
-      (get-setf-method (car-of-cons place-cons) env))
+    (multiple-value-setq (temps vals stores store-form)
+      (get-setf-expansion (car-of-cons place-cons) env))
     (when (null (cdr-of-cons place-cons))
       (ab-lisp::error "Odd number of forms in PSETF:  ~s" whole))
     (when (cdr stores)

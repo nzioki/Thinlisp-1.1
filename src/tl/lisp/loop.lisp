@@ -1402,7 +1402,7 @@ The offending clause"
 		         (and (setq tem (loop-tassoc
 					   (car z) loop-named-variables))
 			      (loop-simple-error
-			         "Duplicated var substitition in USING phrase"
+			         "Duplicated var substitution in USING phrase"
 				 (list tem z)))
 			 (push (cons (car z) (cadr z)) loop-named-variables)))
 		(loop-pop-source)))

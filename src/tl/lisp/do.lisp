@@ -73,7 +73,8 @@
 
 (defun-for-macro do-do-body (varlist endlist code decl bind step name block)
   (let* ((inits ())
-	 (steps ()))
+	 (steps ())
+	 (endtest (car endlist)))
     ;; Check for illegal old-style do.
     (when (or (not (listp varlist)) (atom endlist))
       (lisp:error "Ill-formed ~S -- possibly illegal old style DO?" name))
@@ -91,31 +92,31 @@
 	       (t (lisp:error "~S is an illegal form for a ~S varlist." v name))))
 	    (t (lisp:error "~S is an illegal form for a ~S varlist." v name))))
     ;; And finally construct the new form.
-    `(block ,BLOCK
+    `(block ,block
        (,bind ,(nreverse inits)
-	,@decl
-	(tagbody
-	   next-loop
-	   (when ,(car endlist) (go end-loop))
+         ,@decl
+	 (tagbody
+	  next-loop
+	   ,@(when endtest `((when ,endtest (go end-loop))))
 	   ,@code
 	   ,(if (cddr steps)
 		`(,step ,@(nreverse steps))
-		`(setq ,@(nreverse steps)))
+	      `(setq ,@(nreverse steps)))
 	   (go next-loop)
-	   end-loop
-	   (return-from ,BLOCK (progn ,@(cdr endlist))))))))
+	   ,@(when endtest '(end-loop))
+	   (return-from ,block (progn ,@(cdr endlist))))))))
 
 
 
 
 ;;; DO ({(Var [Init] [Step])}*) (Exit-Test Exit-Form*) Declaration* Form*
-;;; Iteration construct.  Each Var is initialized in parallel to the value of the
-;;; specified Init form.  On subsequent iterations, the Vars are assigned the
-;;; value of the Step form (if any) in paralell.  The Test is evaluated before
-;;; each evaluation of the body Forms.  When the Test is true, the the Exit-Forms
-;;; are evaluated as a PROGN, with the result being the value of the DO.  A block
-;;; named NIL is established around the entire expansion, allowing RETURN to be
-;;; used as an laternate exit mechanism."
+;;; Iteration construct.  Each Var is initialized in parallel to the value of
+;;; the specified Init form.  On subsequent iterations, the Vars are assigned
+;;; the value of the Step form (if any) in paralell.  The Test is evaluated
+;;; before each evaluation of the body Forms.  When the Test is true, the the
+;;; Exit-Forms are evaluated as a PROGN, with the result being the value of the
+;;; DO.  A block named NIL is established around the entire expansion, allowing
+;;; RETURN to be used as an laternate exit mechanism."
 
 (defmacro do (varlist endlist &body decls-and-forms)
   (multiple-value-bind (decls body)

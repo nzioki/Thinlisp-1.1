@@ -311,10 +311,12 @@
 ;;; functions are guarded by #+development.
 
 (defun-for-macro find-dead-forward-references ()
+  #-lucid
+  nil
+  #+lucid
   (do-symbols (symbol (find-package 'ab))
     (let (symbol-function)
       (when (fboundp symbol)
-	#+lucid
 	(when (and (typep (setf symbol-function (symbol-function symbol))
 			  'system:procedure)
 		   (eq (system:procedure-name symbol-function)

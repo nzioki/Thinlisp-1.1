@@ -73,3 +73,14 @@
 
 (defmacro my-identity (x)
   x)
+
+
+
+
+;;; The macro `substitution-function-p' is a predicate used to declare that a
+;;; symbol was defined using the def-substitution mechinism.  This knowledge is
+;;; useful to code walkers which then know they may treat the forms as function
+;;; like.
+
+(defmacro substitution-function-p (name)
+  `(get ,name 'substitution-function-p))
