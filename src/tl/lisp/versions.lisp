@@ -110,11 +110,12 @@
   (let* ((name (normalize-system-name system-name))
 	 (cached-list? (get name :system-all-used-systems)))
     (or cached-list?
-	(let ((collected-systems nil))
-	  (collect-all-used-systems name)
-	  (setq collected-systems (nreverse collected-systems))
-	  (setf (get name :system-all-used-systems) collected-systems)
-	  collected-systems))))
+	(with-permanent-area
+	 (let ((collected-systems nil))
+	   (collect-all-used-systems name)
+	   (setq collected-systems (nreverse collected-systems))
+	   (setf (get name :system-all-used-systems) collected-systems)
+	   collected-systems)))))
 
 (defun collect-all-used-systems (name)
   (declare (consing-area either)

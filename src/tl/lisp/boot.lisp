@@ -35,8 +35,8 @@
 ;;; Translator, which should already have been loaded when this file is loaded.
 
 (declare-system (tl :library t :used-systems nil
-		    :extra-c-files ("tlt" "notify")
-		    :extra-h-files ("tlt"))
+		    :extra-c-files ("tl")
+		    :extra-h-files ("tl"))
   boot
   stubs
   tl-types

@@ -118,6 +118,7 @@
 	new-list)))
 
 (defun append (&rest lists)
+  (declare (consing-area either))
   (cond
     ((null lists)
      nil)
