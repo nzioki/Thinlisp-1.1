@@ -324,6 +324,9 @@
      "BIGNUM"
      "FLOAT"
      "DOUBLE-FLOAT"
+     "SINGLE-FLOAT"
+     "SHORT-FLOAT"
+     "LONG-FLOAT"
      "FLOATP"
      "CHARACTER"
      "STRING-CHAR"			; for CLtL1 compatibility
