@@ -1226,6 +1226,22 @@
 		  (loop for subform in (cons-cdr form)
 			always (translates-as-c-expr-p subform env)))))))
 
+(defun end-loop-used-p (form-or-forms)
+  (do* ((forms-cons form-or-forms (cons-cdr forms-cons)))
+       ((atom forms-cons)
+	nil)
+    (let ((form (cons-car forms-cons)))
+      (when (consp form)
+	(let ((form-car (cons-car form)))
+	  (cond ((eq form-car 'gl:loop-finish)
+		 (return t))
+		((eq form-car 'gl:go)
+		 (return (and (consp (cons-cdr form))
+			      (eq (cons-second form) 'gl::end-loop))))
+		(t
+		 (when (end-loop-used-p form)
+		   (return t)))))))))
+
 (defun rewrite-tagbody-for-loops (form env)
   (let* ((loop-body nil)
 	 (new-loop-form (list 'while-loop))
@@ -1286,11 +1302,10 @@
 	   (setf (cdr new-loop-form)
 		 (cons end-test
 		       (list (cons 'gl:tagbody loop-body))))))
-    (cons 'gl:tagbody new-tagbody-body)))
-
-
-			   
-		 
+    (cons 'gl:tagbody 
+	  (if (end-loop-used-p new-tagbody-body)
+	      new-tagbody-body
+	    (delq 'gl::end-loop new-tagbody-body)))))
 
 
 

@@ -127,69 +127,91 @@
   (error "The extra value ~s ran off the end of a destructuring-bind-strict pattern."
 	 shoulda-been-nil))
 
+(defun single-var-lambda-key-p (key lambda-list)
+  (loop for sublist = lambda-list then (cdr next-cons)
+      while (consp sublist)
+      for next-cons = (cons-cdr sublist)
+      while (consp next-cons)
+      do
+    (when (eq (cons-car sublist) key)
+      (return (cons-car next-cons)))))
+
+(defun remove-lambda-key (key list)
+  (setq list (copy-list list))
+  (loop for trailer = nil then cons
+      for cons on list
+      do
+    (when (eq (cons-car cons) key)
+      (if trailer
+	  (setf (cdr trailer) (cons-cddr cons))
+	(setq list (cons-cddr cons)))
+      (loop-finish)))
+  list)
+
 (defun collect-destructure-bindings (pattern value-var null-value-ok?)
-  (etypecase pattern
-    (symbol
-     (if (null pattern)
-	 (unless null-value-ok?
-	   (add-destruct-check
-	     `(when-destruct
-		,value-var (not-null-destructuring-error ,value-var))))
-	 (add-destruct-binding pattern value-var)))
-    (cons
-     (etypecase (cons-car pattern)
-       (symbol
-	(case (cons-car pattern)
-	  ((&optional)
-	   (collect-optional-destructure-bindings
-	     (cons-cdr pattern) value-var))
-	  ((&rest &body)
-	   (add-destruct-binding (cons-second pattern) value-var)
-	   (when (cddr pattern)
-	     (unless (memq (third pattern) gl:lambda-list-keywords)
-	       (error "&rest may only be followed by other lambda-list keywords, not ~s"
-		      (cddr pattern)))
-	     (collect-destructure-bindings (cddr pattern) value-var t)))
-	  ((&whole)
-	   (let ((next-cons (cons-cdr pattern)))
-	     (add-destruct-binding (cons-car next-cons) value-var)
-	     (collect-destructure-bindings (cons-cdr next-cons) value-var t)))
-	  ((&key)
-	   (collect-keyword-destructure-bindings (cons-cdr pattern) value-var))
-	  ((&aux)
-	   (loop for binding in (cons-cdr pattern) do
-	     (cond ((symbolp binding)
-		    (add-destruct-binding binding nil))
-		   ((consp binding)
-		    (add-destruct-binding
-		      (cons-car binding) (car (cons-cdr binding))))
-		   (t
-		    (error "Invalid &aux binding ~s" binding)))))
-	  ((&environment)
-	   (let ((next-cons (cons-cdr pattern)))
-	     (add-destruct-binding (cons-car next-cons) 'env)
-	     (collect-destructure-bindings
-	       (cons-cdr next-cons) value-var null-value-ok?)))
-	  ((nil)
-	   (add-destruct-action
-	     `(setq-destruct ,value-var (cons-cdr-destruct ,value-var)))
-	   (collect-destructure-bindings
-	     (cons-cdr pattern) value-var null-value-ok?))
-	  (otherwise
-	   (add-destruct-binding
-	     (cons-car pattern) `(cons-car-destruct ,value-var))
-	   (add-destruct-action
-	     `(setq-destruct ,value-var (cons-cdr-destruct ,value-var)))
-	   (collect-destructure-bindings
-	     (cons-cdr pattern) value-var null-value-ok?))))
-       (cons
-	(let ((new-value-var (gensym)))
-	  (add-destruct-binding new-value-var `(cons-car-destruct ,value-var))
-	  (collect-destructure-bindings (cons-car pattern) new-value-var nil)
+  (cond
+   ((symbolp pattern)
+    (if (null pattern)
+	(unless null-value-ok?
+	  (add-destruct-check
+	   `(when-destruct
+	     ,value-var (not-null-destructuring-error ,value-var))))
+      (add-destruct-binding pattern value-var)))
+   ((atom pattern)
+    nil)
+   ((single-var-lambda-key-p '&whole pattern)
+    (add-destruct-binding (single-var-lambda-key-p '&whole pattern) value-var)
+    (collect-destructure-bindings
+     (remove-lambda-key '&whole pattern) value-var t))
+   ((single-var-lambda-key-p '&environment pattern)
+    (add-destruct-binding (single-var-lambda-key-p '&environment pattern) 'env)
+    (collect-destructure-bindings
+     (remove-lambda-key '&environment pattern) value-var t))
+   ((consp pattern)
+    (etypecase (cons-car pattern)
+      (symbol
+       (case (cons-car pattern)
+	 ((&optional)
+	  (collect-optional-destructure-bindings
+	   (cons-cdr pattern) value-var))
+	 ((&rest &body)
+	  (add-destruct-binding (cons-second pattern) value-var)
+	  (when (cddr pattern)
+	    (unless (memq (third pattern) gl:lambda-list-keywords)
+	      (error "&rest may only be followed by other lambda-list keywords, not ~s"
+		     (cddr pattern)))
+	    (collect-destructure-bindings (cddr pattern) value-var t)))
+	 ((&key)
+	  (collect-keyword-destructure-bindings (cons-cdr pattern) value-var))
+	 ((&aux)
+	  (loop for binding in (cons-cdr pattern) do
+		(cond ((symbolp binding)
+		       (add-destruct-binding binding nil))
+		      ((consp binding)
+		       (add-destruct-binding
+			(cons-car binding) (car (cons-cdr binding))))
+		      (t
+		       (error "Invalid &aux binding ~s" binding)))))
+	 ((nil)
 	  (add-destruct-action
-	    `(setq-destruct ,value-var (cons-cdr-destruct ,value-var)))
+	   `(setq-destruct ,value-var (cons-cdr-destruct ,value-var)))
 	  (collect-destructure-bindings
-	    (cons-cdr pattern) value-var null-value-ok?)))))))
+	   (cons-cdr pattern) value-var null-value-ok?))
+	 (otherwise
+	  (add-destruct-binding
+	   (cons-car pattern) `(cons-car-destruct ,value-var))
+	  (add-destruct-action
+	   `(setq-destruct ,value-var (cons-cdr-destruct ,value-var)))
+	  (collect-destructure-bindings
+	   (cons-cdr pattern) value-var null-value-ok?))))
+      (cons
+       (let ((new-value-var (gensym)))
+	 (add-destruct-binding new-value-var `(cons-car-destruct ,value-var))
+	 (collect-destructure-bindings (cons-car pattern) new-value-var nil)
+	 (add-destruct-action
+	  `(setq-destruct ,value-var (cons-cdr-destruct ,value-var)))
+	 (collect-destructure-bindings
+	  (cons-cdr pattern) value-var null-value-ok?)))))))
 
 (defun collect-keyword-destructure-bindings (key-list value-var)
   (unless (memq '&allow-other-keys key-list)
