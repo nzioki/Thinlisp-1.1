@@ -74,6 +74,8 @@
 
 (defparameter *lisp-package* (find-package #+lucid "LISP" #-lucid "COMMON-LISP"))
 
+(defparameter *cl-user-package* (find-package "CL-USER"))
+
 (defparameter *keyword-package* (find-package "KEYWORD"))
 
 

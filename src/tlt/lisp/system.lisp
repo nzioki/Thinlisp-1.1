@@ -49,6 +49,10 @@
 (defun normalize-module-name (name)
   (normalize-system-name name))
 
+(defvar gl:current-system-being-loaded nil)
+
+(defvar gl:all-systems nil)
+
 
 
 
@@ -218,9 +222,7 @@
 			',extra-h-files ',modules))))
        ,@(unless (eq name 'gl:debug)
 	   `((gl:setq gl:current-system-being-loaded ',name)
-	     ;; The following line crashes for reasons I cannot fathom.
-	     ;; -jallard 7/28/97
-	     ; (gl:setq gl:all-systems (gl:cons ',name gl:all-systems))
+	     (gl:setq gl:all-systems (gl:cons ',name gl:all-systems))
 	     ))
        (gl:setf (,defined-get ',name :system-nicknames)
 		',nicknames)
@@ -567,7 +569,7 @@
 	do
     (unless (eql loaded-date? write-date)
       (when verbose
-	(format t "~%Loading ~14a      [~3d/~3d]"
+	(format t "~%Loading ~14a      [~3d/~3d] "
 		module module-count total-modules)
 	(force-output))
       (load binary-file :verbose print)
@@ -687,7 +689,7 @@
 			  (<= binary-write-date? 
 			      user::exports-file-write-date))))
 	(when verbose
-	  (format t "~%Compiling ~14a    [~3d/~3d]~a"
+	  (format t "~%Compiling ~14a    [~3d/~3d] ~a"
 		  module module-count total-modules
 		  (if development? " (development)" ""))
 	  (force-output))
@@ -698,7 +700,7 @@
 	(setq binary-write-date? (file-write-date binary-file)))
       (unless (eql loaded-date? binary-write-date?)
 	(when verbose
-	  (format t "~%Loading ~14a      [~3d/~3d]~a"
+	  (format t "~%Loading ~14a      [~3d/~3d] ~a"
 		  module module-count total-modules
 		  (if development? " (development)" ""))
 	  (force-output))
@@ -728,10 +730,13 @@
     'progn
     (loop for system in system-names
 	  for load-name = (intern (format nil "LOAD-~a" system) *gl-package*)
+	  for cl-load-name = (intern (symbol-name load-name) *cl-user-package*)
 	  for compile-name = (intern (format nil "COMPILE-~a" system)
 				     *gl-package*)
+	  for cl-compile-name = (intern (symbol-name compile-name) *cl-user-package*)
 	  for translate-name = (intern (format nil "TRANSLATE-~a" system)
 				       *gl-package*)
+	  for cl-translate-name = (intern (symbol-name translate-name) *cl-user-package*)
 	  appending
 	  `((make-convenince-names-visible '(,(symbol-name load-name)
 					     ,(symbol-name compile-name)
@@ -739,7 +744,20 @@
 	    (defmacro ,load-name (&key (verbose t) (print nil) (to nil))
 	      `(gl:load-system ',',system
 			       :verbose ,verbose :print ,print :to ,to))
+	    (defmacro ,cl-load-name (&key (verbose t) (print nil) (to nil))
+	      `(gl:load-system ',',system
+			       :verbose ,verbose :print ,print :to ,to))
 	    (defmacro ,compile-name
+		(&key (verbose t) (recompile nil) (from nil) (to nil)
+		      (compile-used-systems t) (recompile-used-systems nil)
+		      (print nil))
+	      `(gl:compile-system
+		 ',',system
+		 :verbose ,verbose :recompile ,recompile :from ,from :to ,to
+		 :compile-used-systems ,compile-used-systems
+		 :recompile-used-systems ,recompile-used-systems
+		 :print ,print))
+	    (defmacro ,cl-compile-name
 		(&key (verbose t) (recompile nil) (from nil) (to nil)
 		      (compile-used-systems t) (recompile-used-systems nil)
 		      (print nil))
@@ -764,12 +782,27 @@
 		 :recompile-used-systems ,recompile-used-systems
 		 :retranslate-used-systems ,retranslate-used-systems
 		 :retranslate ,retranslate
+		 :print ,print))
+	    (defmacro ,cl-translate-name
+		(&key (verbose t)
+		      (recompile nil) (from nil) (to nil)
+		      (compile-used-systems t)
+		      (recompile-used-systems nil)
+		      (retranslate-used-systems nil)
+		      (retranslate nil)
+		      (print nil))
+	      `(gl:translate-system
+		 ',',system
+		 :verbose ,verbose :recompile ,recompile :from ,from :to ,to
+		 :compile-used-systems ,compile-used-systems
+		 :recompile-used-systems ,recompile-used-systems
+		 :retranslate-used-systems ,retranslate-used-systems
+		 :retranslate ,retranslate
 		 :print ,print))))))
 
 (defun make-convenince-names-visible (name-strings)
   (let ((symbols (loop for name in name-strings
 		       collect (intern name *gl-package*))))
-    (export symbols *gl-package*)
-    (import symbols (find-package "USER"))))
+    (export symbols *gl-package*)))
 
 (def-system-convenience-forms gl lecho)

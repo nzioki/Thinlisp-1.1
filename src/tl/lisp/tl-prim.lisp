@@ -26,6 +26,23 @@
 
 
 
+;;;; Systems
+
+
+
+
+;;; The variable current-system-being-loaded is set while the top level forms of
+;;; a system are being evaluated.
+
+(def-translatable-lisp-var current-system-being-loaded nil)
+
+(def-translatable-lisp-var all-systems nil)
+
+
+
+
+
+
 ;;;; Features
 
 

@@ -48,11 +48,33 @@
       (obj-postfix . ".o")
       ))
 
+
+
+
+;;; The parameter `makefile-ports' is used to override settings of
+;;; makefile-element-alist for various ports.  For each element of the
+;;; makefile-ports list, a distinct makefile will be generated.  Each element of
+;;; makefile-ports is a list with the folowing format.
+
+;;;   ( port-names-list . makefile-element-alist-overrides )
+
+;;; The port-names-list portion is a list of the name of this port, and the names of other defined ports which should provide defaults for this port.  The  ports later in the list will win out over
+;;; overrides earlier in the list.
+
+;;; For example, the element (("freebsd" "linux") (cc . "cc -o")) would specify
+;;; that the makefile for FreeBSD should be like the makefile for Linux, except
+;;; that "cc -o" should be used as the compile command, rather than gcc.
+
 (defparameter makefile-ports
-  '(("linux"
+  '((("cygnus"))
+    
+    (("linux")
      (exe-postfix . "")
      (system-libs . "-lm"))
-    ("cygnus")))     
+
+    (("freebsd" "linux"))
+
+    ))
 
 (defvar makefile-elements nil)
 
@@ -63,8 +85,18 @@
 (defparameter debuggable-makefile t)
 
 (defun generate-makefiles (system verbose)
-  (loop for (port-name . port-alist) in makefile-ports
-	for makefile-elements = (append port-alist makefile-element-alist)
+  (loop for ((port-name . subports) . port-alist) in makefile-ports
+	for makefile-elements 
+	= (loop named portalist
+		with alist = makefile-element-alist
+		for name in subports
+		for subalist = (loop named subportalist
+				     for subport in makefile-ports
+				     do
+				 (when (string= name (cons-caar subport))
+				   (return-from subportalist (cons-cdr subport))))
+		do (setq alist (append subalist alist))
+		finally (return-from portalist (append port-alist alist)))
 	do
     (generate-makefile system verbose port-name)))
 
@@ -95,8 +127,8 @@
 	(pattern (makeup 'wild))
 	(files-per-line 7))
     (with-open-file (output temp-path :direction :output :if-exists :supersede)
-      (format output "#~%# ~a Makefile~%#~%# Copyright (c) ~a Jim Allard~%~%"
-	      (system-name system) current-year)
+      (format output "#~%# ~a ~a Makefile~%#~%# Copyright (c) ~a Jim Allard~%~%"
+	      (system-name system) (string-capitalize port-name) current-year)
       
       (format output "CC=~a~%" (makeup 'cc))
       (format output "CFLAGS=~a~%" 
@@ -134,11 +166,11 @@
       (glt-write-char #\tab output)
       (format output "-rm *~a~%" obj)
       (glt-write-char #\tab output)
-      (format output "-rm ~a~%~%" target)
+      (format output "-( if [ -f ~a ] ; then rm ~a ; fi )~%~%" target target)
       
-      (format output "~a : makefile $(OBJECTS) $(LIBS)~%" target)
+      (format output "~a : ~a $(OBJECTS) $(LIBS)~%" target (pathname-name path))
       (glt-write-char #\tab output)
-      (format output "-rm ~a~%" target)
+      (format output "-( if [ -f ~a ] ; then rm ~a ; fi )~%" target target)
       (glt-write-char #\tab output)
       (cond ((system-is-library-p system)
 	     (format output "$(ARCHIVE) ~a $(OBJECTS)~%~%" target))
@@ -146,16 +178,18 @@
 	     (format output "$(LINK) ~a $(LINKFLAGS) $(OBJECTS) " target)
 	     (format output "$(LIBS) $(SYSLIBS)~%~%")))
       
-      (format output "~a~a : ../c/~a.c ../c/~a.h makefile"
-	      pattern obj pattern pattern)
+      (format output "~a~a : ../c/~a.c ../c/~a.h ~a"
+	      pattern obj pattern pattern (pathname-name path))
       (loop for file in (system-extra-h-files system) do
 	(format output " ../c/~a.h" file))
       (glt-write-char #\newline output)
       (glt-write-char #\tab output)
-      (format output "$(CC) ~a $(CFLAGS) -I ../c -I "
+      (format output "$(CC) ~a $(CFLAGS) -I ../c"
 	      (makeup 'target))
-      (relative-path-to-directory
-       bin-dir (system-c-dir (gl:find-system 'gl)) output)
+      (unless (eq system (gl:find-system 'gl))
+	(format output " -I")
+	(relative-path-to-directory
+	 bin-dir (system-c-dir (gl:find-system 'gl)) output))
       (format output " ~a~%" (makeup 'first-dep)))
     
     ;; If the newly created makefile is different from the existing one,
@@ -163,7 +197,8 @@
     (when (or (not (probe-file path))
 	      (not (file-contents-equal temp-path path)))
       (when verbose
-	(format t "~%Installing new C dir makefile for ~a" (system-name system)))
+	(format t "~%Installing new C dir   makefile for ~a ~a" 
+		(system-name system) (string-capitalize port-name)))
       (with-open-file (input temp-path)
 	(with-open-file (output path :direction 
 			 :output :if-exists :supersede)
@@ -179,7 +214,8 @@
       (when (or (not (probe-file binary-makefile))
 		(not (file-contents-equal path binary-makefile)))
 	(when verbose
-	  (format t "~%Installing new bin dir makefile for ~a" (system-name system)))
+	  (format t "~%Installing new bin dir makefile for ~a ~a"
+		  (system-name system) (string-capitalize port-name)))
 	(with-open-file (input path)
 	  (with-open-file (output binary-makefile 
 			   :direction :output :if-exists :supersede)
