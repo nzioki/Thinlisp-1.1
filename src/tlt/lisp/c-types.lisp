@@ -140,28 +140,40 @@
 		     (format out "~a" (c-type-string arg-type))))
 	       (format out ")"))))
 	  ((eq car 'struct)
-	   (c-struct-type-string c-type))
+	   (c-struct-or-union-type-string "struct" c-type))
+	  ((eq car 'union)
+	   (c-struct-or-union-type-string "union" c-type))
 	  (t
 	   (error "Can't make type string for ~s" c-type)))))
 
-(defun c-struct-type-string (c-type)
+(defun c-struct-or-union-type-string (struct-or-union c-type)
   (let* ((type-strings (loop for (elt-type) in (cons-cdr c-type)
 			     collect (c-type-string elt-type)))
 	 (max-length 
 	  (apply 'max (mapcar #'length type-strings))))
-    (format nil "struct {~%~a}"
+    (format nil "~a {~%~a}"
+	    struct-or-union
 	    (apply 'concatenate 'string
 		   (loop for elt in (cons-cdr c-type) 
 			 for type-string in type-strings
 			 for (elt-type name) = elt
 			 collect 
-			 (if (and (consp elt-type)
-				  (memqp (car elt-type) '(int uint)))
-			     (format nil "  ~Va ~a : ~a;~%"
-				     max-length type-string name 
-				     (cons-second elt-type))
-			   (format nil "  ~Va ~a;~%"
-				   max-length type-string name)))))))
+			 (cond ((and (consp elt-type)
+				     (memqp (car elt-type) '(int uint)))
+				(format nil "  ~Va ~a : ~a;~%"
+					max-length type-string name 
+					(cons-second elt-type)))
+			       ((and (consp elt-type)
+				     (eq (car elt-type) 'array)
+				     (third elt-type))
+				(format nil "  ~Va ~a[~a];~%"
+					max-length
+					(c-type-string (second elt-type))
+					name
+					(third elt-type)))
+			       (t
+				(format nil "  ~Va ~a;~%"
+					max-length type-string name))))))))
 
 
 
@@ -196,7 +208,7 @@
   (if (atom c-type)
       c-type
     (let ((car (cons-car c-type)))
-      (cond ((memqp car '(uint it))
+      (cond ((memqp car '(uint int))
 	     car)
 	    ((eq car 'array)
 	     (cons 'pointer (cons-cdr c-type)))

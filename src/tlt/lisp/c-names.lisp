@@ -1134,33 +1134,8 @@
       'class-home)
     (setq lisp-class-symbols
       (sort lisp-class-symbols #'string< :key #'symbol-name))
-    (loop for class in lisp-class-symbols
-	for info = (class-info class)
-	for struct = nil
-	for align = 4
-	for c-namespace = *global-c-namespace*
-	do
-      (push (list '(uint 24) (c-identifier-for-struct-slot
-			      'type c-namespace *global-c-namespace*))
-	    struct)
-      (push (list '(uint 8) (c-identifier-for-struct-slot
-			     'extended-type c-namespace *global-c-namespace*))
-	    struct)
-      (c-identifier-for-class class c-namespace *global-c-namespace*)
-      (loop for slot in (struct-slot-descriptions info)
-	  for c-slot-name = (c-identifier-for-struct-slot
-			     (struct-slot-reader slot)
-			     c-namespace *global-c-namespace*)
-	  for lisp-slot-type = (struct-slot-original-type slot)
-	  for c-slot-type = (struct-slot-c-type-for-lisp-type lisp-slot-type)
-	  do
-	(setf (struct-slot-c-accessor slot) c-slot-name)
-	(setf (struct-slot-c-type slot) c-slot-type)
-	(when (c-types-equal-p c-slot-type 'double)
-	  (setq align 8))
-	(push (list c-slot-type c-slot-name) struct))
-      (setf (struct-c-type info) (cons 'struct (nreverse struct)))
-      (setf (struct-c-alignment info) align))
+    (loop for class in lisp-class-symbols do
+      (compute-c-type-for-class class))
 
     ;; Functions
     (map-over-declarations

@@ -344,6 +344,8 @@
 	 (doc (if (stringp (car doc-and-slots))
 		  (car doc-and-slots)
 		nil))
+	 (type (get-defstruct-option options :type nil))
+	 (reclaimer (get-defstruct-option options :reclaimer nil))
 	 (local-slot-descriptions 
 	  (loop for desc in (if doc (cdr doc-and-slots) doc-and-slots)
 		for slot-name = (if (symbolp desc) desc (car desc))
@@ -363,8 +365,6 @@
 	     options :predicate default-predicate default-predicate)))
 	 (print-object (get-defstruct-option options :print-object nil))
 	 (print-function (get-defstruct-option options :print-function nil))
-	 (type (get-defstruct-option options :type nil))
-	 (reclaimer (get-defstruct-option options :reclaimer nil))
 	 (new-struct (make-struct
 		      :name name :doc doc
 		      :local-slot-descriptions local-slot-descriptions
@@ -631,6 +631,47 @@
 			       body))
 			 body)
 		     ,struct-var))))))
+
+
+
+
+;;; The function `compute-c-type-for-class' is called after all structures and
+;;; functions have been defined, and just before a translation is begun
+;;; (i.e. from reserve-global-identifiers).  The reason that C types for
+;;; structures are defined so late is that the slot names must be determined
+;;; only within the context of a translation, and the slot names are central to
+;;; the definition of the C type.  In order to have repeatable translations
+;;; (i.e. there are no diffs between two translations of the same sources), then
+;;; the order in which global C identifiers are reserved must be deterministic,
+;;; and not affected by incrementals Lisp compilations, as would occur if we
+;;; defined C types when defstructs were defined.
+
+(defun compute-c-type-for-class (class)
+  (let ((info (class-info class))
+	(struct nil)
+	(align 4)
+	(c-namespace *global-c-namespace*))
+    (push (list '(uint 24) (c-identifier-for-struct-slot
+			    'type c-namespace c-namespace))
+	  struct)
+    (push (list '(uint 8) (c-identifier-for-struct-slot
+			   'extended-type c-namespace c-namespace))
+	  struct)
+    (c-identifier-for-class class c-namespace c-namespace)
+    (loop for slot in (struct-slot-descriptions info)
+	  for c-slot-name = (c-identifier-for-struct-slot
+			     (struct-slot-reader slot)
+			     c-namespace c-namespace)
+	  for lisp-slot-type = (struct-slot-original-type slot)
+	  for c-slot-type = (struct-slot-c-type-for-lisp-type lisp-slot-type)
+	  do
+      (setf (struct-slot-c-accessor slot) c-slot-name)
+      (setf (struct-slot-c-type slot) c-slot-type)
+      (when (c-types-equal-p c-slot-type 'double)
+	(setq align 8))
+      (push (list c-slot-type c-slot-name) struct))
+    (setf (struct-c-type info) (cons 'struct (nreverse struct)))
+    (setf (struct-c-alignment info) align)))
 
 (defun install-structure (name doc local-slot-descriptions copier include 
 			       initial-offset predicate print-object 
