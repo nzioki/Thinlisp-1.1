@@ -691,7 +691,7 @@
 
 (defun lisp-implementation-version ()
   (declare (return-type string))
-  "0.6")
+  "1.0")
 
 (defun lisp-implementation-type ()
   (declare (return-type string))

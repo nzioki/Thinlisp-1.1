@@ -747,13 +747,13 @@ unsigned char *write_char_into_string (unsigned char char_1, unsigned char *outp
 }
 
 static const Str_5 str_const_10
-  = { 7, 3, 3, "0.6" };
+  = { 7, 3, 3, "1.0" };
 
 /* Translated from LISP-IMPLEMENTATION-VERSION() = STRING */
 
 unsigned char *lisp_implementation_version (void)
 {
-  return ((Str *)(&str_const_10))->body;        /* "0.6" */
+  return ((Str *)(&str_const_10))->body;        /* "1.0" */
 }
 
 static const Str_9 str_const_11

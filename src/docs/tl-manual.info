@@ -1,39 +1,41 @@
 This is tl-manual.info, produced by makeinfo version 4.0 from
 tl-manual.texinfo.
 
-   The manual and associated descriptions of ThinLisp, a Lisp-to-C
+   The rationale and associated descriptions of ThinLisp, a Lisp-to-C
 translator for real time applications and anything that shouldn't be
 fat and slow.
 
-   Copyright (c) 1999 The ThinLisp Group
+   Copyright (c) 1999-2001 The ThinLisp Group
 
 
 Indirect:
-tl-manual.info-1: 275
-tl-manual.info-2: 23462
-tl-manual.info-3: 70414
+tl-manual.info-1: 283
+tl-manual.info-2: 29781
+tl-manual.info-3: 76733
 
 Tag Table:
 (Indirect)
-Node: Top275
-Node: Acknowledgements729
-Node: Preface2233
-Node: Rant3564
-Ref: Rant-Footnote-121768
-Ref: Rant-Footnote-221889
-Ref: Rant-Footnote-322007
-Node: ThinLisp-Compromise22228
-Node: Original-Notes23462
-Node: Memory70414
-Ref: Memory-Footnote-187963
-Ref: Memory-Footnote-288724
-Ref: Memory-Footnote-389252
-Ref: Memory-Footnote-489307
-Ref: Memory-Footnote-589581
-Ref: Memory-Footnote-689690
-Node: Original-Introduction89791
-Ref: Original-Introduction-Footnote-192747
-Node: Required-Symbols92812
-Node: Index97296
+Node: Top283
+Node: Acknowledgements737
+Node: Preface2429
+Node: Rant3760
+Ref: Rant-Footnote-124500
+Ref: Rant-Footnote-224621
+Ref: Rant-Footnote-324761
+Ref: Rant-Footnote-424940
+Node: ThinLisp-Compromise25161
+Ref: ThinLisp-Compromise-Footnote-129641
+Node: Original-Notes29781
+Node: Memory76733
+Ref: Memory-Footnote-194282
+Ref: Memory-Footnote-295043
+Ref: Memory-Footnote-395571
+Ref: Memory-Footnote-495626
+Ref: Memory-Footnote-595900
+Ref: Memory-Footnote-696009
+Node: Original-Introduction96110
+Ref: Original-Introduction-Footnote-199066
+Node: Required-Symbols99131
+Node: Index103615
 
 End Tag Table

@@ -1,13 +1,13 @@
 <HTML>
 <HEAD>
-<!-- Created by texi2html 1.56k from tl-manual.texinfo on 4 March 2001 -->
+<!-- Created by texi2html 1.56k from tl-manual.texinfo on 9 May 2001 -->
 
-<TITLE>ThinLisp Manual</TITLE>
+<TITLE>ThinLisp Rant and Notes</TITLE>
 </HEAD>
 <BODY>
 <H1>ThinLisp Manual</H1>
-<H2>Version 0.6</H2>
-<H2>4 March 2001</H2>
+<H2>Version 1.0</H2>
+<H2>9 May 2001</H2>
 <ADDRESS>The ThinLisp Group:</ADDRESS>
 <ADDRESS>Jim Allard</ADDRESS>
 <ADDRESS>Ben Hyde</ADDRESS>
@@ -33,16 +33,18 @@ taken off the shelf, polished up, and released as open source software.  Mike
 Colena and Glen Iba wrote significant parts of the implementation.  Nick Caruso,
 Joe Devlin, Rick Harris, and John Hodgkinson and also contributed their time,
 sage opinions, and code.  Thanks to Lowell Hawkinson, Jim Pepe, and Dave Riddell
-for their support of this work at Gensym Corporation.  Thanks to Kim Barrett and
-David Sotkowitz of IS Robotics, Inc. for contributions of multiple-inheritance
-code and opinions, and to Rod Brooks and Dave Barrett for their ideas.  Finally,
-thanks to my wife, Gerry Zipser, for putting up with the bleary-eyed aftermath
-of coding sessions, and for helping to focus efforts during this past summer's
-release push.
+for their support of this work at Gensym Corporation.  Bill Brody, Kim Barrett,
+and Rick Harris wrote much of the Chestnut Lisp to C translator that was the
+philosophical precursor to this work.  Thanks to Kim Barrett and David Sotkowitz
+of IS Robotics, Inc. (now iRobot Corporation) for contributions of
+multiple-inheritance code and opinions, and to Rod Brooks and Dave Barrett for
+their ideas.  Finally, thanks to my wife, Gerry Zipser, for putting up with the
+bleary-eyed aftermath of coding sessions, and for helping to focus efforts
+during this past summer's release push.
 
 
 <P>
-<BR>Jim Allard<BR>Newton, Massachusetts<BR>October 6, 1999
+<BR>Jim Allard<BR>Newton, Massachusetts<BR>October 6, 1999 and again May 9, 2001
 
 
 
@@ -89,7 +91,7 @@ reported to <A HREF="mailto:bugs@thinlisp.org">bugs@thinlisp.org</A>.
 <P>
 I've imagined the reactions people will have when they see that there is yet
 another Lisp to C translator implementation being released.  Mostly I've
-expected that people would think I'm stark raving mad to engage is a large work,
+expected that people would think I'm stark raving mad to engage in a large work,
 to serve an almost non-existent user base of programmers in a language that is
 largely discredited while being actively antagonistic towards many of the design
 principles this language has employed for decades.  Since I'm expecting that
@@ -216,8 +218,18 @@ still in use.
 
 
 <P>
+In this system, Lisp served a very useful purpose as a prototyping language, but
+a critical element in the success of the project was to abandon the original
+implementation and rewrite it in C.  This was necessary for the commercial
+division that deployed this product, first to gain acceptance, and second to
+enable that division to maintain the system with the personnel they had working
+there.  The rewrite also sped up the application and greatly reduced its
+run-time size.
+
+
+<P>
 The Cooker system was a real-time supervisory level monitoring system also built
-at Homeywell which was intended to be used in process control plants.  It was
+at Honeywell which was intended to be used in process control plants.  It was
 implemented on a Symbolics 3640 which was deployed to a paper mill in
 Pennsylvania.  Though care had been taken to tailor memory use such that a
 generational garbage collector would efficiently reclaim the vast majority of
@@ -228,23 +240,39 @@ happened, the plant crew turned off the system and never restarted it again.
 
 
 <P>
+In this case, the system was gaining acceptance by the pilot users, but as a
+direct consequence of the performance problems caused by garbage collection this
+pilot project was closed out, and this particular approach was dropped.
+
+
+<P>
 The G2 system is a real-time supervisory level control system built by Gensym
 Corporation.  It's source code was written in Lisp, and for approximately 3
-years was released as a world-saved image made from Lucid Lisp
-environments on UNIX workstation class machines.  In 1990, Gensym ported its
-system to Ibuki Common Lisp, which was a Lisp-to-C translator descended from
-Kyoto Common Lisp.  By translating to C and discarding those parts of Common Lisp
-that we didn't use, we were able to decrease the size of our shipped product by
-25%, a fact that was greatly appreciated by a customer base tired of constantly
-having to buy more memory for computers.  In 1993 Gensym changed again to a
-different Lisp to C translator made by Chestnut Software.  This produced an
-additional 40% decrease in size, and a significant improvement in performance.
-The ThinLisp translator is a philosophical descendent of the Chestnut
-translator, though ThinLisp was written from scratch.  One of the factors cited
-by the head of sales of G2 was that once we used a Lisp to C translator, he
-could say that the product was "deployed in C", thereby side-stepping the Lisp
-issue, which had been a significant downside to our system in the eyes of many
-potential customers.
+years was released as a world-saved image made from Lucid Lisp environments on
+UNIX workstation class machines.  In 1990, Gensym ported its system to Ibuki
+Common Lisp, which was a Lisp-to-C translator descended from Kyoto Common Lisp.
+By translating to C and discarding those parts of Common Lisp that we didn't
+use, we were able to decrease the size of our shipped product by 25%, a fact
+that was greatly appreciated by a customer base tired of constantly having to
+buy more memory for computers.  In 1993 Gensym changed again to a different Lisp
+to C translator made by Chestnut Software.  This produced an additional 40%
+decrease in size, and a significant improvement in performance.  The ThinLisp
+translator is a philosophical descendent of the Chestnut translator, though
+ThinLisp was written from scratch.  One of the factors cited by the head of
+sales of G2 was that once we used a Lisp to C translator, he could say that the
+product was "deployed in C", thereby side-stepping the Lisp issue, which had
+been a significant downside to our system in the eyes of many potential
+customers.
+
+
+<P>
+Here Lisp was a competative advantage for development, but became a sales
+liability due to the poor reputation of Lisp-based applications in the
+marketplace.  Once the organization switched to a Lisp-to-C translator, then
+development could continue to see the advantages of Lisp coding, but marketing
+could bury that detail, avoid a defensive technical argument that was proving a
+barrier to closing sales, and continue to focus on the product's positive
+benefits.
 
 
 <P>
@@ -255,7 +283,25 @@ then return to the surface, all under its own power and control.  The software
 for this system was written in L, a Lisp subset made for embedded processors, in
 this case a Motorola 68376.  The first prototypes of the BoreRat became
 operational in 1999 and are currently being marketed to the oil field services
-industry by IIC.
+industry by IIC.  In this case Lisp was not a significant factor, either in a
+positive or a negative sense.
+
+
+<P>
+During this time, Lisp has waned in its influence.  Java has replaced Lisp in
+many places, the number of Lisp vendors has dropped, and Lisp is being taught in
+fewer college courses.  The future of traditional Common Lisp is in doubt,
+though it is still strong in a few niches, and deep within a few specific
+applications, such as Yahoo Store.
+
+
+<P>
+As a result of these experiences, and as an outcropping of my experience using
+Lisp to implement real-time control systems, I've wanted to have a Lisp
+environment that provided the features that I liked, such as macros for control
+structure abstractions, that had outstanding performance characteristics given
+proper type declarations, and which remained small and lean.  ThinLisp is an
+embodiment of that environment.
 
 
 
@@ -263,9 +309,19 @@ industry by IIC.
 <H2><A NAME="SEC7" HREF="tl-manual_toc.html#TOC7">Scientists, Mathematicians, and Engineers (oh my!)</A></H2>
 
 <P>
+I have been fascinated (and occasionally amused) by the nearly religious
+arguments about the merits of various computer languages.  Beyond the pure
+merits of the systems being discussed there seemed to be lurking a difference in
+philosophy about how to go about programming that colored these discussions.
+This section is an attempt to expose a theory about that underpinning.  In the
+end, this discussion also helps me explain why I've made the design choices that
+I have in ThinLisp.
+
+
+<P>
 From the beginning Lisp was a mathematician's language.  To understand what I
-mean by Lisp this, I must explain one view of the differences between the goals
-of scientists, mathematicians, and engineers.  <A NAME="DOCF2" HREF="tl-manual_foot.html#FOOT2">(2)</A>
+mean by this, I must explain one view of the differences between the goals of
+scientists, mathematicians, and engineers.  <A NAME="DOCF2" HREF="tl-manual_foot.html#FOOT2">(2)</A>
 
 
 <P>
@@ -306,6 +362,7 @@ Within the computer science community, examples of personalities suited to each
 of these different disciplines abound.  Within the the small community of
 computer language designers, the mathematician and engineer distinguish
 themselves through two very different approaches to language design.
+<A NAME="DOCF3" HREF="tl-manual_foot.html#FOOT3">(3)</A>
 
 
 
@@ -347,7 +404,7 @@ defined with operational semantics in mind.  Building primarily from the
 operations that could be implemented on the computing devices that could be made
 at the time, and secondarily on the specific computing needs of a user base at
 hand, languages were designed to allow people to command computers to do things.
-This quote from the preface to <CITE>K&#38;R C</CITE><A NAME="DOCF3" HREF="tl-manual_foot.html#FOOT3">(3)</A>, the original book describing C,
+This quote from the preface to <CITE>K&#38;R C</CITE><A NAME="DOCF4" HREF="tl-manual_foot.html#FOOT4">(4)</A>, the original book describing C,
 explains this style well.
 
 
@@ -469,7 +526,7 @@ that the execution of clean-up code cannot be enforced.
 
 
 
-<H2><A NAME="SEC10" HREF="tl-manual_toc.html#TOC10">ThinLisp's Compromise</A></H2>
+<H2><A NAME="SEC10" HREF="tl-manual_toc.html#TOC10">ThinLisp's Compromises</A></H2>
 
 <P>
 While C++ and Java can be viewed as attempts to move C more towards a
@@ -511,6 +568,63 @@ run-time dispatched operations, and
 non-local exits.
 
 </UL>
+
+<P>
+Within ThinLisp there is no garbage collector.  While many fine garbage
+collection systems exist, and some are truely approaching the goal of real-time
+operation, they all impose significant overhead to maintain a root set of
+objects that form the base of the reference tree that is walked during a garbage
+collect.  ThinLisp avoids the cost of the garbage collection and the cost of
+maintaining the data that makes garbage collection possible.
+
+
+<P>
+This means that Lisp programmers must adopt the discipline of the C programmer
+in knowing where memory is allocated and where it is reclaimed.  Because this is
+such a foreign concept to Lisp programming style, automated help is required to
+protect Lisp programmers from careless consing.  It is a well known maxim that
+Lisp programmers looking to improve performance should avoid consing, however
+very few Lisp programmers are good at it.  Within ThinLisp there is a concept of
+both lexical and dynamic scopes that supply consing contexts.  At compile time
+any consing operation must have a <CODE>consing-area</CODE> declaration lexically
+surrounding its scope, or else a compile time warning is given.  The
+<CODE>consing-area</CODE> can either be <CODE>permanent</CODE> or <CODE>temporary</CODE>.
+<A NAME="DOCF5" HREF="tl-manual_foot.html#FOOT5">(5)</A>  A
+<CODE>permanent</CODE> area means consing proceeds as normal, with all create objects
+having dynamic extent.  However, whenever consing happens within a
+<CODE>temporary</CODE> scope, then the object's lifetime only has dynamic scope back
+to the exit point of the <CODE>temporary</CODE> <CODE>consing-area</CODE>.  The
+<CODE>consing-area</CODE> declaration is similar to the <CODE>dynamic-extent</CODE>
+declaration, but it is pervasive instead of applying to a particular variable
+binding.
+
+
+<P>
+ThinLisp warns about run-time dispatched operations which could be made more
+efficient with type declarations.  In some cases, the run-time polymorphism of
+an operation is exactly what is desired, and then there are declarations that
+can be used to suppress these warnings.  It is well known that type declarations
+can improve the performance of some Lisp operations, however it is very
+difficult in practice to acquire these optimizations without some warnings and
+assistance from the compiler.  The assumption in building the ThinLisp
+translator is that you are attempting to make production quality code, and
+therefore want advice about code that could be hiding a performance gotcha.
+
+
+<P>
+Lastly, ThinLisp can issue compile-time warnings about non-local exits.  The
+<CODE>unwind-protect</CODE> form can guarantee that clean-up code is executed on exit
+from a scope, but it is a very expensive operation.  There are some macro forms
+where is it acceptible if an error exits a scope without a clean-up, but a
+normal execution of the body form should not leave the scope with a
+<CODE>return-from</CODE> form.  ThinLisp provides a <CODE>require-local-exit</CODE>
+declaration that will cause compile time warnings if a scope is left
+prematurely.  The other kind of non-local exit that ThinLisp prevents is
+<CODE>goto</CODE> or <CODE>return-from</CODE> forms that exit a lexical closure and re-enter
+a surrounding function.  These patterns of code are tantamount to <CODE>catch</CODE>
+and <CODE>throw</CODE> forms, which are very expensive.  By declining to implement
+this form of non-local exit, we can prevent this kind of performance pratfall.
+
 
 
 
@@ -1507,7 +1621,7 @@ The upper 3 bytes of the header word should be used for type specific data.  For
 vectors this should be the length, giving us a simple vector with one word of
 overhead (all previous Lisp implementations we've used, except the Lispm, had
 two or more words of header).  All Lisp objects should be aligned on 4 byte
-addresses. <A NAME="DOCF4" HREF="tl-manual_foot.html#FOOT4">(4)</A>
+addresses. <A NAME="DOCF6" HREF="tl-manual_foot.html#FOOT6">(6)</A>
 
 
 <P>
@@ -1542,7 +1656,7 @@ A determination of type can be made from a hex value of the pointer.
 The arguments for a 30 bit fixnum instead of a 31 is that it makes for fast
 fixnum additions and subtractions without risking overflow.  31 bit fixnums
 require a sequence point between operations to avoid the potential for overflow.
-<A NAME="DOCF5" HREF="tl-manual_foot.html#FOOT5">(5)</A>
+<A NAME="DOCF7" HREF="tl-manual_foot.html#FOOT7">(7)</A>
 
 
 <P>
@@ -1607,12 +1721,12 @@ sint32 type_tag (Obj object) {
 <P>
 In C, the implemetation type for object should be an unsigned integer type 32
 bits long.  There are several advantages to this.  All architectures (including
-the Alpha OSF <A NAME="DOCF6" HREF="tl-manual_foot.html#FOOT6">(6)</A> when
+the Alpha OSF <A NAME="DOCF8" HREF="tl-manual_foot.html#FOOT8">(8)</A> when
 using a linker option) can have pointer values be represented in 32 bits, but
 for some platforms (the Alpha OSF) pointer types can consume something other
 than 4 bytes, i.e. 8 for all pointers on the Alpha OSF.  By forcing all objects
 to consume 4 bytes, we can get interesting packing in structures and vectors on
-all platforms.  <A NAME="DOCF7" HREF="tl-manual_foot.html#FOOT7">(7)</A>
+all platforms.  <A NAME="DOCF9" HREF="tl-manual_foot.html#FOOT9">(9)</A>
 
 
 <P>
@@ -1632,14 +1746,14 @@ The type for structures is the type value stored in the 8 bit type tag location
 of standard headers.  Structures also have an additional type value that is
 stored in the remainder 24 bits of the initial header word which further
 differentiates between structure types.  The same is true for class instances.
-<A NAME="DOCF8" HREF="tl-manual_foot.html#FOOT8">(8)</A>
+<A NAME="DOCF10" HREF="tl-manual_foot.html#FOOT10">(10)</A>
 
 
 <P>
 The type tags for heap allocated data structures have no special issues, except
 that these values should not collide with any immediate type tags (i.e. be
 greater than 3), and be able to quickly determine if a data structure is
-reclaimed (i.e. use bit 7 as a flag). <A NAME="DOCF9" HREF="tl-manual_foot.html#FOOT9">(9)</A>
+reclaimed (i.e. use bit 7 as a flag). <A NAME="DOCF11" HREF="tl-manual_foot.html#FOOT11">(11)</A>
 
 
 <P>
@@ -2038,7 +2152,7 @@ in the translator implement data structure allocation and manipulation, the
 defining of constants, parameters, variables, macros, and functions.  The system
 will not contain many of the features normally present in a full Common Lisp
 implementation, most notably no garbage collector, lexical closures, rest
-arguments, condition system, bignums, complex numbers, or CLOS.  <A NAME="DOCF10" HREF="tl-manual_foot.html#FOOT10">(10)</A>  The built-in types will be
+arguments, condition system, bignums, complex numbers, or CLOS.  <A NAME="DOCF12" HREF="tl-manual_foot.html#FOOT12">(12)</A>  The built-in types will be
 limited to packages, symbols, conses, fixnums, doubles, simple-vectors, simple-
 arrays of unsigned-byte 1, 8, and 16 bits, simple-arrays of doubles, and
 fill-pointered non-adjustable strings.  Notable complex features that will be
@@ -2340,7 +2454,7 @@ Jump to:
 
 
 <P><HR><P>
-This document was generated on 4 March 2001 using
+This document was generated on 9 May 2001 using
 <A HREF="http://wwwinfo.cern.ch/dis/texi2html/">texi2html</A>&nbsp;1.56k.
 </BODY>
 </HTML>

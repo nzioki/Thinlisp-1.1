@@ -1,11 +1,11 @@
 This is tl-manual.info, produced by makeinfo version 4.0 from
 tl-manual.texinfo.
 
-   The manual and associated descriptions of ThinLisp, a Lisp-to-C
+   The rationale and associated descriptions of ThinLisp, a Lisp-to-C
 translator for real time applications and anything that shouldn't be
 fat and slow.
 
-   Copyright (c) 1999 The ThinLisp Group
+   Copyright (c) 1999-2001 The ThinLisp Group
 
 
 File: tl-manual.info,  Node: Memory,  Next: Original-Introduction,  Prev: Original-Notes,  Up: Top

@@ -7,13 +7,13 @@ tarball on UNIX or Windows where Cygwin has been installed, use the following
 commands.
 
   cd <install-directory>
-  tar xzvf thinlisp-0.9.tgz
+  tar xzvf thinlisp-1.0.tgz
 
 To unpack the zip file, use Winzip or some equivalent on Windows, or use the
 following command.
 
   cd <install-directory>
-  unzip thinlisp-0.9.tgz
+  unzip thinlisp-1.0.tgz
 
 2.  Start your Lisp environment such that the default directory is the
 one where you unpacked the Thinlisp distribution, such that the
@@ -60,4 +60,4 @@ Lisp-based libraries and executables.
 Enjoy.
 
 --------
-$Id: INSTALL,v 1.1 1999/12/04 09:53:56 jallard Exp $
+$Id: INSTALL,v 1.2 2001/05/09 06:49:28 jallard Exp $
