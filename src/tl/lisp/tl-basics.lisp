@@ -459,6 +459,29 @@
       string-or-symbol
       `(coerce-to-string ,string-or-symbol)))
 
+(defun bounded-string-compare (a b start1 end1 start2 end2)
+  (declare (type string a b)
+	   (type fixnum start1 start2)
+	   (return-type fixnum))
+  (let ((e1 (if (null end1)
+		(tli::length-trans a)
+	      end1))
+	(e2 (if (null end2)
+		(tli::length-trans b)
+	      end2)))
+    (declare (type fixnum e1 e2))
+    (do ()
+	((or (>= start1 e1)
+	     (>= start2 e2))
+	 0)
+      (let ((c1 (char a start1))
+	    (c2 (char b start2)))
+	(declare (type character c1 c2))
+	(unless (char= c1 c2)
+	  (return-from bounded-string-compare
+	    (if (char< c1 c2) -1 1)))))))
+
+
 
 
 ;;; Note that these string comparison functions do not implement the
@@ -470,12 +493,17 @@
   `(defmacro ,op-name (string-or-symbol-a string-or-symbol-b &key
 					  (start1 0) (end1 nil)
 					  (start2 0) (end2 nil))
-     (declare (ignore start1 end1 start2 end2))
      (let ((a (gensym))
 	   (b (gensym)))
-       `(let ((,a (string ,string-or-symbol-a))
-	      (,b (string ,string-or-symbol-b)))
-	  (,',operation (tli::string-compare ,a ,b) 0)))))
+       (if (and (equal start1 0) (equal start2 0)
+		(null end1) (null end2))
+	   `(let ((,a (string ,string-or-symbol-a))
+		  (,b (string ,string-or-symbol-b)))
+	      (,',operation (tli::string-compare ,a ,b) 0))
+	 `(bounded-string-compare
+	    (string ,string-or-symbol-a)
+	    (string ,string-or-symbol-b)
+	    ,start1 ,end1 ,start2 ,end2)))))
 
 (def-string-comparitor string= =)
 
