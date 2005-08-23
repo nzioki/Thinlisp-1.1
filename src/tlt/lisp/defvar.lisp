@@ -67,8 +67,9 @@
 (defmacro tl:def-translatable-lisp-var
     (name &optional (initial-value no-initial-value))
   `(tl:progn
-     (tl:declaim (special ,name))
-     (def-named-variable ,name :underlying-lisp-variable ,initial-value)))
+    (with-common-lisp-unlocked ()
+     (tl:declaim (special ,name)))
+    (def-named-variable ,name :underlying-lisp-variable ,initial-value)))
 
 (defmacro def-translatable-lisp-constant
     (name initial-value)

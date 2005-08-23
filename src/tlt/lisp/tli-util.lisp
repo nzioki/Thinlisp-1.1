@@ -102,30 +102,41 @@
 ;;; of the Lisp directories that will contain binaries for these two diffent
 ;;; types of compiles.
 
-(defconstant lisp-file-type "lisp")
+(defmacro define-equal-constant (symbol value)
+  `(defconstant ,symbol (let ((s ',symbol)
+			      (v ,value))
+			  (if (and (boundp s)
+				   (equal v (symbol-value s)))
+			      (symbol-value s)
+			      v))))
 
-(defconstant lisp-binary-file-type
-    #+lucid                      "sbin"
-    #+allegro                    "fasl"
-    #+cmu                        "x86f"
-    #+mcl                        "pfsl"
-    #-(or lucid allegro cmu mcl) "bin")
+(define-equal-constant lisp-file-type "lisp")
 
-(defconstant c-file-type "c")		; duh
+(define-equal-constant lisp-binary-file-type
+    #+lucid                    "sbin"
+    #+aclpc                    "acl"
+    #+allegro                  "fasl"
+    #+cmu                      "x86f"
+    #+sbcl                     "fasl"
+    #+mcl                      "pfsl"
+    #+clisp                    "fas"
+    #-(or lucid aclpc allegro cmu sbcl mcl clisp) "bin")
 
-(defconstant h-file-type "h")
+(define-equal-constant c-file-type "c")		; duh
 
-(defconstant trans-data-file-type "tlt")
+(define-equal-constant h-file-type "h")
 
-(defconstant temporary-c-file-type "tmc")
+(define-equal-constant trans-data-file-type "tlt")
 
-(defconstant temporary-h-file-type "tmh")
+(define-equal-constant temporary-c-file-type "tmc")
 
-(defconstant temporary-trans-data-file-type "tmg")
+(define-equal-constant temporary-h-file-type "tmh")
 
-(defconstant lisp-dev-binary-directory-name "dev")
+(define-equal-constant temporary-trans-data-file-type "tmg")
 
-(defconstant lisp-macro-binary-directory-name "macro")
+(define-equal-constant lisp-dev-binary-directory-name "dev")
+
+(define-equal-constant lisp-macro-binary-directory-name "macro")
 
 
 
@@ -401,7 +412,7 @@
 (defun cons-fifth (conses)
   (cons-car (cons-cdr (cons-cdddr conses))))
 
-(defconstant default-cons-error-message
+(define-equal-constant default-cons-error-message
   "An argument to cons-car or cons-cdr, ~s, was not a cons.")
 
 (defvar cons-error-message default-cons-error-message)
@@ -589,7 +600,8 @@
 
 (defmacro tl:expand-development-memory (bytes)
   (unless (eval-feature :translator)
-    `(user::expand-memory-to-limit ,bytes)))
+    ; `(user::expand-memory-to-limit ,bytes)
+    `(common-lisp-user::expand-memory-to-limit ,bytes)))
 
 
 
@@ -618,9 +630,10 @@
        (write-string "#<" ,stream-var)
        (multiple-value-prog1
 	   ,@forms
-	 (format stream " ~X>"
+	 (format ,stream-var " ~X>"
 		 #+lucid (sys:%pointer ,object-var)
-		 #-lucid (progn ,object-var 0))))))
+		 #+sbcl (sb-kernel:get-lisp-obj-address ,object-var)
+		 #-(or sbcl lucid) (progn ,object-var 0))))))
 
 
 
@@ -641,11 +654,11 @@
       #+lucid
       `(lcl:with-buffered-terminal-output (*standard-output*)
 	 ,@forms)
-      #+(or allegro cmu)
+      #+(or allegro cmu sbcl)
       `(multiple-value-prog1
 	   (progn ,@forms)
 	 (force-output))
-      #-(or lucid allegro cmu)
+      #-(or lucid allegro cmu sbcl)
       `(progn ,@forms)))
 
 
@@ -903,18 +916,28 @@
 
 
 
+;;; In SBCL we can't declare facts about COMMON-LISP symbols unless we
+;;; relax a lock.
 
+#+sbcl(eval-when (:compile-toplevel) (warn "In port to SBCL with-common-lisp-unlocked is not well thought thru."))
+
+(defmacro with-common-lisp-unlocked (() &body body)
+  `(#+sbcl sb-ext:with-unlocked-packages #+sbcl ("COMMON-LISP")
+    #-sbcl progn
+    ,@body))
+  
 ;;; The Lucid we are currently using does not support declaim, so we have a
 ;;; macro that abstracts this with TLT.  Note that TL supports declaim, and so
 ;;; only the TLT implementation need worry about this fixup.
 
 (defmacro lisp-declaim (&rest decls)
-  #+lucid
-  `(eval-when (compile load eval)
-     ,@(loop for decl in decls
-	     collect `(proclaim ',decl)))
-  #-lucid
-  `(declaim ,@decls))
+  (with-common-lisp-unlocked ()
+    #+lucid
+    `(eval-when (compile load eval)
+      ,@(loop for decl in decls
+	      collect `(proclaim ',decl)))
+    #-lucid
+    `(declaim ,@decls)))
 
 
 
@@ -970,6 +993,7 @@
   (excl:gc :tenure)
   #+cmu
   (ext:gc)
+  #+sbcl nil ; (sb-ext:gc :gen t) <-- but not implemented
   nil)
 
 (defun gc-a-lot ()
@@ -982,4 +1006,6 @@
   ;; following call.  -jallard 2/22/01
   #+cmu
   (ext:gc)
+  #+sbcl
+  (sb-ext:gc :full t)
   nil)

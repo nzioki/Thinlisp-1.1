@@ -594,7 +594,7 @@
 	   (list slot-name (struct-slot-initial-form slot)))
 	  (t slot-name-or-binding))))
 
-(defconstant boa-lambda-list-keywords 
+(define-equal-constant boa-lambda-list-keywords 
   '(tl:&optional tl:&rest tl:&aux tl:&key tl:&allow-other-keys))
 
 (defun expand-constructors (name type named slots 

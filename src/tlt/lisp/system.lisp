@@ -265,37 +265,46 @@
 (defun make-new-system
     (name nicknames library main-function used-systems lisp-dir c-dir
 	  extra-c-files extra-h-files modules alias properties)
-  (make-system
-    :name name
-    :nicknames nicknames
-    :is-library-p library
-    :main-function main-function
-    :used-systems used-systems
-    :lisp-dir (if lisp-dir
-		  (pathname lisp-dir)
-		  (make-pathname
-		    :directory
-		    (list :relative
-			  (string-downcase (symbol-name name))
-			  "lisp")))
-    :c-dir (if c-dir
-	       (pathname c-dir)
-	       (make-pathname
+  (flet ((finalize-pathname (pathname)
+;	   #+allegro
+;	   (merge-pathnames pathname)
+;	   #-allegro
+;	   (format t "~&finalize: p: ~S d: ~S m: ~S" pathname *default-pathname-defaults* (merge-pathnames pathname))
+	   #+sbcl
+	   (merge-pathnames pathname)))
+    (make-system
+     :name name
+     :nicknames nicknames
+     :is-library-p library
+     :main-function main-function
+     :used-systems used-systems
+     :lisp-dir (finalize-pathname
+		(if lisp-dir
+		    (pathname lisp-dir)
+		    (make-pathname
+		     :directory
+		     (list :relative
+			   (string-downcase (symbol-name name))
+			   "lisp"))))
+     :c-dir (finalize-pathname
+	     (if c-dir
+		(pathname c-dir)
+		(make-pathname
 		 :directory
 		 (list :relative
 		       (string-downcase (symbol-name name))
-		       "c")))
-    :extra-c-files extra-c-files
-    :extra-h-files extra-h-files
-    :modules (loop for mod in modules
-		   collect (if (consp mod)
-			       (cons-car mod)
-			       mod))
-    :module-properties-alist (loop for mod in modules
-				   when (consp mod)
-				     collect mod)
-    :alias alias
-    :properties properties))
+		       "c"))))
+     :extra-c-files extra-c-files
+     :extra-h-files extra-h-files
+     :modules (loop for mod in modules
+		    collect (if (consp mod)
+				(cons-car mod)
+				mod))
+     :module-properties-alist (loop for mod in modules
+				    when (consp mod)
+				    collect mod)
+     :alias alias
+     :properties properties)))
 
 
 
@@ -748,13 +757,13 @@
       (when (and lisp-write-date
 		 (or (null binary-write-date?)
 		     (<= binary-write-date? lisp-write-date)
-		     (and user::exports-file-write-date
+		     (and common-lisp-user::exports-file-write-date
 			  (<= binary-write-date? 
-			      user::exports-file-write-date))))
+			      common-lisp-user::exports-file-write-date))))
 	(when verbose
 	  (write-string
 	    (format nil "~%Compiling   ~40a    [~3d/~3d] ~a"
-		    lisp-file module-count total-modules
+		    (enough-namestring lisp-file) module-count total-modules
 		    (if development? " (development)" "")))
 	  (force-output))
 	(compile-file lisp-file
@@ -766,7 +775,7 @@
 	(when verbose
 	  (write-string
 	    (format nil "~%Loading     ~40a    [~3d/~3d] ~a"
-		    binary-file module-count total-modules
+		    (enough-namestring binary-file) module-count total-modules
 		    (if development? " (development)" "")))
 	  (force-output))
 	(load binary-file :verbose print :print print)
@@ -792,7 +801,7 @@
 ;;; to tl:load-system, tl:compile-system, and tl:translate-system and are here
 ;;; purely for convenience.
 
-(defmacro user::def-system-convenience-forms (&rest system-names)
+(defmacro common-lisp-user::def-system-convenience-forms (&rest system-names)
   (cons
     'progn
     (loop for system in system-names
@@ -873,6 +882,6 @@
     (export symbols *tl-package*)))
 
 (defmacro def-system-convenience-forms (&rest systems)
-  `(user::def-system-convenience-forms ,@systems))
+  `(common-lisp-user::def-system-convenience-forms ,@systems))
 
 (def-system-convenience-forms tl)

@@ -333,7 +333,7 @@
 
 (defun emit-statement-to-compound-statement (statement compound-statement)
   (unless (c-statement-p statement)
-    (error "~A is not a C-statement."))
+    (error "~A is not a C-statement." statement))
   (if (c-compound-statement-p statement)
       (let ((substatements (c-compound-statement-statements statement)))
 	(if (null (c-compound-statement-declarations statement))

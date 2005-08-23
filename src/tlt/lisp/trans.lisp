@@ -169,8 +169,8 @@
   (let ((write-date? (and (probe-file file) (file-write-date file))))
     (or (null write-date?)
 	(<= write-date? source-write-date)
-	(and user::exports-file-write-date
-	     (<= write-date? user::exports-file-write-date)))))
+	(and common-lisp-user::exports-file-write-date
+	     (<= write-date? common-lisp-user::exports-file-write-date)))))
 
 
 

@@ -174,18 +174,27 @@
       (setf (symbol-function tl-compile-tlt)
 	(symbol-function 'compile-tlt)))))
 
-(defconstant lisp-file-type 
+(defmacro defconstant-string (symbol value)
+  `(defconstant ,symbol (let ((s ',symbol)
+			      (v ,value))
+			  (if (and (boundp s)
+				   (string= v (symbol-value s)))
+			      (symbol-value s)
+			      v))))
+
+(defconstant-string lisp-file-type 
    #-aclpc "lisp"
    #+aclpc "lsp")
 
-(defconstant binary-file-type 
+(defconstant-string binary-file-type 
     #+lucid                    "sbin"
     #+aclpc                    "acl"
     #+allegro                  "fasl"
     #+cmu                      "x86f"
+    #+sbcl                     "fasl"
     #+mcl                      "pfsl"
     #+clisp                    "fas"
-    #-(or lucid aclpc allegro cmu mcl clisp) "bin")
+    #-(or lucid aclpc allegro  cmu sbcl mcl clisp) "bin")
 
 
 
@@ -235,7 +244,9 @@
 ;  #+allegro
 ;  (merge-pathnames pathname)
 ;  #-allegro
-  pathname)
+;  (format t "~&finalize: p: ~S d: ~S m: ~S" pathname *default-pathname-defaults* (merge-pathnames pathname))
+  #+sbcl
+  (merge-pathnames pathname))
 
 
 
@@ -290,15 +301,16 @@
 	      (and exports-file-write-date
 		   (<= bin-date? exports-file-write-date)))
       ;; The following weird construction forces line output buffering.
-      (write-string (format nil "Compiling   ~40a    [~3d/~3d] ~%" lisp-file count total))
+      (write-string (format nil "Compiling   ~40a    [~3d/~3d] ~%" (enough-namestring lisp-file) count total))
       (force-output)
       (compile-file lisp-file #-clisp-old :output-file #-clisp-old relative-bin-file
 		    :verbose nil :print nil)
+      (force-output)
       (setq bin-date? (file-write-date bin-file)))
     (when (or (null load-date?)
 	      (/= load-date? bin-date?))
       ;; The following weird construction forces line output buffering.
-      (write-string (format nil "Loading     ~40a    [~3d/~3d] ~%" bin-file count total))
+      (write-string (format nil "Loading     ~40a    [~3d/~3d] ~%" (enough-namestring bin-file) count total))
       (force-output)
       (load bin-file :verbose nil)
       (setf (get module :tlt-load-date) bin-date?))))
@@ -331,6 +343,24 @@
 
 
 ;;;; Lisp Implementation Specific Switches
+
+
+
+;;; Porting status for various implementations.
+
+;;; Add clauses here to get started, be sure to leave
+;;; note the date when you got it working for that implementation.
+;;; If you port is incomplete emit a warning here.
+
+#+lucid nil ; worked-circa-2000
+#+aclpc nil ;  worked-circa-2000
+#+allegro nil ; worked-circa-2000
+#+cmu nil ; worked-circa-2000
+#+sbcl (warning "Port to SBCL is incomplete 8/22/2005.")
+#+mcl nil ; worked-circa-2000 
+#+clisp nil ; worked-circa-2000 
+#-(or lucid aclpc allegro cmu sbcl mcl clisp)
+(warning "No known Lisp implementation was found in *features*.")
 
 
 
@@ -600,10 +630,10 @@
   (unless (find-package name)
     (make-package name :use use-list)))
 
-(make-package-if-necessary "TLI"     '("LISP"))
+(make-package-if-necessary "TLI"     '("COMMON-LISP"))
 (make-package-if-necessary "TLT"     nil)
 (make-package-if-necessary "TL"      nil)
-(make-package-if-necessary "AB-LISP" '("LISP"))
+(make-package-if-necessary "AB-LISP" '("COMMON-LISP"))
 (make-package-if-necessary "TL-USER" '("TL"))
 
 (unless (fboundp (intern "COMPILE-TLT" (find-package "TLI")))

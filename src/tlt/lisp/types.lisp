@@ -45,7 +45,9 @@
       (multiple-value-bind (decls forms)
 	  (split-declarations-and-body body)
 	`(progn
-	   (deftype ,name ,arglist ,@body)
+	  (handler-case 
+	      (deftype ,name ,arglist ,@body)
+	    #+sbcl(sb-kernel:declaration-type-conflict-error (e) nil))
 	   (eval-when (:compile-toplevel :load-toplevel :execute)
 	     (defun ,type-expander ,arglist
 	       ,@decls

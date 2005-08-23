@@ -398,7 +398,7 @@
 
 ;;;   (def-c-translation +-two-arg (number1 number2)
 ;;;     ((lisp-specs :ftype ((number number) number))
-;;;      `(lisp:+ ,number1 ,number2))
+;;;      `(common-lisp:+ ,number1 ,number2))
 ;;;     
 ;;;     ((trans-specs :lisp-type ((fixnum fixnum) fixnum)
 ;;;   		:c-type ((sint32 sint32) sint32))
@@ -441,7 +441,7 @@
 		       ,name)
 		     ;; In the following line, lie about the home location of this 
 		     (function-home (,home-system . ,home-module) ,name))
-	 (lisp:defmacro ,name ,function-arglist ,@macro)
+	 (common-lisp:defmacro ,name ,function-arglist ,@macro)
 	 (defun ,translator-name
 	     (function-call-l-expr c-expr-args c-func
 				   c-compound-statement return-directive)

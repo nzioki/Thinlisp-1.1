@@ -65,7 +65,7 @@
 
 (defvar destruct-binding-list nil)
 
-(defconstant tl:lambda-list-keywords
+(define-equal-constant tl:lambda-list-keywords
   '(&optional &rest &key &aux &body &whole &allow-other-keys &environment))
 
 (defmacro let*-destruct (bindings &body body)

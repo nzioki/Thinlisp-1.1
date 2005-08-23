@@ -2131,7 +2131,7 @@
 (def-tl-macro tl:make-package (name &key (use ''("TL")))
   (if (eval-feature :translator)
       `(tl::make-package-1 ,name ,use)
-      `(lisp:make-package ,name :use ,use)))
+      `(common-lisp:make-package ,name :use ,use)))
 
 (def-tl-macro tl:find-package (string-or-symbol-or-package)
   (if (eval-feature :translator)
@@ -2145,7 +2145,7 @@
 (defun find-package-safely (arg)
   (if (typep arg 'package)
       arg
-    (lisp:find-package arg)))
+    (common-lisp:find-package arg)))
 
 
 (def-c-translation make-new-package (name use-list)

@@ -147,14 +147,14 @@
 
 (progn
   (defconstant byte-array
-    #.(lisp:make-array 10 :element-type '(unsigned-byte 8) :initial-element 9))
+    #.(common-lisp:make-array 10 :element-type '(unsigned-byte 8) :initial-element 9))
   (defconstant double-byte-array
-    #.(lisp:make-array 15 :element-type '(unsigned-byte 16) :initial-element 132)))
+    #.(common-lisp:make-array 15 :element-type '(unsigned-byte 16) :initial-element 132)))
 
 (progn
   (defconstant list-1 '(1 2 3 4 "Uffda" (5 nil . 8) 23))
-  (defconstant list-2 (quote #.(let ((a (lisp:list 1 2 3))) (lisp:setf (lisp:cdr (lisp:last a)) a) a)))
-  (defconstant list-3 (quote #.(let ((a (lisp:list nil 2 3))) (lisp:setf (lisp:car a) a) a))))
+  (defconstant list-2 (quote #.(let ((a (common-lisp:list 1 2 3))) (common-lisp:setf (common-lisp:cdr (common-lisp:last a)) a) a)))
+  (defconstant list-3 (quote #.(let ((a (common-lisp:list nil 2 3))) (common-lisp:setf (lisp:car a) a) a))))
 
 (defun and-test1 (a b)
   (and a (< a b)))

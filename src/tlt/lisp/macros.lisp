@@ -51,7 +51,7 @@
 
 ;;; Note that this macroexpander supports macrolet, symbol-macrolet, and
 ;;; compiler-macros, ala CLtL 2.  The macros defined are also passed through to
-;;; lisp:macro-function.  The tl:macro-function version is defined since it
+;;; common-lisp:macro-function.  The tl:macro-function version is defined since it
 ;;; needs to use the TL environment structures, not the ones native to the
 ;;; underlying Lisp.
 

@@ -381,7 +381,7 @@
       (when (not (string= c-name current-c-name))
 	(retranslate-warning
 	  verbose module
-	  "A C function name has changed:~%    ~a changed to ~a."
+	  "A C function name has changed:~%    ~a (aka ~a) changed to ~a."
 	  function-name c-name current-c-name)
 	(return-from trans-data-indicates-retranslate-p t))
       (when (not (equal ftype current-ftype))
@@ -405,7 +405,7 @@
       (when (not (string= c-name current-c-name))
 	(retranslate-warning
 	  verbose module
-	  "A C variable name has changed:~%    ~a changed to ~a."
+	  "A C variable name has changed:~%    ~a (aka ~a) changed to ~a."
 	  variable-name c-name current-c-name)
 	(return-from trans-data-indicates-retranslate-p t))
       (when (not (equal c-type current-c-type))
@@ -429,13 +429,13 @@
       (when (not (string= c-name current-c-name))
 	(retranslate-warning
 	  verbose module
-	  "A C typedef name for a Lisp structure or class has changed:~%    ~a changed to ~a"
+	  "A C typedef name for a Lisp structure or class has changed:~%    ~a (aka ~a) changed to ~a"
 	  class-name c-name current-c-name)
 	(return-from trans-data-indicates-retranslate-p t))
       (when (not (c-types-equal-p c-struct-type current-c-struct-type))
 	(retranslate-warning
 	 verbose module
-	 "A C struct type for a Lisp structure or class has changed:~%    ~a changed to ~a"
+	 "A C struct type for a Lisp structure or class has changed:~%    ~a (aka ~a) changed to ~a"
 	 class-name c-struct-type current-c-struct-type)
 	(return-from trans-data-indicates-retranslate-p t)))
 
