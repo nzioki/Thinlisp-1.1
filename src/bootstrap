@@ -3,7 +3,7 @@
 ### A script to compile those parts of the system
 ### that have changed since last time.
 
-if [ -x /usr/local/bin/clisp ] ; then
+if [ -x /usr/local/bin/clisp ] || [ -x /usr/bin/clisp ] ; then
   clisp -x "(load \"boot.lisp\")"
 else
 
