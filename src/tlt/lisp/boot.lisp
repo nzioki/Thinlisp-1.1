@@ -241,11 +241,6 @@
 ;;; merged with the defaults BEFORE being used.
 
 (defun finalize-pathname (pathname)
-;  #+allegro
-;  (merge-pathnames pathname)
-;  #-allegro
-;  (format t "~&finalize: p: ~S d: ~S m: ~S" pathname *default-pathname-defaults* (merge-pathnames pathname))
-  #+sbcl
   (merge-pathnames pathname))
 
 

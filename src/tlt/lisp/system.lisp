@@ -262,49 +262,41 @@
 	   `((tl:setf (,defined-get ',name :alias) ',alias)))
        ',name)))
 
-(defun make-new-system
-    (name nicknames library main-function used-systems lisp-dir c-dir
-	  extra-c-files extra-h-files modules alias properties)
-  (flet ((finalize-pathname (pathname)
-;	   #+allegro
-;	   (merge-pathnames pathname)
-;	   #-allegro
-;	   (format t "~&finalize: p: ~S d: ~S m: ~S" pathname *default-pathname-defaults* (merge-pathnames pathname))
-	   #+sbcl
-	   (merge-pathnames pathname)))
-    (make-system
-     :name name
-     :nicknames nicknames
-     :is-library-p library
-     :main-function main-function
-     :used-systems used-systems
-     :lisp-dir (finalize-pathname
-		(if lisp-dir
-		    (pathname lisp-dir)
-		    (make-pathname
-		     :directory
-		     (list :relative
-			   (string-downcase (symbol-name name))
-			   "lisp"))))
-     :c-dir (finalize-pathname
-	     (if c-dir
-		(pathname c-dir)
-		(make-pathname
-		 :directory
-		 (list :relative
-		       (string-downcase (symbol-name name))
-		       "c"))))
-     :extra-c-files extra-c-files
-     :extra-h-files extra-h-files
-     :modules (loop for mod in modules
-		    collect (if (consp mod)
-				(cons-car mod)
-				mod))
-     :module-properties-alist (loop for mod in modules
-				    when (consp mod)
-				    collect mod)
-     :alias alias
-     :properties properties)))
+(defun make-new-system (name nicknames library main-function used-systems
+			     lisp-dir c-dir extra-c-files extra-h-files
+			     modules alias properties)
+  (make-system
+   :name name
+   :nicknames nicknames
+   :is-library-p library
+   :main-function main-function
+   :used-systems used-systems
+   :lisp-dir (merge-pathnames
+	      (if lisp-dir
+		  (pathname lisp-dir)
+		(make-pathname :directory
+			       (list :relative
+				     (string-downcase (symbol-name name))
+				     "lisp"))))
+   :c-dir (merge-pathnames
+	   (if c-dir
+	       (pathname c-dir)
+	     (make-pathname
+	      :directory
+	      (list :relative
+		    (string-downcase (symbol-name name))
+		    "c"))))
+   :extra-c-files extra-c-files
+   :extra-h-files extra-h-files
+   :modules (loop for mod in modules
+		  collect (if (consp mod)
+			      (cons-car mod)
+			    mod))
+   :module-properties-alist (loop for mod in modules
+				  when (consp mod)
+				  collect mod)
+   :alias alias
+   :properties properties))
 
 
 

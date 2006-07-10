@@ -921,10 +921,10 @@
 
 #+sbcl(eval-when (:compile-toplevel) (warn "In port to SBCL with-common-lisp-unlocked is not well thought thru."))
 
-(defmacro with-common-lisp-unlocked (() &body body)
-  `(#+sbcl sb-ext:with-unlocked-packages #+sbcl ("COMMON-LISP")
-    #-sbcl progn
-    ,@body))
+(defmacro with-common-lisp-unlocked (ignored &body body)
+  (declare (ignore ignored))
+  #+sbcl `(sb-ext:with-unlocked-packages ("COMMON-LISP") ,@body)
+  #-sbcl `(progn ,@body))
   
 ;;; The Lucid we are currently using does not support declaim, so we have a
 ;;; macro that abstracts this with TLT.  Note that TL supports declaim, and so
@@ -983,8 +983,8 @@
 
 ;;; The function `gc-a-little' will invoke the ephemeral garbage collector on
 ;;; the most transient levels of garbage.  This should be called at top levels
-;;; of large processes when it is expected that most of the recent created data
-;;; will be garbage, for example inbetween module translations.
+;;; of large processes when it is expected that most of the recently created
+;;; data will be garbage, for example in between module translations.
 
 (defun gc-a-little ()
   #+lucid

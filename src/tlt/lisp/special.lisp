@@ -1034,10 +1034,18 @@
 
 
 ;;; The walker for `tl:progn' is a simple as they get (though I got it wrong the
-;;; first time by expanding into a let, not a tl:let  -jra 11/9/95).
+;;; first time by expanding into a let, not a tl:let -jra 11/9/95).  Also add a
+;;; walker for the Lisp symbol progn, since it occasionally slips into
+;;; translated forms.
 
 (def-special-form-walker tl:progn (form env walker required-type)
   `(tl:progn ,@(walk-progn-body (cons-cdr form) env walker required-type)))
+
+(tl:declaim (special-form progn))
+
+(def-special-form-walker progn (form env walker required-type)
+  `(tl:progn ,@(walk-progn-body (cons-cdr form) env walker required-type)))
+
 
 
 
@@ -1181,8 +1189,8 @@
 	    (setq subform-cons (cons-cdr subform-cons))
 	    (return (loop for subform = (car subform-cons)
 			  while subform-cons
-			  never (atom subform)
-			  thereis (equal subform '(tl:go tl::next-loop))
+			  thereis (and (consp subform)
+				       (equal subform '(tl:go tl::next-loop)))
 			  do
 		      (setf subform-cons (cons-cdr subform-cons))))))
     (setq form (rewrite-tagbody-for-loops form env)))
@@ -1776,7 +1784,7 @@
 
 
 
-;;; The numeric operations `+' and `*' have to be done as speical forms in TL in
+;;; The numeric operations `+' and `*' have to be done as special forms in TL in
 ;;; order to allow the use of lisp:+ and lisp:* within the read-eval-print loop
 ;;; of the Lisp development environment.  The implementations of the walkers for
 ;;; these special forms will always expand into the TLI package symbols that
@@ -1794,6 +1802,9 @@
 (def-special-form-walker * (form env walker required-type)
   `(tl:progn
      ,(tl:walk (cons 'multiply (cons-cdr form)) env walker required-type)))
+
+
+
 
 
 
