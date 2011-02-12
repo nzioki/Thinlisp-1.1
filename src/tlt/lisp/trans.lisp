@@ -46,7 +46,7 @@
 ;;; written when attempting a translate of a Lisp file, so comparing that file's
 ;;; date is adequate.
 
-(defun tl:translate-system (system &key (verbose t)
+(defun tl:translate-system (system &key (verbose nil)
 				   (recompile nil) (from nil) (to nil)
 				   (compile-used-systems t)
 				   (recompile-used-systems nil)
@@ -169,8 +169,8 @@
   (let ((write-date? (and (probe-file file) (file-write-date file))))
     (or (null write-date?)
 	(<= write-date? source-write-date)
-	(and common-lisp-user::exports-file-write-date
-	     (<= write-date? common-lisp-user::exports-file-write-date)))))
+	(and cl-user::exports-file-write-date
+	     (<= write-date? cl-user::exports-file-write-date)))))
 
 
 

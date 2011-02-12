@@ -1120,7 +1120,7 @@
      (emit-c-expr-as-directed (make-c-literal-expr (if value 1 0))
 			      quote-l-expr c-func c-body return-directive))
     ((or (and (fixnump value)
-	      (loop for type in '(sint32 uint32 sint32 uint16 uint8)
+	      (loop for type in '(sint32 uint32 sint32 uint16 sint16 uint8)
 		    thereis (satisfies-c-required-type-p c-type type)))
 	 (and (tl-typep value 'double-float)
 	      (satisfies-c-required-type-p c-type 'double)))
@@ -1184,7 +1184,8 @@
         (which the reader macro #' expands into)."
        value))
     (t
-     (translation-error "Quote-l-expr doesn't have a case for ~s" value))))
+     ;(translation-error "Quote-l-expr doesn't have a case for ~s" value)
+     (error (format nil "Quote-l-expr doesn't have a case for ~s" value)))))
 
 (defun declared-const-array-type (c-array-type length c-file)
   (let ((const-array-type (c-type-for-const-array c-array-type length)))
@@ -1769,9 +1770,7 @@
 	(make-c-direct-selection-expr compiled-function "closure_environment")
 	"=" (translate-l-expr-into-c
 	      (prepare-l-expr-for-translation 
-	       ;; Add reference to closure object here.  -jallard 3/24/02
-		(make-quoted-constant-l-expr nil env env)
-		't 'obj)
+		(make-quoted-constant-l-expr nil env env) 't 'obj)
 	      top-c-func top-c-body :c-expr))
       top-c-body)
     (emit-expr-to-compound-statement

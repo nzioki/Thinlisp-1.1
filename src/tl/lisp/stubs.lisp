@@ -78,77 +78,77 @@
 ;;; TL library while the base is still under construction.
 
 (defmacro file-write-date (&rest args)
-  `(lisp:file-write-date ,@args))
+  `(common-lisp:file-write-date ,@args))
 
 (defmacro directory (&rest args)
-  `(lisp:directory ,@args))
+  `(common-lisp:directory ,@args))
 
 (defmacro make-broadcast-stream (&rest args)
-  `(lisp:make-broadcast-stream ,@args))
+  `(common-lisp:make-broadcast-stream ,@args))
 
 (defmacro union (&rest args)
-  `(lisp:union ,@args))
+  `(common-lisp:union ,@args))
 
 (defmacro revappend (&rest args)
-  `(lisp:revappend ,@args))
+  `(common-lisp:revappend ,@args))
 
 (defmacro compile-file (&rest args)
-  `(lisp:compile-file ,@args))
+  `(common-lisp:compile-file ,@args))
 
 (defmacro load (&rest args)
-  `(lisp:load ,@args))
+  `(common-lisp:load ,@args))
 
 (defmacro unread-char (&rest args)
-  `(lisp:unread-char ,@args))
+  `(common-lisp:unread-char ,@args))
 
 (defmacro multiple-value-list (&rest args)
-  `(lisp:multiple-value-list ,@args))
+  `(common-lisp:multiple-value-list ,@args))
 
 (defmacro coerce (object result-type)
   (if (and (constantp result-type)
-	   (tli::tl-subtypep (lisp:eval result-type) 'tli::double-float))
+	   (tli::tl-subtypep (common-lisp:eval result-type) 'tli::double-float))
       `(coerce-to-double-float ,object)
-    `(lisp:coerce ,object ,result-type)))
+    `(common-lisp:coerce ,object ,result-type)))
 
 (defmacro pathnamep (object)
-  `(lisp:pathnamep ,object))
+  `(common-lisp:pathnamep ,object))
 
 (deftype pathname () 'tli::pathname)
 
 (deftype bignum () 'tli::bignum)
 
 (defmacro rename-file (&rest args)
-  `(lisp:rename-file ,@args))
+  `(common-lisp:rename-file ,@args))
 
 (defmacro merge-pathnames (&rest args)
-  `(lisp:merge-pathnames ,@args))
+  `(common-lisp:merge-pathnames ,@args))
 
 (defmacro namestring (pathname)
-  `(lisp:namestring ,pathname))
+  `(common-lisp:namestring ,pathname))
 
 (defmacro pathname (pathname)
-  `(lisp:pathname ,pathname))
+  `(common-lisp:pathname ,pathname))
 
 (defmacro truename (pathname)
-  `(lisp:truename ,pathname))
+  `(common-lisp:truename ,pathname))
 
 (defmacro clear-input (&optional input-stream)
-  `(lisp:clear-input
+  `(common-lisp:clear-input
      ,@(if input-stream `(,input-stream) nil)))
 
 (defmacro vector (&rest args)
-  `(lisp:vector ,@args))
+  `(common-lisp:vector ,@args))
 
 (defmacro random (&rest args)
-  `(lisp:random ,@args))
+  `(common-lisp:random ,@args))
 
 (defmacro read-char-no-hang (&rest args)
-  `(lisp:read-char-no-hang ,@args))
+  `(common-lisp:read-char-no-hang ,@args))
 
 (defmacro make-pathname (&key (host nil) (device nil)
 			 (directory nil) (name nil) (type nil)
 			 (version nil) (defaults nil) (case nil))
-  `(lisp:make-pathname 
+  `(common-lisp:make-pathname 
 		,@(if host `(:host ,host) nil)
 		,@(if device `(:device ,device) nil)
 		,@(if directory `(:directory ,directory) nil)
@@ -159,25 +159,25 @@
 		,@(if case `(:case ,case) nil)))
 
 (defmacro get-decoded-time ()
-  `(lisp:get-decoded-time))
+  `(common-lisp:get-decoded-time))
 
 (defmacro read (&optional input-stream eof-error-p eof-value recursive-p)
-  `(lisp:read
+  `(common-lisp:read
      ,@(if input-stream `(,input-stream) nil)
      ,@(if eof-error-p `(,eof-error-p) nil)
      ,@(if eof-value `(,eof-value) nil)
      ,@(if recursive-p `(,recursive-p) nil)))
 
 (defmacro pathname-name (pathname &key (case nil))
-  `(lisp:pathname-name ,pathname
+  `(common-lisp:pathname-name ,pathname
 		,@(if case `(:case ,case) nil)))
 
 (defmacro array-element-type (array)
-  `(lisp:array-element-type ,array))
+  `(common-lisp:array-element-type ,array))
 
 (defmacro parse-integer (string &key (start nil) (end nil)
 				(radix nil) (junk-allowed nil))
-  `(lisp:parse-integer ,string
+  `(common-lisp:parse-integer ,string
 		,@(if start `(:start ,start) nil)
 		,@(if end `(:end ,end) nil)
 		,@(if radix `(:radix ,radix) nil)
@@ -203,62 +203,62 @@
 ;;; translate these forms, translation time errors will occur.
 
 (defmacro string-trim (character-bag string)
-  `(lisp:string-trim ,character-bag ,string))
+  `(common-lisp:string-trim ,character-bag ,string))
     
 (defmacro fmakunbound (symbol)
-  `(lisp:fmakunbound ,symbol))
+  `(common-lisp:fmakunbound ,symbol))
 
 (defmacro gethash (key hashtable &optional (default nil))
-  (if (lisp:eql default nil)
-      `(lisp:gethash ,key ,hashtable)
-      `(lisp:gethash ,key ,hashtable ,default)))
+  (if (common-lisp:eql default nil)
+      `(common-lisp:gethash ,key ,hashtable)
+      `(common-lisp:gethash ,key ,hashtable ,default)))
 
 (defsetf gethash set-gethash)
 
 (defmacro set-gethash (key hashtable new-or-default-value
 			   &optional (new-value nil supplied?))
-  `(lisp:setf (lisp:gethash ,key ,hashtable
+  `(common-lisp:setf (common-lisp:gethash ,key ,hashtable
 			    ,@(if supplied? `(,new-or-default-value)))
 	      ,(if supplied? new-value new-or-default-value)))
     
 (defmacro eval (form)
-  `(lisp:eval ,form))
+  `(common-lisp:eval ,form))
 
 (defmacro butlast (list &optional (count 1))
-  (if (lisp:eql count 1)
-      `(lisp:butlast ,list)
-      `(lisp:butlast ,list ,count)))
+  (if (common-lisp:eql count 1)
+      `(common-lisp:butlast ,list)
+      `(common-lisp:butlast ,list ,count)))
 
 (defmacro subst (&rest args)
-  `(lisp:subst ,@args))
+  `(common-lisp:subst ,@args))
 
 (defmacro sublis (&rest args)
-  `(lisp:sublis ,@args))
+  `(common-lisp:sublis ,@args))
 
 (defmacro do-symbols (&rest args)
-  `(lisp:do-symbols ,@args))
+  `(common-lisp:do-symbols ,@args))
 
 (defmacro do-all-symbols (&rest args)
-  `(lisp:do-symbols ,@args))
+  `(common-lisp:do-symbols ,@args))
 
 (defmacro maphash (function hash-table)
-  `(lisp:maphash ,function ,hash-table))
+  `(common-lisp:maphash ,function ,hash-table))
 
 (defmacro get-universal-time ()
-  `(lisp:get-universal-time))
+  `(common-lisp:get-universal-time))
 
 (defmacro decode-universal-time (&rest args)
-  `(lisp:decode-universal-time ,@args))
+  `(common-lisp:decode-universal-time ,@args))
 
 (defmacro encode-universal-time (&rest args)
-  `(lisp:encode-universal-time ,@args))
+  `(common-lisp:encode-universal-time ,@args))
 
 (defmacro subseq (sequence start &optional end)
-  `(lisp:subseq ,sequence ,start ,@(if end `(,end) nil)))
+  `(common-lisp:subseq ,sequence ,start ,@(if end `(,end) nil)))
 
 (defmacro remove-duplicates (sequence &key (from-end nil) (test nil)
 			 (test-not nil) (start nil) (end nil) (key nil))
-  `(lisp:remove-duplicates ,sequence
+  `(common-lisp:remove-duplicates ,sequence
 		,@(if from-end `(:from-end ,from-end) nil)
 		,@(if test `(:test ,test) nil)
 		,@(if test-not `(:test-not ,test-not) nil)
@@ -267,17 +267,17 @@
 		,@(if key `(:key ,key) nil)))
 
 (defmacro ldiff (list sublist)
-  `(lisp:ldiff ,list ,sublist))
+  `(common-lisp:ldiff ,list ,sublist))
 
 (defmacro compile (name &optional definition)
-  `(lisp:compile ,name ,@(if definition `(,definition) nil)))
+  `(common-lisp:compile ,name ,@(if definition `(,definition) nil)))
 
 (defmacro disassemble (name-or-compiled-function)
-  `(lisp:disassemble ,name-or-compiled-function))
+  `(common-lisp:disassemble ,name-or-compiled-function))
 
 (defmacro inspect (object)
-  `(lisp:inspect ,object))
+  `(common-lisp:inspect ,object))
 
 (defmacro write-to-string (object &rest args)
-  `(lisp:write-to-string ,object ,@args))
+  `(common-lisp:write-to-string ,object ,@args))
 

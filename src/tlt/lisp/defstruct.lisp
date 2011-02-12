@@ -21,8 +21,11 @@
 ;;; Author: Jim Allard
 
 
+;;; BUGS:
 
-
+;;; :include option is pretty much, completely broken
+;;; slot initargs options with :include are not supported
+;;; :include -ed slots cannot be used for constructor keyword initialization
 
 
 ;;;; Defstruct
@@ -50,7 +53,7 @@
     (cond ((eq elt name)
 	   (return singleton-default))
 	  ((and (consp elt) (eq (car elt) name))
-	   (return (cadr elt))))
+	   (return (cdr elt))))
         finally (return default))) 
 
 
@@ -594,7 +597,7 @@
 	   (list slot-name (struct-slot-initial-form slot)))
 	  (t slot-name-or-binding))))
 
-(define-equal-constant boa-lambda-list-keywords 
+(defconstant boa-lambda-list-keywords 
   '(tl:&optional tl:&rest tl:&aux tl:&key tl:&allow-other-keys))
 
 (defun expand-constructors (name type named slots 

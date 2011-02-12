@@ -29,13 +29,15 @@
 
 
 
-
 ;;; This file contains miscellaneous utilities needed within the TLI package,
 ;;; but which are not large enough or sophisticated enough to deserve their own
 ;;; module.
 
 
+;;; Note that this also defines some stuff in the TL package!! Watch out!
 
+;;; This file contains some things which are just plain obsolete
+;;; and get in the way. They'll be removed eventually. -- VS
 
 
 
@@ -85,7 +87,7 @@
 
 (defparameter *tl-user-package* (find-package "TL-USER"))
 
-(defparameter *lisp-package* (find-package #+lucid "LISP" #-lucid "COMMON-LISP"))
+(defparameter *lisp-package* (find-package "COMMON-LISP"))
 
 (defparameter *cl-user-package* (find-package "CL-USER"))
 
@@ -102,41 +104,30 @@
 ;;; of the Lisp directories that will contain binaries for these two diffent
 ;;; types of compiles.
 
-(defmacro define-equal-constant (symbol value)
-  `(defconstant ,symbol (let ((s ',symbol)
-			      (v ,value))
-			  (if (and (boundp s)
-				   (equal v (symbol-value s)))
-			      (symbol-value s)
-			      v))))
+(defconstant lisp-file-type "lisp")
 
-(define-equal-constant lisp-file-type "lisp")
+(defconstant lisp-binary-file-type
+    #+lucid                      "sbin"
+    #+allegro                    "fasl"
+    #+cmu                        "x86f"
+    #+mcl                        "pfsl"
+    #-(or lucid allegro cmu mcl) "bin")
 
-(define-equal-constant lisp-binary-file-type
-    #+lucid                    "sbin"
-    #+aclpc                    "acl"
-    #+allegro                  "fasl"
-    #+cmu                      "x86f"
-    #+sbcl                     "fasl"
-    #+mcl                      "pfsl"
-    #+clisp                    "fas"
-    #-(or lucid aclpc allegro cmu sbcl mcl clisp) "bin")
+(defconstant c-file-type "c")
 
-(define-equal-constant c-file-type "c")		; duh
+(defconstant h-file-type "h")
 
-(define-equal-constant h-file-type "h")
+(defconstant trans-data-file-type "tlt")
 
-(define-equal-constant trans-data-file-type "tlt")
+(defconstant temporary-c-file-type "tmc")
 
-(define-equal-constant temporary-c-file-type "tmc")
+(defconstant temporary-h-file-type "tmh")
 
-(define-equal-constant temporary-h-file-type "tmh")
+(defconstant temporary-trans-data-file-type "tmg")
 
-(define-equal-constant temporary-trans-data-file-type "tmg")
+(defconstant lisp-dev-binary-directory-name "dev")
 
-(define-equal-constant lisp-dev-binary-directory-name "dev")
-
-(define-equal-constant lisp-macro-binary-directory-name "macro")
+(defconstant lisp-macro-binary-directory-name "macro")
 
 
 
@@ -145,7 +136,9 @@
 
 ;;;; Fast Stream Writing
 
-
+;;; (Contrast to slow stream writing, which is commonly used by Lisp
+;;; implementations not to confuse the hardware. Like special
+;;; variables, fast streams ride the short bus). -- VS
 
 
 ;;; The macros `tlt-write-char' and `tlt-write-string' should be used for all
@@ -153,15 +146,9 @@
 ;;; found, these macros will expand to the optimized versions.
 
 (defmacro tlt-write-char (char stream)
-  #+lucid
-  `(lcl:fast-write-char ,char ,stream)
-  #-lucid
   `(write-char ,char ,stream))
 
 (defmacro tlt-write-string (string stream &rest keyword-args)
-  #+lucid
-  `(lcl:fast-write-string ,string ,stream ,@keyword-args)
-  #-lucid
   `(write-string ,string ,stream ,@keyword-args))
 
 
@@ -323,7 +310,9 @@
 
 ;;;; Type Specific Accessors
 
-
+;;; !!! I don't quite get where this is used (by the translator or in
+;;; the generated code??), or how ANSI Common Lisp list accessors are
+;;; not type safe - this is very bad and confusing. -- VS
 
 
 ;;; The following section provides type specific versions of functions supplied
@@ -412,7 +401,7 @@
 (defun cons-fifth (conses)
   (cons-car (cons-cdr (cons-cdddr conses))))
 
-(define-equal-constant default-cons-error-message
+(defconstant default-cons-error-message
   "An argument to cons-car or cons-cdr, ~s, was not a cons.")
 
 (defvar cons-error-message default-cons-error-message)
@@ -433,18 +422,23 @@
 
 ;;; The following macros provide old Zetalisp list operations.
 
-(defmacro assq (key a-list)
-  (let ((key-var?
-	  (if (not (or (constantp key) (symbolp key)))
-	      (gensym)))
-	(alist-entry? (gensym)))
-    `(loop ,@(if key-var? `(with ,key-var? = ,key))
-	   for ,alist-entry? in ,a-list
-	   do
-       (when (and ,alist-entry?
-		  (eq (cons-car ,alist-entry?)
-		      ,(or key-var? key)))
-	 (return ,alist-entry?)))))
+;; (defmacro assq (key a-list)
+;;   (let ((key-var?
+;; 	  (if (not (or (constantp key) (symbolp key)))
+;; 	      (gensym)))
+;; 	(alist-entry? (gensym)))
+;;     `(loop ,@(if key-var? `(with ,key-var? = ,key))
+;; 	   for ,alist-entry? in ,a-list
+;; 	   do
+;;        (when (and ,alist-entry?
+;; 		  (eq (cons-car ,alist-entry?)
+;; 		      ,(or key-var? key)))
+;; 	 (return ,alist-entry?)))))
+
+;;; The above can probably be replaced by
+
+(defmacro assq (key alist)
+  `(assoc ,key ,alist))
 
 (defmacro memq (key list)
   (let ((key-var?
@@ -598,10 +592,11 @@
 ;;; expansion and will extend the size of the Lisp development environment to
 ;;; that limit.
 
-(defmacro tl:expand-development-memory (bytes)
-  (unless (eval-feature :translator)
-    ; `(user::expand-memory-to-limit ,bytes)
-    `(common-lisp-user::expand-memory-to-limit ,bytes)))
+;;; This is an ugly hack
+
+;; (defmacro tl:expand-development-memory (bytes)
+;;   (unless (eval-feature :translator)
+;;     `(cl-user::expand-memory-to-limit ,bytes)))
 
 
 
@@ -630,10 +625,9 @@
        (write-string "#<" ,stream-var)
        (multiple-value-prog1
 	   ,@forms
-	 (format ,stream-var " ~X>"
+	 (format stream " ~X>"
 		 #+lucid (sys:%pointer ,object-var)
-		 #+sbcl (sb-kernel:get-lisp-obj-address ,object-var)
-		 #-(or sbcl lucid) (progn ,object-var 0))))))
+		 #-lucid (progn ,object-var 0))))))
 
 
 
@@ -648,20 +642,24 @@
 ;;; default in Lucid, every function that writes to *standard-output*
 ;;; immediately flushes it out to the user.
 
+;;; (Contrast to 'with-slower-standard-output', which is used by
+;;; default by most Lisp implementations not to confuse the elderly.)
+
+;; (defmacro with-faster-standard-output (&body forms)
+;;   (if (eval-feature :translator)
+;;       `(progn ,@forms)
+;;       #+lucid
+;;       `(lcl:with-buffered-terminal-output (*standard-output*)
+;; 	 ,@forms)
+;;       #+(or allegro cmu)
+;;       `(multiple-value-prog1
+;; 	   (progn ,@forms)
+;; 	 (force-output))
+;;       #-(or lucid allegro cmu)
+;;       `(progn ,@forms)))
+
 (defmacro with-faster-standard-output (&body forms)
-  (if (eval-feature :translator)
-      `(progn ,@forms)
-      #+lucid
-      `(lcl:with-buffered-terminal-output (*standard-output*)
-	 ,@forms)
-      #+(or allegro cmu sbcl)
-      `(multiple-value-prog1
-	   (progn ,@forms)
-	 (force-output))
-      #-(or lucid allegro cmu sbcl)
-      `(progn ,@forms)))
-
-
+  `(progn ,@forms))
 
 
 
@@ -684,7 +682,7 @@
 (defun translation-error-1 (message)
   (describe-translation-context t)
   (write-string message *error-output*)
-  (write-char #\space *error-output*)
+  (write-char #\Space *error-output*)
   (handle-translation-problem :translation-error))
 
 (defvar within-translation-catcher nil)
@@ -916,30 +914,15 @@
 
 
 
-;;; In SBCL we can't declare facts about COMMON-LISP symbols unless we
-;;; relax a lock.
 
-#+sbcl(eval-when (:compile-toplevel) (warn "In port to SBCL with-common-lisp-unlocked is not well thought thru."))
-
-(defmacro with-common-lisp-unlocked (ignored &body body)
-  (declare (ignore ignored))
-  #+sbcl `(sb-ext:with-unlocked-packages ("COMMON-LISP") ,@body)
-  #-sbcl `(progn ,@body))
-  
 ;;; The Lucid we are currently using does not support declaim, so we have a
 ;;; macro that abstracts this with TLT.  Note that TL supports declaim, and so
 ;;; only the TLT implementation need worry about this fixup.
 
+;;; !!! This is not longer an issue, all code using this should be fixed. --VS
+
 (defmacro lisp-declaim (&rest decls)
-  (with-common-lisp-unlocked ()
-    #+lucid
-    `(eval-when (compile load eval)
-      ,@(loop for decl in decls
-	      collect `(proclaim ',decl)))
-    #-lucid
-    `(declaim ,@decls)))
-
-
+  `(declaim ,@decls))
 
 
 ;;;; Special Forms
@@ -950,11 +933,10 @@
 ;;; The special-form-p function has been removed from ANSI Common Lisp.
 ;;; Define it for those Lisp systems that haven't given us a replacement.
 
+;;; !!! This is no longer an issue, all code using this should be fixed -- VS
+
 (defun lisp-special-operator-p (symbol)
-  #+(or ansi-cl clisp)
-  (special-operator-p symbol)
-  #-(or ansi-cl clisp)
-  (special-form-p symbol))
+   (special-operator-p symbol))
 
 
 
@@ -983,8 +965,16 @@
 
 ;;; The function `gc-a-little' will invoke the ephemeral garbage collector on
 ;;; the most transient levels of garbage.  This should be called at top levels
-;;; of large processes when it is expected that most of the recently created
-;;; data will be garbage, for example in between module translations.
+;;; of large processes when it is expected that most of the recent created data
+;;; will be garbage, for example inbetween module translations.
+
+;;; !!! This no longer applies - all this does is increase GC overhead
+;;; on my box, with it's now (1/27/04) modest 256mb of memory --VS
+
+;(defun gc-a-little ())
+;(defun gc-a-lot())
+
+#+cmu (setq cl-user::*gc-verbose* nil)
 
 (defun gc-a-little ()
   #+lucid
@@ -993,7 +983,6 @@
   (excl:gc :tenure)
   #+cmu
   (ext:gc)
-  #+sbcl nil ; (sb-ext:gc :gen t) <-- but not implemented
   nil)
 
 (defun gc-a-lot ()
@@ -1006,6 +995,4 @@
   ;; following call.  -jallard 2/22/01
   #+cmu
   (ext:gc)
-  #+sbcl
-  (sb-ext:gc :full t)
   nil)

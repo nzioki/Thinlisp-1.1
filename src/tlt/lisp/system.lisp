@@ -86,7 +86,7 @@
 		:name "boot"
 		:type lisp-file-type)))
 	(or (and (probe-file standard-boot-name)
-		 (load standard-boot-name :verbose nil)
+		 (load standard-boot-name)
 		 (get system-name :system))
 	    (let ((backup-standard-boot-name
 		   (make-pathname
@@ -94,7 +94,7 @@
 		     :name (format nil "~(~a~)-boot" system-name)
 		     :type lisp-file-type)))
 	      (or (and (probe-file backup-standard-boot-name)
-		       (load backup-standard-boot-name :verbose nil)
+		       (load backup-standard-boot-name)
 		       (get system-name :system))
 		  (error
 		    "No system ~a exists, or no file ~a exist, or if it did ~
@@ -262,41 +262,40 @@
 	   `((tl:setf (,defined-get ',name :alias) ',alias)))
        ',name)))
 
-(defun make-new-system (name nicknames library main-function used-systems
-			     lisp-dir c-dir extra-c-files extra-h-files
-			     modules alias properties)
+(defun make-new-system
+    (name nicknames library main-function used-systems lisp-dir c-dir
+	  extra-c-files extra-h-files modules alias properties)
   (make-system
-   :name name
-   :nicknames nicknames
-   :is-library-p library
-   :main-function main-function
-   :used-systems used-systems
-   :lisp-dir (merge-pathnames
-	      (if lisp-dir
+    :name name
+    :nicknames nicknames
+    :is-library-p library
+    :main-function main-function
+    :used-systems used-systems
+    :lisp-dir (if lisp-dir
 		  (pathname lisp-dir)
-		(make-pathname :directory
-			       (list :relative
-				     (string-downcase (symbol-name name))
-				     "lisp"))))
-   :c-dir (merge-pathnames
-	   (if c-dir
+		  (make-pathname
+		    :directory
+		    (list :relative
+			  (string-downcase (symbol-name name))
+			  "lisp")))
+    :c-dir (if c-dir
 	       (pathname c-dir)
-	     (make-pathname
-	      :directory
-	      (list :relative
-		    (string-downcase (symbol-name name))
-		    "c"))))
-   :extra-c-files extra-c-files
-   :extra-h-files extra-h-files
-   :modules (loop for mod in modules
-		  collect (if (consp mod)
-			      (cons-car mod)
-			    mod))
-   :module-properties-alist (loop for mod in modules
-				  when (consp mod)
-				  collect mod)
-   :alias alias
-   :properties properties))
+	       (make-pathname
+		 :directory
+		 (list :relative
+		       (string-downcase (symbol-name name))
+		       "c")))
+    :extra-c-files extra-c-files
+    :extra-h-files extra-h-files
+    :modules (loop for mod in modules
+		   collect (if (consp mod)
+			       (cons-car mod)
+			       mod))
+    :module-properties-alist (loop for mod in modules
+				   when (consp mod)
+				     collect mod)
+    :alias alias
+    :properties properties))
 
 
 
@@ -402,15 +401,15 @@
     "txt" nil (system-c-dir system)))
 
 (defun system-makefile (system &optional port-name)
-  (let ((autoconf-p (string= "autoconf" port-name)))
-    (make-system-file-pathname
-     (if port-name
-	 (intern
-	  (format nil "makefile~a~a"
-		  (if autoconf-p "." "-")
-		  (if autoconf-p "in" port-name)))
-       'makefile)
-     nil nil (system-c-dir system))))
+  (make-system-file-pathname
+   (if port-name 
+       (intern (format nil "makefile~a~a"
+		       (if (string= port-name "config")
+			   "."
+			 "-")
+		       port-name))
+     'makefile)
+   nil nil (system-c-dir system)))
 
 (defun system-temporary-makefile (system)
   (make-system-file-pathname
@@ -588,7 +587,7 @@
 ;;; a module in this system.  If :to is provided, load-system will stop after
 ;;; processing the named file.
 
-(defun tl:load-system (system &key (verbose t) (print nil) (to nil))
+(defun tl:load-system (system &key (verbose nil) (print t) (to nil))
   (let* ((system-name (if (symbolp system)
 			  (normalize-system-name system)
 			  (system-name system)))
@@ -668,7 +667,7 @@
 ;;;   not need to supply a value for :compile-used-systems.
 
 (defun tl:compile-system
-    (system &key (verbose t) (recompile nil) (from nil) (to nil)
+    (system &key (verbose nil) (recompile nil) (from nil) (to nil)
 	    (compile-used-systems t) (recompile-used-systems nil)
 	    (print nil))
   (let* ((system-name (if (symbolp system)
@@ -693,8 +692,7 @@
 	    (load-system-1
 	     used-system-name verbose print nil)))))))
 
-(defun compile-system-1
-    (system &key (verbose t) (print nil) (recompile nil) (from nil) (to nil))
+(defun compile-system-1 (system &key (verbose nil) (print nil) (recompile nil) (from nil) (to nil))
   (when (symbolp system)
     (setq system (tl:find-system system)))
   (pushnew (system-name system) current-systems)
@@ -734,9 +732,12 @@
 	for module-count from 1
 	for module in modules
 	do
-    (let* ((lisp-file (system-lisp-file system module))
+    (let* ((lisp-file
+	    (merge-pathnames (system-lisp-file system module)
+			     cl-user::*thinlisp-source-path*))
 	   (relative-binary-file
-	     (system-lisp-relative-binary-file system module))
+	     (merge-pathnames (system-lisp-relative-binary-file system module)
+			      cl-user::*thinlisp-source-path*))
 	   (binary-file (system-lisp-binary-file system module))
 	   (lisp-write-date (and (probe-file lisp-file)
 				 (file-write-date lisp-file)))
@@ -745,29 +746,29 @@
 	   (loaded-date? (loaded-system-lisp-binary-write-date system module))
 	   (*current-system-name* (system-name system))
 	   (*current-module-name* module))
-      (ensure-directories-exist binary-file :verbose nil)
+      (ensure-directories-exist binary-file :verbose t)
       (when (and lisp-write-date
 		 (or (null binary-write-date?)
 		     (<= binary-write-date? lisp-write-date)
-		     (and common-lisp-user::exports-file-write-date
+		     (and cl-user::exports-file-write-date
 			  (<= binary-write-date? 
-			      common-lisp-user::exports-file-write-date))))
+			      cl-user::exports-file-write-date))))
 	(when verbose
 	  (write-string
 	    (format nil "~%Compiling   ~40a    [~3d/~3d] ~a"
-		    (enough-namestring lisp-file) module-count total-modules
+		    lisp-file module-count total-modules
 		    (if development? " (development)" "")))
 	  (force-output))
 	(compile-file lisp-file
 		      :output-file relative-binary-file
-		      #-lucid :verbose #-lucid print
-		      #-lucid :print #-lucid print)
+		      :verbose print
+		      :print print)
 	(setq binary-write-date? (file-write-date binary-file)))
       (unless (eql loaded-date? binary-write-date?)
 	(when verbose
 	  (write-string
 	    (format nil "~%Loading     ~40a    [~3d/~3d] ~a"
-		    (enough-namestring binary-file) module-count total-modules
+		    binary-file module-count total-modules
 		    (if development? " (development)" "")))
 	  (force-output))
 	(load binary-file :verbose print :print print)
@@ -793,7 +794,7 @@
 ;;; to tl:load-system, tl:compile-system, and tl:translate-system and are here
 ;;; purely for convenience.
 
-(defmacro common-lisp-user::def-system-convenience-forms (&rest system-names)
+(defmacro cl-user::def-system-convenience-forms (&rest system-names)
   (cons
     'progn
     (loop for system in system-names
@@ -809,14 +810,14 @@
 	  `((make-convenince-names-visible '(,(symbol-name load-name)
 					     ,(symbol-name compile-name)
 					     ,(symbol-name translate-name)))
-	    (defmacro ,load-name (&key (verbose t) (print nil) (to nil))
+	    (defmacro ,load-name (&key (verbose nil) (print nil) (to nil))
 	      `(tl:load-system ',',system
 			       :verbose ,verbose :print ,print :to ,to))
 	    (defmacro ,cl-load-name (&key (verbose t) (print nil) (to nil))
 	      `(tl:load-system ',',system
 			       :verbose ,verbose :print ,print :to ,to))
 	    (defmacro ,compile-name
-		(&key (verbose t) (recompile nil) (from nil) (to nil)
+		(&key (verbose nil) (recompile nil) (from nil) (to nil)
 		      (compile-used-systems t) (recompile-used-systems nil)
 		      (print nil))
 	      `(tl:compile-system
@@ -826,7 +827,7 @@
 		 :recompile-used-systems ,recompile-used-systems
 		 :print ,print))
 	    (defmacro ,cl-compile-name
-		(&key (verbose t) (recompile nil) (from nil) (to nil)
+		(&key (verbose nil) (recompile nil) (from nil) (to nil)
 		      (compile-used-systems t) (recompile-used-systems nil)
 		      (print nil))
 	      `(tl:compile-system
@@ -836,7 +837,7 @@
 		 :recompile-used-systems ,recompile-used-systems
 		 :print ,print))
 	    (defmacro ,translate-name
-		(&key (verbose t)
+		(&key (verbose nil)
 		      (recompile nil) (from nil) (to nil)
 		      (compile-used-systems t)
 		      (recompile-used-systems nil)
@@ -852,7 +853,7 @@
 		 :retranslate ,retranslate :rebuild ,rebuild
 		 :print ,print))
 	    (defmacro ,cl-translate-name
-		(&key (verbose t)
+		(&key (verbose nil)
 		      (recompile nil) (from nil) (to nil)
 		      (compile-used-systems t)
 		      (recompile-used-systems nil)
@@ -874,6 +875,6 @@
     (export symbols *tl-package*)))
 
 (defmacro def-system-convenience-forms (&rest systems)
-  `(common-lisp-user::def-system-convenience-forms ,@systems))
+  `(cl-user::def-system-convenience-forms ,@systems))
 
 (def-system-convenience-forms tl)

@@ -80,13 +80,31 @@
 
 ;;; Load the translator's boot file.
 
-(load
- (merge-pathnames (make-pathname :directory '(:relative "tlt" "lisp") :name "boot")
-		  (or *load-pathname* *default-pathname-defaults*)))
+;;; put your tlt path here
+(defparameter *thinlisp-source-path*
+  #p"/home/viper/programming/thinlisp-release/src/")
 
-;; a less diverse world this would have read (load "tlt/lisp/boot"))
+;(defparameter *tlt-path-string*
+;  "/home/viper/programming/thinlisp-1.0.1/src/tlt/")
 
+(defparameter *tlt-source-path*
+  (merge-pathnames (make-pathname :directory '(:relative "tlt" "lisp"))
+		   *thinlisp-source-path*))
 
+(defparameter *tl-source-path*
+  (merge-pathnames (make-pathname :directory '(:relative "tl" "lisp"))
+		   *thinlisp-source-path*))
+
+;  (pathname (concatenate 'string *tlt-path-string* "lisp/")))
+
+(defparameter *tlt-bin-path*
+  (merge-pathnames (make-pathname :directory '(:relative "tlt" "dev"))
+		   *thinlisp-source-path*))
+
+;  (pathname (concatenate 'string *tlt-path-string* "dev/")))
+
+(load (merge-pathnames #p"boot.lisp" *tlt-source-path*))
+		  
 
 ;;; Compile (and load) the translator.
 

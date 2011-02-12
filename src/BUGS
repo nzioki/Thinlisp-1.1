@@ -1,0 +1,30 @@
+Thinlisp bugs I've (VS) found (in no particular order):
+
+- There are no nil blocks around defun and other forms that should
+have them.
+
+- 'block' seems to be broken (or maybe it's 'return'?)
+
+- The package-related function 'export' is broken
+
+- 'defstruct' inheritance seems to be there, but is actually horribly
+broken (not that it would be too useful without multimethods).
+
+- Lambda is not wrapped in an implicit (function)
+
+- Importing header files through 'defsystem' causes builds to fail (it
+also puts the includes in the wrong place, but I don't see why it
+should break there).
+
+- 'def-tl-foreign-function' and 'def-c' cause bogus header
+declarations.
+
+- There is currently no way to declare and pass a callback function in
+the lisp code (you have to put in the function name by hand in the C
+file).
+
+- Objects of type Obj are not unboxed/coerced before being passed to
+foreign functions.
+
+- Array typing is funny (for example, fill-pointers are only
+implemented for a few special array types).

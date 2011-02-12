@@ -42,12 +42,12 @@
      (tl:declaim (special ,name))
      (def-named-variable ,name :variable ,initial-value)))
 			  
-(defmacro tl:defparameter (name initial-value)
+(defmacro tl:defparameter (name initial-value &optional doc-string)
   `(tl:progn
      (tl:declaim (special ,name))
      (def-named-variable ,name :parameter ,initial-value)))
 
-(defmacro tl:defconstant (name initial-value)
+(defmacro tl:defconstant (name initial-value &optional doc-string)
   `(tl:progn
      (tl:declaim (constant ,name))
      (def-named-variable ,name :constant ,initial-value)))
@@ -67,9 +67,8 @@
 (defmacro tl:def-translatable-lisp-var
     (name &optional (initial-value no-initial-value))
   `(tl:progn
-    (with-common-lisp-unlocked ()
-     (tl:declaim (special ,name)))
-    (def-named-variable ,name :underlying-lisp-variable ,initial-value)))
+     (tl:declaim (special ,name))
+     (def-named-variable ,name :underlying-lisp-variable ,initial-value)))
 
 (defmacro def-translatable-lisp-constant
     (name initial-value)

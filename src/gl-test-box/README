@@ -1,0 +1,42 @@
+This is a small example mostly showing off the foreign function
+interface of Thinlisp. The program is adapted from the OpenGL "Red
+Book's" hello.c, but comes with fruity colors. It was written by
+Vladimir Sedach.
+
+Here is how to run it:
+
+First, load Thinlisp. There is a handy macro,
+'def-system-convenience-forms', that defines all the necessary
+translator helper functions for projects. It takes a symbol whose name
+is that of the project directory, so for this project you'd call
+"(def-system-convenience-forms gl-test-box)" in the package
+CL-USER. This defines a few new functions, the most interesting of
+which is 'translate-gl-test-box', which takes no arguments. This makes
+a bunch of directories and translates the program. Since as of the
+time of this writing, I haven't fixed quite a few things in ThinLisp
+(these should all be documented in the BUGS file), there's still some
+work to do to get things running. Go into the "c" directory, and type
+'make -f makefile-<your platform here>'.
+
+The build will fail. We to do several things to fix it. First, the
+'def-c' foreign function macro generates bogus header files if there
+is no corresponding lisp function (I have no idea how to fix that, and
+just making a dummy function doesn't work since it needs to return the
+proper type). The culprit here is the lisp/test-box.lisp file, so you
+will find the headers in c/test-box.h, ll. 28-43. Just delete or
+comment them out. After this, you may notice that the GLUT redisplay
+callback is wrong - this is because I haven't figured out how to pass
+C functions around in Lisp. Go to line 73 in test-box.c, where it says
+"glutDisplayFunc();", and stick "display" in as the argument.
+
+Now, the next thing to do is to include the GLUT header file (#include
+"GL/glut.h") in c/test-box.c (or .h) ('defsystem' includes an option
+to include include files, but unfortunately it is broken). The last
+thing to do is to modify the makefile for your platform to point to
+the OpenGL libraries. On my Linux system, I have to append "-L
+/usr/X11R6/lib -lGL -lGLU" to the SYSLIBS line.
+
+Now everything should build. Unfortunately, if you want to change the
+lisp code, you'll either have to figure out how to fix these bugs or
+perform the above changes by hand again.
+

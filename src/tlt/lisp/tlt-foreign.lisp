@@ -38,18 +38,20 @@
 ;;; libraries against the set of foreign functions that have been defined, but
 ;;; not yet bound to C functions within the Lisp environment.
 
-;;; The macro `def-tl-foreign-function' defines a Lisp function that can be
-;;; called in order to call a C function.  When expanding during translation
-;;; this macro has the side-effect of registering the given C name as the
-;;; identifier for the Lisp symbol.
+
 
 (defmacro tl:def-tl-foreign-function (lisp-name-and-key-forms
-				      &rest arg-names-and-types)
+				      arg-names-and-types)
+;;   "Defines a Lisp function that can be called to call a C
+;; function. Arg-list: ((lisp-name (:name c-function-name) (:language C)
+;; (:return-type c-return-type)) c-argument-type-list). When expanded
+;; during translation this macro has the side-effect of registering the
+;; given C name as the identifier for the Lisp symbol."
   (let* ((lisp-name (first lisp-name-and-key-forms))
 	 (key-forms (rest lisp-name-and-key-forms))
-	 (language-form (assq :language key-forms))
-	 (name-form (assq :name key-forms))
-	 (return-type-form (assq :return-type key-forms)))
+	 (language-form (assoc :language key-forms))
+	 (name-form (assoc :name key-forms))
+	 (return-type-form (assoc :return-type key-forms)))
     `(def-tl-foreign-function-required-args
 	 (,lisp-name
 	    (:language ,(if language-form
@@ -61,13 +63,11 @@
 	    (:return-type ,(if return-type-form
 			       (second return-type-form)
 			       nil)))
-	 ,@arg-names-and-types)))
+	 ,arg-names-and-types)))
 
-(defmacro def-tl-foreign-function-required-args ((lisp-name
-						   (&key (language :c))
-						   (&key name)
-						   (&key return-type))
-						 &rest arg-names-and-types)
+(defmacro def-tl-foreign-function-required-args
+  ((lisp-name (&key (language :c)) (&key name) (&key return-type))
+   arg-names-and-types)
   (unless (eq language :c)
     (error "TL can only translate foreign calls to :C, not ~s" language))
   (let ((expansion
@@ -75,20 +75,21 @@
 	     (tl:declaim (tl:ftype
 			   (tl:function
 			     ,(loop for (nil type) in arg-names-and-types
-				    collect (rewrite-foreign-keyword-type-names
-					      type))
-			     ,(rewrite-foreign-keyword-type-names return-type))
+				    collect (rewrite-foreign-keyword-type-name type))
+			     ,(rewrite-foreign-keyword-type-name return-type))
 			   ,lisp-name))
-	     (tl:declaim (foreign-c-identifier ,lisp-name ,name)))))
+	     (tl:declaim (foreign-c-identifier ,lisp-name ,name))
+	     )))
 ;    (format t "~%~%Made ~s~%" expansion)
     expansion))
 
-(defparameter keyword-to-lisp-type-alist
+(defparameter *keyword-to-lisp-type-alist*
   '((:fixnum                 . (c-type "long"))
     (:fixnum-long            . (c-type "long"))
     (:fixnum-int             . (c-type "long"))
     (:long                   . (c-type "long"))
     (:signed-32bit           . fixnum)
+    (:sint32                 . fixnum)
     (:unsigned-32bit-pointer . (c-type (pointer "uint32")))
     (:char-pointer           . (c-type (pointer "char")))
     (:string                 . (c-type (pointer "char")))
@@ -100,108 +101,12 @@
     (:object                 . t)
     (:void                   . void)))
 
-(defun rewrite-foreign-keyword-type-names (type)
+(defun rewrite-foreign-keyword-type-name (type)
   (or (and (keywordp type)
-	   (cdr (assq type keyword-to-lisp-type-alist)))
+	   (cdr (assoc type *keyword-to-lisp-type-alist*)))
       type))
 
-
-
-
-;;; The variable `underlying-def-foreign-callable' holds the symbol naming this
-;;; port's implementation of def-foreign-callable.  If this variable
-;;; returnscontains NIL, then no attempt will be made to enable this feature in
-;;; Lisp development.
-
-(defvar underlying-def-foreign-callable
-  #+lucid
-  'lcl:def-foreign-callable
-  #+(and cmu verify)
-  'alien:def-alien-routine
-  #-(or lucid (and cmu verify))
-  nil)
-
-(defun underlying-lisp-callable-type (type)
-  #+lucid
-  (or (cdr (assq type '((:fixnum-long            . :fixnum)
-			(:fixnum-int             . :fixnum)
-			(:object                 . :pointer)
-			(:string                 . :simple-string)
-			(:unsigned-32bit-pointer . (:pointer :unsigned-32bit))
-			(:char-pointer           . (:pointer :char))
-			)))
-      type)
-  #+(and cmu verify)
-  (or (cdr (assq type '((:fixnum-long            . '(alien (signed 64)))
-			(:fixnum-int             . '(alian (signed 32)))
-			(:object                 . '(alian '(* void)))
-			(:string                 . '(alien '(* (unsigned 16))))
-			(:unisgned-32bit-pointer . '(alien '(* (unsigned 32))))
-			(:char-pointer           . '(alien '(* char))))))
-      type)
-  #-lucid
-  type)
-
-
-
-
-;;; The macro `tli::def-foreign-callable' is written to be compatible with the
-;;; Lucid and Chestnut implementations.  It defines the function in question,
-;;; using the same type transforms as are used for foreign-functions.  Note that
-;;; this is NOT being made into an exported symbol of TL until the Lisp code has
-;;; been rewritten to be able to handle it.
-
-(defmacro tli::def-foreign-callable
-    ((lisp-name &rest key-value-pairs)
-     args
-     &body decls-and-forms)
-  (let* ((return-type
-	   (or (second (assq :return-type key-value-pairs))
-	       (error ":return-type unspecified in def-foreign-callable")))
-	 (name (second (assq :name key-value-pairs)))
-	 (transformed-return-type
-	   (rewrite-foreign-keyword-type-names return-type))
-	 (transformed-args
-	   (loop for (arg-name arg-type) in args
-		 collect (list arg-name
-			       (rewrite-foreign-keyword-type-names arg-type))))
-	 (translating? (eval-feature :translator))
-	 (lisp-implementation? underlying-def-foreign-callable))
-    `(tl:progn
-       ,@(unless translating?
-	   `((tl:declaim
-	       (tl:ftype
-		 (tl:function ,(loop for arg-spec in transformed-args
-				     collect (second arg-spec))
-			      ,transformed-return-type)
-		 ,lisp-name))))
-       ,@(unless (or translating? (null name))
-	   `((tl:declaim
-	       (function-c-identifier ,lisp-name ,name))))
-       ,(cond
-	   ((and (not translating?) lisp-implementation?)
-	    `(,lisp-implementation?
-		(,lisp-name
-		   (:return-type ,(underlying-lisp-callable-type return-type))
-		   ,@(if name `((:name ,name))))
-		,(loop for (arg-name arg-type) in args
-		       collect `(,arg-name ,(underlying-lisp-callable-type arg-type)))
-		,@decls-and-forms))
-	   (t
-	    `(tl:defun ,lisp-name ,(loop for (arg-name) in args collect arg-name)
-	       (tl:declare
-		 (tl:return-type ,transformed-return-type)
-		 ,@(loop for (arg-name arg-type) in transformed-args
-			 collect `(tl:type ,arg-type ,arg-name)))
-	       ,@decls-and-forms))))))
-
-
-
-
-
-
 ;;;; Inlineable Pseudo Functions
-
 
 (def-tl-macro tl:def-inlined-pseudo-function-with-side-effects
     (lisp-name args &body lisp-body)
@@ -209,16 +114,16 @@
     (let* ((specs? (and (consp lisp-name) lisp-name))
 	   (given-return-type (if specs? (second specs?) :object))
 	   (lisp-return-type
-	     (rewrite-foreign-keyword-type-names given-return-type))
+	     (rewrite-foreign-keyword-type-name given-return-type))
 	   (lisp-name (if specs? (car specs?) lisp-name))
 	   (c-name
 	     (or (and specs? (third specs?))
-		 (string-downcase (substitute #\_ #\- (symbol-name lisp-name)))))
+		 (string-downcase (substitute #\_ #\- (symbol-name lisp-name))))) ;; !!! possible name clash
 	   (given-arg-types
 	     (loop for arg in args collect (if (atom arg) :object (second arg))))
 	   (lisp-arg-types
 	     (loop for type in given-arg-types
-		   collect (rewrite-foreign-keyword-type-names type)))
+		   collect (rewrite-foreign-keyword-type-name type)))
 	   (arg-names
 	     (loop for arg in args collect (if (atom arg) arg (car arg))))
 	   )
@@ -252,4 +157,120 @@
 ;;; the following form.
 ;;;   (def-c ceil double "ceil" double)
 ;;;
+
+(defmacro tl:def-c (lisp-name return-type c-name &rest argtypes)
+  `(tl:def-tl-foreign-function
+    (,lisp-name (:name ,c-name) (:language :C) (:return-type ,return-type))
+    ,(loop for type in argtypes
+	   collect `(ignore-me ,type))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; C callback support
+
+(defmacro tl:def-c-callback (lisp-name c-name return-type typed-arg-list &body body)
+  "Defines a function, callable from C (which implies that it should
+follow the C calling convention) with the specified argument list and
+return type."
+  (let (;(c-name (symbol-name function-name))
+	(return-type (rewrite-foreign-keyword-type-name return-type))
+	(arg-names (mapcar #'first typed-arg-list)) 
+	(arg-types (mapcar (lambda (x) (rewrite-foreign-keyword-type-name (second x)))
+			   typed-arg-list)))
+    `(tl:progn (tl:declaim (tl:ftype (tl:function ,arg-types ,return-type) ,lisp-name)
+			   (foreign-c-identifier ,lisp-name ,c-name))
+	       (tl:defun ,lisp-name ,arg-names
+			 ,@body))))       
+
+
+
+
+
+;;; Code not currently used
+
+;;; The variable `underlying-def-foreign-callable' holds the symbol naming this
+;;; port's implementation of def-foreign-callable.  If this variable
+;;; returnscontains NIL, then no attempt will be made to enable this feature in
+;;; Lisp development.
+
+;; (defvar underlying-def-foreign-callable
+;;   #+lucid
+;;   'lcl:def-foreign-callable
+;;   #+(and cmu verify)
+;;   'alien:def-alien-routine
+;;   #-(or lucid (and cmu verify))
+;;   nil)
+
+;; (defun underlying-lisp-callable-type (type)
+;;   #+lucid
+;;   (or (cdr (assq type '((:fixnum-long            . :fixnum)
+;; 			(:fixnum-int             . :fixnum)
+;; 			(:object                 . :pointer)
+;; 			(:string                 . :simple-string)
+;; 			(:unsigned-32bit-pointer . (:pointer :unsigned-32bit))
+;; 			(:char-pointer           . (:pointer :char))
+;; 			)))
+;;       type)
+;;   #+(and cmu verify)
+;;   (or (cdr (assq type '((:fixnum-long            . '(alien (signed 64)))
+;; 			(:fixnum-int             . '(alian (signed 32)))
+;; 			(:object                 . '(alian '(* void)))
+;; 			(:string                 . '(alien '(* (unsigned 16))))
+;; 			(:unisgned-32bit-pointer . '(alien '(* (unsigned 32))))
+;; 			(:char-pointer           . '(alien '(* char))))))
+;;       type)
+;;   #-lucid
+;;   type)
+
+
+
+
+;; ;;; The macro `tli::def-foreign-callable' is written to be compatible with the
+;; ;;; Lucid and Chestnut implementations.  It defines the function in question,
+;; ;;; using the same type transforms as are used for foreign-functions.  Note that
+;; ;;; this is NOT being made into an exported symbol of TL until the Lisp code has
+;; ;;; been rewritten to be able to handle it.
+
+;; (defmacro tli::def-foreign-callable
+;;     ((lisp-name &rest key-value-pairs)
+;;      args
+;;      &body decls-and-forms)
+;;   (let* ((return-type
+;; 	   (or (second (assq :return-type key-value-pairs))
+;; 	       (error ":return-type unspecified in def-foreign-callable")))
+;; 	 (name (second (assq :name key-value-pairs)))
+;; 	 (transformed-return-type
+;; 	   (rewrite-foreign-keyword-type-name return-type))
+;; 	 (transformed-args
+;; 	   (loop for (arg-name arg-type) in args
+;; 		 collect (list arg-name
+;; 			       (rewrite-foreign-keyword-type-name arg-type))))
+;; 	 (translating? (eval-feature :translator))
+;; 	 (lisp-implementation? underlying-def-foreign-callable))
+;;     `(tl:progn
+;;        ,@(unless translating?
+;; 	   `((tl:declaim
+;; 	       (tl:ftype
+;; 		 (tl:function ,(loop for arg-spec in transformed-args
+;; 				     collect (second arg-spec))
+;; 			      ,transformed-return-type)
+;; 		 ,lisp-name))))
+;;        ,@(unless (or translating? (null name))
+;; 	   `((tl:declaim
+;; 	       (function-c-identifier ,lisp-name ,name))))
+;;        ,(cond
+;; 	   ((and (not translating?) lisp-implementation?)
+;; 	    `(,lisp-implementation?
+;; 		(,lisp-name
+;; 		   (:return-type ,(underlying-lisp-callable-type return-type))
+;; 		   ,@(if name `((:name ,name))))
+;; 		,(loop for (arg-name arg-type) in args
+;; 		       collect `(,arg-name ,(underlying-lisp-callable-type arg-type)))
+;; 		,@decls-and-forms))
+;; 	   (t
+;; 	    `(tl:defun ,lisp-name ,(loop for (arg-name) in args collect arg-name)
+;; 	       (tl:declare
+;; 		 (tl:return-type ,transformed-return-type)
+;; 		 ,@(loop for (arg-name arg-type) in transformed-args
+;; 			 collect `(tl:type ,arg-type ,arg-name)))
+;; 	       ,@decls-and-forms))))))
 

@@ -32,29 +32,33 @@
 (defun unix-style-namestring (pathname)
   (substitute #\/ #\\ (namestring pathname)))
 
-;; Where does this function belong?
+(defun make-pretty-date-string (time)
+  (multiple-value-bind (second minute hour date month year)
+     (decode-universal-time time)
+   (format nil "~D/~D/~D ~D:~D:~D" date month year hour minute second)))
+		       
 
+;; Where does this function belong?
 (defun generate-default-c-copyright-prolog (stream file-kind system-name module-name c-namestring lisp-namestring)
   (declare (type (member :lisp-file :c-file) file-kind))
   (declare (ignore system-name module-name))
   (let ((unix-c-namestring (unix-style-namestring c-namestring))
 	(unix-lisp-namestring (unix-style-namestring lisp-namestring))
-	(organization "The Thinlisp Group")  ;; Ought to be in the system data.
-	 (current-year
-	   (sixth (multiple-value-list
-		      (decode-universal-time (get-universal-time))))))
+	(current-time (make-pretty-date-string (get-universal-time))))
   (case file-kind
     (:lisp-file
        (format stream
 	  ";;;; Module ~a
 
-;;; Copyright (c) ~a ~a All Rights Reserved.
+;;; Translated on ~a
+
+;;; ~A
 
 ;;; Translation data for ~a.
 "
 	  unix-c-namestring
-	  current-year
-	  organization
+	  current-time
+	  tl-user::*TL-CURRENT-PROJECT-COPYRIGHT-STRING*
 	  unix-lisp-namestring))
     (:c-file
      (format stream
@@ -62,16 +66,21 @@
  *
  * Module:      ~a
  *
- * Copyright (c) ~a ~a All Rights Reserved.
+ * Translated on ~a GMT
+ * 
+ * ~A
  *
  * Description: Translation of ~a.
  *    by ThinLisp http://www.thinlisp.org
  *
+ * ThinLisp is Copyright (c) 1999-2000 The ThinLisp Group.  All rights reserved.
+ *             Copyright (c) 1997-1998 Gensym Corporation.  All rights reserved.
+ *
  */~%~%"
 	     
 	     unix-c-namestring
-	     current-year
-	     organization
+	     current-time
+	     tl-user::*TL-CURRENT-PROJECT-COPYRIGHT-STRING*
 	     unix-lisp-namestring)))))
 
 (defun emit-copyright (stream file-kind system module-name c-namestring lisp-namestring)
@@ -381,7 +390,7 @@
       (when (not (string= c-name current-c-name))
 	(retranslate-warning
 	  verbose module
-	  "A C function name has changed:~%    ~a (aka ~a) changed to ~a."
+	  "A C function name has changed:~%    ~a changed to ~a."
 	  function-name c-name current-c-name)
 	(return-from trans-data-indicates-retranslate-p t))
       (when (not (equal ftype current-ftype))
@@ -405,7 +414,7 @@
       (when (not (string= c-name current-c-name))
 	(retranslate-warning
 	  verbose module
-	  "A C variable name has changed:~%    ~a (aka ~a) changed to ~a."
+	  "A C variable name has changed:~%    ~a changed to ~a."
 	  variable-name c-name current-c-name)
 	(return-from trans-data-indicates-retranslate-p t))
       (when (not (equal c-type current-c-type))
@@ -429,13 +438,13 @@
       (when (not (string= c-name current-c-name))
 	(retranslate-warning
 	  verbose module
-	  "A C typedef name for a Lisp structure or class has changed:~%    ~a (aka ~a) changed to ~a"
+	  "A C typedef name for a Lisp structure or class has changed:~%    ~a changed to ~a"
 	  class-name c-name current-c-name)
 	(return-from trans-data-indicates-retranslate-p t))
       (when (not (c-types-equal-p c-struct-type current-c-struct-type))
 	(retranslate-warning
 	 verbose module
-	 "A C struct type for a Lisp structure or class has changed:~%    ~a (aka ~a) changed to ~a"
+	 "A C struct type for a Lisp structure or class has changed:~%    ~a changed to ~a"
 	 class-name c-struct-type current-c-struct-type)
 	(return-from trans-data-indicates-retranslate-p t)))
 

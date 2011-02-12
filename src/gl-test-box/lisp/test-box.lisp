@@ -1,0 +1,62 @@
+(in-package "GL-TEST-BOX")
+
+(declaim (type fixnum PROJECTION COLOR_BUFFER_BIT POLYGON))
+
+;; These constants taken from Mesa gl.h
+(defconstant PROJECTION #x1701)
+(defconstant COLOR_BUFFER_BIT #x00004000)
+(defconstant POLYGON #x0009)
+
+(def-c Vertex3d :void "glVertex3d" :double-float :double-float :double-float)
+(def-c Color3i :void "glColor3i" :fixnum :fixnum :fixnum)
+(def-c Color3d :void "glColor3d" :double-float :double-float :double-float)
+(def-c Clear :void "glClear" :fixnum)
+(def-c Begin :void "glBegin" :fixnum)
+(def-c End :void "glEnd")
+(def-c Flush :void "glFlush")
+(def-c ClearColor :void "glClearColor" :double-float :double-float :double-float :double-float)
+(def-c MatrixMode :void "glMatrixMode" :fixnum)
+(def-c LoadIdentity :void "glLoadIdentity")
+(def-c Ortho :void "glOrtho" :double-float :double-float :double-float :double-float :double-float :double-float)
+
+;; These constants are from Mark J. Kilgard's glut.h
+(declaim (type fixnum SINGLE RGB))
+(defconstant SINGLE 0)
+(defconstant RGB 0)
+
+(def-c InitDisplayMode :void "glutInitDisplayMode" :fixnum)
+(def-c InitWindowSize :void "glutInitWindowSize" :fixnum :fixnum)
+(def-c InitWindowPosition :void "glutInitWindowPosition" :fixnum :fixnum)
+(def-c CreateWindow (c-type "int") "glutCreateWindow" :string)
+(def-c DisplayFunc :void "glutDisplayFunc")
+(def-c MainLoop :void "glutMainLoop")
+
+(defun init-display ()
+  (ClearColor 0.0 0.0 0.0 0.0)
+  (MatrixMode PROJECTION)
+  (LoadIdentity)
+  (Ortho 0.0 1.0 0.0 1.0 -1.0 1.0))
+
+(def-c-callback display "display" :void ()
+    (Clear COLOR_BUFFER_BIT)
+    (Begin POLYGON)
+    (Vertex3d 0.25 0.25 0.0)
+    (Color3d 1.0 1.0 0.0)
+    (vertex3d 0.75 0.25 0.0)
+    (Color3d 1.0 1.0 1.0)
+    (vertex3d 0.75 0.75 0.0)
+    (color3d 1.0 0.0 0.0)
+    (vertex3d 0.25 0.75 0.0)
+    (End)
+    (Flush))
+
+(defun main (args)
+  (declare (ignore args))
+  (InitDisplayMode (logior SINGLE RGB))
+  (InitWindowSize 250 250)
+  (InitWindowPosition 100 100)
+  (CreateWindow "hello")
+  (init-display)
+  (DisplayFunc);  display
+  (MainLoop)
+  0)

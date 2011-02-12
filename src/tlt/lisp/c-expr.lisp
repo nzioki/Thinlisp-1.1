@@ -993,7 +993,7 @@
 ;;; above can be created using the macro `make-c-infix-expr'.  It takes a left
 ;;; arg, an infix operator string, and a right arg.
 
-(define-equal-constant c-expr-infix-operator-types
+(defconstant c-expr-infix-operator-types
   ;; Op strings          C-expr type        Requires op string arg?
   '((("*" "/" "%")       c-mult-expr        t)
     (("+" "-")           c-add-expr         t)

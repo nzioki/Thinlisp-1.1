@@ -165,6 +165,8 @@
 
      ;; Foreign functions
      "DEF-TL-FOREIGN-FUNCTION"
+     "DEF-C"
+     "DEF-C-CALLBACK"
 
      ;; The following symbols are TL extensions to the declarations in Common
      ;; Lisp.
@@ -257,6 +259,13 @@
      "CERROR"
      "WARN"
      "FORMAT"
+     "CHAR-NOT-EQUAL"
+     "CHAR-LESSP"
+     "CHAR-GREATERP"
+     "CHAR-NOT-LESSP"
+     "CHAR-NOT-GREATERP"
+     "STRING-EQUAL"
+     "STRING-LESSP"
      "STRING-UPCASE"
      "STRING-DOWNCASE"
      "NSTRING-UPCASE"
@@ -435,7 +444,10 @@
      "LIST-ALL-PACKAGES"
      "MAKE-PACKAGE"
      "USE-PACKAGE"
-
+     "IMPORT"
+     "EXPORT"
+     "KEYWORDP"
+     
      ;; Managed-floats
 
      ;; Managed-floats are being turned off for now.  The problem I've not
@@ -461,6 +473,7 @@
      "MAKE-STRING"
      "UPGRADED-ARRAY-ELEMENT-TYPE"
      "ARRAY-ELEMENT-TYPE"
+     "ARRAY-IN-BOUNDS-P"
 
      ;; Strings
      "SCHAR"
@@ -498,6 +511,7 @@
      "SEARCH-STRING"
 
      ;; Conses
+
      "MAPCAR"
      "MAKE-LIST"
      "LIST*"
@@ -510,13 +524,13 @@
      "NREVERSE"
      "PAIRLIS"
      "ASSOC"
-     "ASSQ"
+     "ASSQ" ;; remove
      "MEMBER"
-     "MEMQ"
+     "MEMQ" ;; remove
      "DELETE"
-     "DELQ"
+     "DELQ" ;; remove
      "NCONC"
-     "NRECONC"
+     "NRECONC" ;; what is this
      "APPPEND"
      "CAR"
      "CAR-OF-CONS"
@@ -749,7 +763,8 @@
      "FIND-DEAD-FORWARD-REFERENCES"
      "VARIABLE"
 
-     ;; Sequence predicates
+     ;; Sequence operations
+ ;;    "REDUCE"
      "SOME"
      "EVERY"
      "NOTANY"
@@ -1025,7 +1040,7 @@
      "STRING-GREATERP"
      "FILE-WRITE-DATE"
      "DIRECTORY"
-     "MAKE-BROADCAST-STREAMS"
+     "MAKE-BROADCAST-STREAM"
      "WITHIN-MANAGED-OBJECT-SCOPE"
      
      ;; ThinLisp-specific numeric operations.
@@ -1080,7 +1095,8 @@
      "NEXT-METHOD-P"
      ))
 
-
+;;; The above list contains some symbols that may need to be shadowed
+(shadow (exported-tl-print-names) "TL")
 
 
 ;;; The following call actually interns the print names into TL and then exports

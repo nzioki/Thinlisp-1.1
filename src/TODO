@@ -1,0 +1,18 @@
+Missing ANSI CL features and other stuff that needs doing:
+
+- If it's in the spec but not in tlt/lisp/exports.lisp, then it's not
+implemented.
+
+- CLOS is missing (multimethods sorely needed).
+
+- format should take more clauses
+
+- A way should be provided through 'defsystem' to add options to the
+auto-generated makefiles.
+
+- Arrays need a lot of work. Currently there are no displaced,
+adjustable or multidimensional arrays. Also, fill-pointers only work
+for certain array types.
+
+- It would probably be a good idea to provide the Boehm-Demers-Weiser
+conservative garbage collector as an option.

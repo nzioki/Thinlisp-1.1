@@ -93,6 +93,10 @@
     (error "Arrays in TL are all vectors, so the axis must be 0."))
   `(array-dimension-1 ,vector))
 
+(def-tl-macro tl:ARRAY-IN-BOUNDS-P (vector index)
+  `(and (not (minusp ,index))
+	(< ,index (tl:array-dimension ,vector 0))))
+
 (def-tl-macro tl:array-total-size (vector)
   `(array-dimension-1 ,vector))
 
@@ -2118,12 +2122,6 @@
 
 ;;;; Packages
 
-
-
-
-
-
-
 ;;; The macro `tl:make-package' takes a name and a :use keyword argument, and
 ;;; returns a new package with that name.  If a package with that name already
 ;;; exists, this function signals an error.
@@ -2131,22 +2129,12 @@
 (def-tl-macro tl:make-package (name &key (use ''("TL")))
   (if (eval-feature :translator)
       `(tl::make-package-1 ,name ,use)
-      `(common-lisp:make-package ,name :use ,use)))
+      `(cl:make-package ,name :use ,use)))
 
 (def-tl-macro tl:find-package (string-or-symbol-or-package)
   (if (eval-feature :translator)
       `(tl::find-package-1 ,string-or-symbol-or-package)
-      ;; Note that the Lucid implementation of find-package has an error, in
-      ;; that it signals an error when given a package object instead of just
-      ;; returning it.  This macroexpansion will work around that bug.
-      ;; -jallard, 5/1/97
-    `(find-package-safely ,string-or-symbol-or-package)))
-
-(defun find-package-safely (arg)
-  (if (typep arg 'package)
-      arg
-    (common-lisp:find-package arg)))
-
+    `(common-lisp:find-package ,string-or-symbol-or-package)))
 
 (def-c-translation make-new-package (name use-list)
   ((lisp-specs :ftype ((string t) package))

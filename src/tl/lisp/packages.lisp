@@ -440,7 +440,7 @@
 	  (package (find-package-or-error package-arg)))
       (loop for symbol in symbol-list
 	    for symbol-name = (symbol-name symbol)
-	    for symbol-hash fixnum = (tli::symbol-name-hash symbol)
+	    for symbol-hash = (tli::symbol-name-hash symbol)
 	    do
 	(multiple-value-bind (found-symbol found?)
 	    (find-symbol-in-package symbol-name symbol-hash package)
