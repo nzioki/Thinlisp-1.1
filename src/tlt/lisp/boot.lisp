@@ -109,11 +109,13 @@
 (defpackage "TL"
   (:documentation "ThinLisp package; contains the language implemented by the ThinLisp translator.")
   (:use "COMMON-LISP")
-  (:export "FUNCTION"))
+  (:export #:function
+           #:define-declaration))
 
 (defpackage "TLI"
   (:use "COMMON-LISP")
-  (:documentation "The TLI (ThinLisp Internals) package is used to implement the translator."))
+  (:documentation "The TLI (ThinLisp Internals) package is used to implement the translator.")
+  (:import-from "TL" #:define-declaration))
 
 (defpackage "TLT"
   (:use "COMMON-LISP")

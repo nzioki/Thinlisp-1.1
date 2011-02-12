@@ -2,10 +2,15 @@
  *
  * Module:      tl/c/tl-extension.h
  *
- * Copyright (c) 2001 The Thinlisp Group All Rights Reserved.
+ * Translated on 12/2/2011 15:5:56 GMT
+ * 
+ * Copyright (c) 1999-2000 The ThinLisp Group.  All rights reserved.
  *
  * Description: Translation of tl/lisp/tl-extension.lisp.
  *    by ThinLisp http://www.thinlisp.org
+ *
+ * ThinLisp is Copyright (c) 1999-2000 The ThinLisp Group.  All rights reserved.
+ *             Copyright (c) 1997-1998 Gensym Corporation.  All rights reserved.
  *
  */
 

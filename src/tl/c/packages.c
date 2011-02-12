@@ -2,10 +2,15 @@
  *
  * Module:      tl/c/packages.c
  *
- * Copyright (c) 2001 The Thinlisp Group All Rights Reserved.
+ * Translated on 12/2/2011 15:5:55 GMT
+ * 
+ * Copyright (c) 1999-2000 The ThinLisp Group.  All rights reserved.
  *
  * Description: Translation of tl/lisp/packages.lisp.
  *    by ThinLisp http://www.thinlisp.org
+ *
+ * ThinLisp is Copyright (c) 1999-2000 The ThinLisp Group.  All rights reserved.
+ *             Copyright (c) 1997-1998 Gensym Corporation.  All rights reserved.
  *
  */
 
@@ -462,9 +467,8 @@ Obj export (Obj symbol_or_symbol_list, Obj package_arg)
   Thread_state *ts;
   Obj temp_1, symbol_list;
   Obj temp_list[2];
-  Obj package, symbol, tl_loop_list_, symbol_name;
-  sint32 symbol_hash;
-  Obj found_symbol, foundP, import_symbol;
+  Obj package, symbol, tl_loop_list_, symbol_name, symbol_hash, found_symbol, 
+        foundP, import_symbol;
 
   ts = THREAD_STATE;
   temp = BOXFIX(0);
@@ -481,14 +485,14 @@ Obj export (Obj symbol_or_symbol_list, Obj package_arg)
   symbol = (Obj)NULL;
   tl_loop_list_ = symbol_list;
   symbol_name = (Obj)NULL;
-  symbol_hash = 0;
+  symbol_hash = (Obj)NULL;
   while (tl_loop_list_!=NULL) {
     symbol = CAR(tl_loop_list_);
     tl_loop_list_ = CDR(tl_loop_list_);
     symbol_name = ((symbol!=NULL) ? ((Sym *)symbol)->symbol_name : (Obj)(
         &str_const_2));                         /* "NIL" */
-    symbol_hash = (sint32)(((Sym *)symbol)->name_hash);
-    found_symbol = find_symbol_in_package(((Str *)symbol_name)->body,symbol_hash,
+    symbol_hash = BOXFIX((sint32)(((Sym *)symbol)->name_hash));
+    found_symbol = find_symbol_in_package(((Str *)symbol_name)->body,UNBOXFIX(symbol_hash),
         package);
     foundP = ((Values_count>1) ? (Values_buffer[0]) : (Obj)NULL);
     if (!((foundP!=NULL) && (found_symbol==symbol))) 
@@ -499,7 +503,7 @@ Obj export (Obj symbol_or_symbol_list, Obj package_arg)
         ((Sym *)symbol)->external = 1;
       else if (foundP==(Obj)(tl_packages_symbols+0)) {  /* INHERITED */
         import_symbol = alloc_symbol(1,11);
-        init_symbol(import_symbol,symbol_name,symbol_hash);
+        init_symbol(import_symbol,symbol_name,UNBOXFIX(symbol_hash));
         ((Sym *)import_symbol)->imported = 1;
         ((Sym *)import_symbol)->symbol_value = symbol;
         insert_symbol_into_package(import_symbol,package);

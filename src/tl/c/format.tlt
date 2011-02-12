@@ -1,6 +1,8 @@
 ;;;; Module tl/c/format.c
 
-;;; Copyright (c) 2002 The Thinlisp Group All Rights Reserved.
+;;; Translated on 12/2/2011 15:5:54
+
+;;; Copyright (c) 1999-2000 The ThinLisp Group.  All rights reserved.
 
 ;;; Translation data for tl/lisp/format.lisp.
 ;;; The following is the value of the trans-data-tlt-version parameter.

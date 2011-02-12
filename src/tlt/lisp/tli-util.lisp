@@ -907,28 +907,7 @@
 (defun tl:split-declarations-and-body (decl-and-body)
   (split-declarations-and-body decl-and-body))
 
-
-
-
-;;;; Declaiming
-
-
-
-
-;;; The Lucid we are currently using does not support declaim, so we have a
-;;; macro that abstracts this with TLT.  Note that TL supports declaim, and so
-;;; only the TLT implementation need worry about this fixup.
-
-;;; !!! This is not longer an issue, all code using this should be fixed. --VS
-
-(defmacro lisp-declaim (&rest decls)
-  `(declaim ,@decls))
-
-
 ;;;; Special Forms
-
-
-
 
 ;;; The special-form-p function has been removed from ANSI Common Lisp.
 ;;; Define it for those Lisp systems that haven't given us a replacement.

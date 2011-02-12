@@ -1,7 +1,7 @@
 #
 # LECHO Cygnus Makefile
 #
-# Copyright (c) 2002 The ThinLisp Group
+# Copyright (c) 2011 The ThinLisp Group
 
 CC = gcc -o
 

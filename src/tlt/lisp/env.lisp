@@ -333,15 +333,8 @@
 
 (defmacro tl:declaim (&rest decl-specs)
   (unless (memq :translator *features*)
-    `(progn
-       ,@(loop for decl in decl-specs
-	       when (memqp (car decl) '(special declaration))
-		 collect `(lisp-declaim ,decl))
-       (tl:eval-when (:compile-toplevel :load-toplevel :execute)
-	 (proclaim-decl-list ',decl-specs)))))
-
-
-
+    `(tl:eval-when (:compile-toplevel :load-toplevel :execute)
+       (proclaim-decl-list ',decl-specs))))
 
 ;;; The macro definition for `tl:eval-when' normally would be in SPECIAL, but
 ;;; has been moved forward here to support its use by declaim.
@@ -350,11 +343,6 @@
   (let ((lisp-situations
 	  (loop for situation in situations
 		collect (or (cdr (assq situation 
-				       #+lucid
-				       '((tl:compile . compile)
-					 (tl:load    . load)
-					 (tl:eval    . eval))
-				       #-lucid
 				       '((tl:compile . :compile-toplevel)
 					 (tl:load    . :load-toplevel)
 					 (tl:eval    . :execute)
@@ -363,9 +351,6 @@
 					 (eval       . :execute))))
 			    situation))))
     `(eval-when ,lisp-situations ,@forms)))
-
-
-
 
 ;;; The macro `tl:define-declaration' is used to extend the set of declarations
 ;;; handled by the environment management code.  See CLtL 2, Sec. 8.5, p. 213
@@ -383,15 +368,6 @@
 	 (setf (get ',decl-name :declaration-definition) #',function-name)
 	 (tl:declaim (declaration ,decl-name))
 	 ',decl-name))))
-
-(defmacro define-declaration (decl-name lambda-list &body forms)
-  `(tl:define-declaration ,decl-name ,lambda-list ,@forms))
-
-
-
-
-
-
 
 ;;; The `declaration declaration' introduces new declarations needed by an
 ;;; application.  The `variable-declaration' declaration specifies that a
@@ -678,3 +654,7 @@
 	   (error
 	     "Decl-space should have been one of :variable or :function, was ~s"
 	     decls-space)))))
+
+;;; other declarations
+
+(declaim (declaration return-type consing-area))

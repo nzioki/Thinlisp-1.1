@@ -1,6 +1,8 @@
 ;;;; Module tl/c/packages.c
 
-;;; Copyright (c) 2001 The Thinlisp Group All Rights Reserved.
+;;; Translated on 12/2/2011 15:5:56
+
+;;; Copyright (c) 1999-2000 The ThinLisp Group.  All rights reserved.
 
 ;;; Translation data for tl/lisp/packages.lisp.
 ;;; The following is the value of the trans-data-tlt-version parameter.
@@ -31,12 +33,12 @@
     (TL::STRING-UPCASE-FUNCTION "string_upcase_function" FUNCTION (STRING FIXNUM T) STRING)
     (TL::WRITE-STRING-FUNCTION "write_string_function" FUNCTION (STRING T FIXNUM T) STRING))
   ;; Defined functions.
-  '((TL::EXPORT . "export")
+  '((TL:EXPORT . "export")
     (TL::FIND-PACKAGE-1 . "find_package_1")
     (TL::FIND-PACKAGE-OR-ERROR-1 . "find_package_or_error_1")
     (TL::FIND-SYMBOL-IN-PACKAGE . "find_symbol_in_package")
     (TL::FIND-SYMBOL-IN-SINGLE-PACKAGE . "find_symbol_in_single_package")
-    (TL::IMPORT . "import")
+    (TL:IMPORT . "import")
     (INIT-SYMBOL . "init_symbol")
     (INIT-SYMBOL-INTO-PACKAGE . "init_symbol_into_package")
     (TL::INSERT-SYMBOL-INTO-PACKAGE . "insert_symbol_into_package")

@@ -1,6 +1,8 @@
 ;;;; Module tl/c/tl-basics.c
 
-;;; Copyright (c) 2001 The Thinlisp Group All Rights Reserved.
+;;; Translated on 12/2/2011 15:5:54
+
+;;; Copyright (c) 1999-2000 The ThinLisp Group.  All rights reserved.
 
 ;;; Translation data for tl/lisp/tl-basics.lisp.
 ;;; The following is the value of the trans-data-tlt-version parameter.
@@ -54,7 +56,7 @@
     (TL::STRING-ARG-INVALID . "string_arg_invalid")
     (TL:STRING-EQUAL . "string_equal")
     (TL:STRING-GREATERP . "string_greaterp")
-    (TL::STRING-LESSP . "string_lessp")
+    (TL:STRING-LESSP . "string_lessp")
     (TL::WRITE-CHAR-INTO-STRING . "write_char_into_string")
     (TL::WRITE-STRING-INTO-STRING . "write_string_into_string"))
   ;; Used variables = (symbol c-name . type).
